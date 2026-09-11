@@ -135,12 +135,41 @@ var SBCH = (function () {
         } catch (e) { /* audio indisponível: segue sem som */ }
     }
 
+    /* ---------- Extras ---------- */
+
+    function embaralhar(arr) {
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+
+    /* Anima um número de um valor a outro (ease-out) com sufixo opcional. */
+    function animarNumero(el, de, para, duracao, sufixo) {
+        sufixo = sufixo || "";
+        var inicio = null;
+        duracao = duracao || 700;
+        function passo(ts) {
+            if (!inicio) inicio = ts;
+            var f = Math.min(1, (ts - inicio) / duracao);
+            var e = 1 - Math.pow(1 - f, 3); // ease-out cúbico
+            var v = Math.round(de + (para - de) * e);
+            el.textContent = v.toLocaleString("pt-BR") + sufixo;
+            if (f < 1) requestAnimationFrame(passo);
+        }
+        requestAnimationFrame(passo);
+    }
+
     return {
         carregarRanking: carregarRanking,
         registrar: registrar,
         desenharRanking: desenharRanking,
         pedirNomeESalvar: pedirNomeESalvar,
         confete: confete,
-        som: som
+        som: som,
+        embaralhar: embaralhar,
+        animarNumero: animarNumero
     };
 })();

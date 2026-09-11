@@ -5,6 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Carbono SBC</title>
     <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        .gauge-wrap { max-width: 320px; margin: 6px auto 0; }
+
+        .degraus { margin-top: 4px; }
+        .degrau {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            background: #f0f4f0;
+            border: 1px solid #dde7dd;
+            font-size: 0.92em;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .degrau .num {
+            flex: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: #cfdccf;
+            color: var(--tinta-suave);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+        .degrau.ativo { background: var(--verde-claro); border-color: var(--verde); }
+        .degrau.ativo .num { background: var(--verde); color: #fff; }
+        .degrau .estado { margin-left: auto; font-size: 1.1em; opacity: 0.35; }
+        .degrau.ativo .estado { opacity: 1; }
+
+        .pratica-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+        .pratica-item input { width: 26px; height: 26px; margin-top: 3px; accent-color: var(--verde); flex: none; }
+        .peso-badge {
+            display: inline-block;
+            background: var(--verde-claro);
+            border: 1px solid #bcd9c2;
+            color: var(--verde-escuro);
+            border-radius: 999px;
+            font-size: 0.75em;
+            font-weight: 700;
+            padding: 1px 10px;
+            margin-top: 4px;
+        }
+
+        .slider-linha { display: block; margin-top: 12px; font-weight: 600; }
+        .slider-linha input { width: 100%; accent-color: var(--verde); height: 36px; }
+        .slider-valor { color: var(--azul); }
+
+        .equiv { display: flex; gap: 10px; margin-top: 12px; }
+        .equiv .placar-item .valor { font-size: 1.1em; }
+    </style>
 </head>
 <body>
 
@@ -17,20 +80,38 @@
     </header>
 
     <main id="tela-calculo">
+
         <section class="cartao">
-            <h2>Monte seu sistema de produção</h2>
-            <p class="sub">Partimos do <strong>baseline regional</strong>: uma lavoura convencional com índice de emissões 100. Escolha as práticas da sua fazenda e veja a <strong>intensidade de emissões (IEGEE)</strong> cair — é esse índice, em kg CO₂eq por tonelada de grãos, que o selo SBC mede.</p>
+            <h2>Sua fazenda</h2>
+            <p class="sub">Partimos do <strong>baseline regional</strong> (índice de emissões 100): lavoura convencional. É esse índice — o <strong>IEGEE</strong>, em kg CO₂eq por tonelada de grãos — que o selo SBC mede.</p>
 
-            <label style="display:block;margin-top:14px;font-weight:600;">Área de soja da fazenda: <span id="area-valor" style="color:var(--azul)">200</span> ha</label>
-            <input type="range" id="area" min="50" max="1000" step="50" value="200" style="width:100%;accent-color:var(--verde);height:36px;">
+            <label class="slider-linha">Área de soja: <span class="slider-valor" id="area-valor">200</span> ha</label>
+            <input type="range" id="area" min="50" max="1000" step="50" value="200">
+            <label class="slider-linha">Produtividade: <span class="slider-valor" id="prod-valor">3,5</span> t/ha</label>
+            <input type="range" id="prod" min="30" max="60" step="5" value="35">
 
-            <div style="margin-top:14px;">
-                <div class="barra">
-                    <div class="barra-preenchimento" id="iegee-barra" style="width:100%;background:#b0503f;"></div>
-                    <span class="barra-rotulo" id="iegee-texto">Índice 100 · Baseline</span>
-                </div>
-                <p class="sub" id="status-texto" style="margin-top:6px;">Sistema convencional — ainda longe do padrão SBC.</p>
+            <!-- Medidor do IEGEE -->
+            <div class="gauge-wrap">
+                <svg viewBox="0 0 200 130" width="100%" aria-label="Medidor do índice de emissões">
+                    <path d="M 20 100 A 80 80 0 0 1 100 20" fill="none" stroke="var(--verde)" stroke-width="16" stroke-linecap="round"/>
+                    <path d="M 100 20 A 80 80 0 0 1 156.6 43.4" fill="none" stroke="var(--dourado)" stroke-width="16"/>
+                    <path d="M 156.6 43.4 A 80 80 0 0 1 180 100" fill="none" stroke="#b0503f" stroke-width="16" stroke-linecap="round"/>
+                    <text x="22" y="122" font-size="11" fill="var(--tinta-suave)">SBC</text>
+                    <text x="160" y="122" font-size="11" fill="var(--tinta-suave)">Baseline</text>
+                    <g id="agulha" transform="rotate(90 100 100)" style="transition: transform 0.7s cubic-bezier(.34,1.3,.64,1);">
+                        <line x1="100" y1="100" x2="100" y2="32" stroke="var(--azul)" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="100" cy="100" r="7" fill="var(--azul)"/>
+                    </g>
+                </svg>
+                <div style="text-align:center;font-size:1.5em;font-weight:700;color:var(--azul);margin-top:-30px;" id="iegee-texto">100</div>
+                <div style="text-align:center;" class="sub" id="status-texto">Baseline convencional</div>
             </div>
+        </section>
+
+        <section class="cartao">
+            <h2>🪜 Escada da redução</h2>
+            <p class="sub">Os degraus do modelo SBC (Figura 1 do Comunicado Técnico 100) — adote cada grupo de práticas para descer.</p>
+            <div class="degraus" id="degraus"></div>
         </section>
 
         <section class="cartao">
@@ -47,12 +128,26 @@
                 </div>
                 <div class="placar-item">
                     <div class="valor" id="res-co2">0 t</div>
-                    <div class="nome">CO₂eq imobilizado/ano*</div>
+                    <div class="nome">Emissões evitadas/ano*</div>
+                </div>
+                <div class="placar-item">
+                    <div class="valor" id="res-solo">0 t</div>
+                    <div class="nome">CO₂ imobilizado no solo/ano</div>
                 </div>
             </div>
-            <p class="sub" id="res-msg"></p>
+            <div class="equiv">
+                <div class="placar-item" style="flex:1;">
+                    <div class="valor" id="res-carros">🚗 0</div>
+                    <div class="nome">Carros fora da estrada/ano</div>
+                </div>
+                <div class="placar-item" style="flex:1;">
+                    <div class="valor" id="res-arvores">🌳 0</div>
+                    <div class="nome">Árvores plantadas/ano</div>
+                </div>
+            </div>
+            <p class="sub" id="res-msg" style="margin-top:10px;"></p>
             <button class="botao secundario" onclick="finalizar()">Ver se está apto ao selo SBC</button>
-            <p class="sub">*Estimativa educativa: 3 t CO₂eq/ha·ano imobilizadas pelo SPD (Embrapa, 20 anos de monitoramento).</p>
+            <p class="sub" style="margin-top:10px;">*Exemplo educativo (baseline ~350 kg CO₂eq/t). Imobilização: 3 t CO₂eq/ha·ano pelo SPD (Embrapa, 20 anos).</p>
         </section>
     </main>
 
@@ -81,96 +176,120 @@
     <script>
         "use strict";
 
-        // Pesos baseados nos degraus da Figura 1 (CT 100) e nos dados do folder SBC.
         var PRATICAS = [
-            {
-                id: "spd", icone: "🚜", nome: "Sistema Plantio Direto (SPD)",
-                desc: "Revololvimento mínimo + rotação e diversificação de culturas.",
-                peso: 35,
-                co2: true,
-                fonte: "Imobiliza 3 t CO₂eq/ha·ano (60 t em 20 anos)."
-            },
-            {
-                id: "fbn", icone: "🦠", nome: "Fixação Biológica do Nitrogênio",
-                desc: "Fim da adubação nitrogenada química + inoculantes.",
-                peso: 20,
-                fonte: "Evita emissões de N₂O, gás com potencial 298× maior que o CO₂."
-            },
-            {
-                id: "coinoculacao", icone: "🧬", nome: "Coinoculação (Bradyrhizobium + Azospirillum)",
-                desc: "Aumenta a eficiência da fixação de nitrogênio.",
-                peso: 10,
-                fonte: "Mais eficiência da FBN, mais produtividade, menos custo."
-            },
-            {
-                id: "ilpf", icone: "🌳", nome: "Integração Lavoura-Pecuária-Floresta",
-                desc: "Diversifica o sistema; o componente arbóreo sequestra CO₂.",
-                peso: 15,
-                co2: true,
-                fonte: "Aumenta o sequestro de carbono e gera renda extra."
-            },
-            {
-                id: "manejos", icone: "🔬", nome: "Manejos Integrados (pragas, doenças e daninhas)",
-                desc: "Monitorar e aplicar produto químico só quando necessário.",
-                peso: 15,
-                fonte: "Menos trânsito de máquinas = menos queima de combustível fóssil."
-            },
-            {
-                id: "produtividade", icone: "📈", nome: "Aumentar produtividade e reduzir perdas",
-                desc: "Menos emissões por tonelada produzida.",
-                peso: 15,
-                fonte: "Dividir por mais grãos reduz o kg CO₂eq/t — o coração do IEGEE."
-            }
+            { id: "spd", icone: "🚜", nome: "Sistema Plantio Direto (SPD)",
+              desc: "Revololvimento mínimo + rotação e diversificação de culturas.",
+              peso: 35, degrau: 1,
+              fonte: "Imobiliza 3 t CO₂eq/ha·ano (60 t em 20 anos)." },
+            { id: "fbn", icone: "🦠", nome: "Fixação Biológica do Nitrogênio",
+              desc: "Fim da adubação nitrogenada química + inoculantes.",
+              peso: 20, degrau: 2,
+              fonte: "Evita N₂O, gás com potencial de aquecimento 298× maior que o CO₂." },
+            { id: "coinoculacao", icone: "🧬", nome: "Coinoculação (Bradyrhizobium + Azospirillum)",
+              desc: "Aumenta a eficiência da fixação de nitrogênio.",
+              peso: 10, degrau: 2,
+              fonte: "Mais eficiência da FBN, mais produtividade, menos custo." },
+            { id: "manejos", icone: "🔬", nome: "Manejos Integrados (pragas, doenças e daninhas)",
+              desc: "Monitorar e aplicar produto químico só quando necessário.",
+              peso: 15, degrau: 3,
+              fonte: "Menos trânsito de máquinas = menos queima de combustível fóssil." },
+            { id: "ilpf", icone: "🌳", nome: "Integração Lavoura-Pecuária-Floresta",
+              desc: "Diversifica o sistema; o componente arbóreo sequestra CO₂.",
+              peso: 15, degrau: 5,
+              fonte: "Aumenta o sequestro de carbono e gera renda extra." },
+            { id: "produtividade", icone: "📈", nome: "Aumentar produtividade e reduzir perdas",
+              desc: "Menos emissões por tonelada produzida.",
+              peso: 15, degrau: 4,
+              fonte: "Dividir por mais grãos reduz o kg CO₂eq/t — o coração do IEGEE." }
+        ];
+
+        var DEGRAUS = [
+            { n: 1, nome: "Manejo conservacionista do solo", ids: ["spd"] },
+            { n: 2, nome: "Redução racional de fertilizantes (FBN + coinoculação)", ids: ["fbn", "coinoculacao"] },
+            { n: 3, nome: "Redução racional de agrotóxicos (manejos integrados)", ids: ["manejos"] },
+            { n: 4, nome: "Aumento de produtividade e redução de perdas", ids: ["produtividade"] },
+            { n: 5, nome: "Integração Lavoura-Pecuária-Floresta", ids: ["ilpf"] }
         ];
 
         var area = 200;
+        var produtividade = 3.5;
+
+        function montarEscada() {
+            var cont = document.getElementById("degraus");
+            DEGRAUS.forEach(function (d, i) {
+                var el = document.createElement("div");
+                el.className = "degrau";
+                el.id = "degrau-" + d.n;
+                el.style.marginLeft = (i * 24) + "px";
+                el.innerHTML = '<span class="num">' + d.n + '</span><span>' + d.nome + '</span><span class="estado">◻</span>';
+                cont.appendChild(el);
+            });
+        }
 
         function montarPraticas() {
             var cont = document.getElementById("praticas");
             PRATICAS.forEach(function (p) {
                 var item = document.createElement("label");
-                item.style.cssText = "display:flex;gap:12px;align-items:flex-start;padding:12px;border-bottom:1px solid #eee;cursor:pointer;margin-bottom:6px;";
+                item.className = "pratica-item";
                 item.innerHTML =
-                    '<input type="checkbox" id="chk-' + p.id + '" onchange="recalcular()" style="width:26px;height:26px;margin-top:3px;accent-color:var(--verde);flex:none;">' +
+                    '<input type="checkbox" id="chk-' + p.id + '" onchange="recalcular()">' +
                     "<span><strong>" + p.icone + " " + p.nome + "</strong><br>" +
-                    '<span class="sub">' + p.desc + " " + p.fonte + "</span></span>";
+                    '<span class="sub">' + p.desc + " " + p.fonte + '</span><br>' +
+                    '<span class="peso-badge">-' + p.peso + " no índice</span></span>";
                 cont.appendChild(item);
             });
         }
 
+        function marcado(id) { return document.getElementById("chk-" + id).checked; }
+
         function estado() {
-            var ativas = PRATICAS.filter(function (p) {
-                return document.getElementById("chk-" + p.id).checked;
-            });
+            var ativas = PRATICAS.filter(function (p) { return marcado(p.id); });
             var soma = ativas.reduce(function (a, p) { return a + p.peso; }, 0);
-            // O uso integrado das tecnologias pode reduzir em pelo menos 50% (CT 100).
-            if (ativas.length === PRATICAS.length) soma = Math.min(soma + 5, 65);
-            return { ativas: ativas, reducao: soma };
+            // Uso integrado completo: redução de pelo menos 50% (CT 100)
+            if (ativas.length === PRATICAS.length) soma += 5;
+            // Produtividade influencia o denominador do IEGEE
+            var prodBonus = Math.round((produtividade - 3.0) * 6); // 0 a +18
+            var reducao = Math.min(soma + prodBonus, 80);
+            return { ativas: ativas, reducao: reducao, prodBonus: prodBonus };
         }
 
         function recalcular() {
             var e = estado();
-            var indice = Math.max(35, 100 - e.reducao);
+            var indice = Math.max(20, 100 - e.reducao);
 
-            var barra = document.getElementById("iegee-barra");
-            barra.style.width = indice + "%";
-            barra.style.background = indice >= 50 ? "var(--verde)" : (indice >= 75 ? "var(--dourado)" : "#b0503f");
+            // Agulha do medidor (90° = valor 50)
+            document.getElementById("agulha").setAttribute("transform", "rotate(" + ((indice - 50) * 1.8) + " 100 100)");
+            var texto = document.getElementById("iegee-texto");
+            texto.textContent = indice;
+            texto.style.color = indice <= 50 ? "var(--verde)" : (indice <= 75 ? "var(--dourado)" : "#b0503f");
 
-            var classe = indice <= 50 ? "Nível SBC 🌱" : (indice <= 75 ? "Em transição" : "Baseline convencional");
-            document.getElementById("iegee-texto").textContent = "Índice " + indice + " · " + classe;
+            var status = indice <= 50 ? "Nível SBC 🌱 — redução de " + e.reducao + "%"
+                       : (indice <= 75 ? "Em transição — redução de " + e.reducao + "%"
+                       : "Baseline convencional");
+            document.getElementById("status-texto").textContent = status;
 
-            document.getElementById("status-texto").textContent =
-                indice <= 50
-                    ? "Redução de " + e.reducao + "% nas emissões — faixa do padrão SBC (≥50% com uso integrado das tecnologias)."
-                    : "Adote mais práticas integradas: o Programa SBC estima redução de ~30% (e até ≥50% com o conjunto completo).";
+            // Degraus acesos
+            DEGRAUS.forEach(function (d) {
+                var completo = d.ids.every(marcado);
+                var el = document.getElementById("degrau-" + d.n);
+                el.classList.toggle("ativo", completo);
+                el.querySelector(".estado").textContent = completo ? "✓" : "◻";
+            });
 
-            document.getElementById("res-reducao").textContent = e.reducao + "%";
+            // Números do resultado
+            var antes = parseInt(document.getElementById("res-reducao").textContent) || 0;
+            SBCH.animarNumero(document.getElementById("res-reducao"), antes, e.reducao, 500, "%");
 
-            var co2 = 0;
-            if (document.getElementById("chk-spd").checked) co2 += area * 3;
-            if (document.getElementById("chk-ilpf").checked) co2 += area * 1;
-            document.getElementById("res-co2").textContent =
-                co2.toLocaleString("pt-BR") + " t";
+            var emissaoBaseKgHa = 1200; // exemplo educativo (≈350 kg CO2eq/t × 3,4 t/ha)
+            var evitadas = area * (emissaoBaseKgHa / 1000) * (e.reducao / 100);
+            var solo = 0;
+            if (marcado("spd")) solo += area * 3;
+            if (marcado("ilpf")) solo += area * 1;
+            SBCH.animarNumero(document.getElementById("res-co2"), 0, Math.round(evitadas), 500, " t");
+            SBCH.animarNumero(document.getElementById("res-solo"), 0, Math.round(solo), 500, " t");
+            SBCH.animarNumero(document.getElementById("res-carros"), 0, Math.round(evitadas / 2), 500);
+            SBCH.animarNumero(document.getElementById("res-arvores"), 0, Math.round((evitadas + solo) * 50), 500);
+
             document.getElementById("res-msg").textContent = e.ativas.length
                 ? "Práticas adotadas: " + e.ativas.map(function (p) { return p.nome; }).join(" · ")
                 : "Nenhuma prática selecionada ainda.";
@@ -178,30 +297,20 @@
 
         function finalizar() {
             var e = estado();
-            var indice = Math.max(35, 100 - e.reducao);
-            var classe, titulo, icone, dicas;
+            var indice = Math.max(20, 100 - e.reducao);
+            var classe, titulo, icone, cls;
 
-            if (indice <= 40) {
-                classe = "Ouro SBC"; titulo = "Sistema pronto para o selo SBC!";
-                icone = "🏆"; document.getElementById("final-classe").className = "classe-sbc ouro";
-            } else if (indice <= 50) {
-                classe = "Prata SBC"; titulo = "Quase lá — padrão SBC alcançado";
-                icone = "🥈"; document.getElementById("final-classe").className = "classe-sbc prata";
-            } else if (indice <= 75) {
-                classe = "Bronze SBC"; titulo = "Sistema em transição";
-                icone = "🥉"; document.getElementById("final-classe").className = "classe-sbc bronze";
-            } else {
-                classe = "Baseline"; titulo = "Sistema convencional";
-                icone = "🚜"; document.getElementById("final-classe").className = "classe-sbc";
-            }
+            if (indice <= 40) { classe = "Ouro SBC"; titulo = "Sistema pronto para o selo SBC!"; icone = "🏆"; cls = "classe-sbc ouro"; }
+            else if (indice <= 50) { classe = "Prata SBC"; titulo = "Padrão SBC alcançado"; icone = "🥈"; cls = "classe-sbc prata"; }
+            else if (indice <= 75) { classe = "Bronze SBC"; titulo = "Sistema em transição"; icone = "🥉"; cls = "classe-sbc bronze"; }
+            else { classe = "Baseline"; titulo = "Sistema convencional"; icone = "🚜"; cls = "classe-sbc"; }
 
             document.getElementById("final-icone").textContent = icone;
             document.getElementById("final-titulo").textContent = titulo;
-            document.getElementById("final-classe").textContent = classe;
+            var cEl = document.getElementById("final-classe");
+            cEl.className = cls; cEl.textContent = classe;
 
-            var faltantes = PRATICAS.filter(function (p) {
-                return !document.getElementById("chk-" + p.id).checked;
-            });
+            var faltantes = PRATICAS.filter(function (p) { return !marcado(p.id); });
             var dicasEl = document.getElementById("final-dicas");
             dicasEl.innerHTML = faltantes.length
                 ? "<strong>Para reduzir ainda mais o IEGEE:</strong><ul style='margin:6px 0 0;padding-left:20px;'>" +
@@ -230,7 +339,13 @@
             document.getElementById("area-valor").textContent = area;
             recalcular();
         });
+        document.getElementById("prod").addEventListener("input", function () {
+            produtividade = parseInt(this.value, 10) / 10;
+            document.getElementById("prod-valor").textContent = produtividade.toLocaleString("pt-BR", { minimumFractionDigits: 1 });
+            recalcular();
+        });
 
+        montarEscada();
         montarPraticas();
         recalcular();
     </script>

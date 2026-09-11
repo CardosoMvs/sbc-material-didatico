@@ -3,38 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estande Embrapa - Soja Baixo Carbono</title>
+    <title>SBC no Estande – Jogos</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { color: #2e7d32; font-size: 2.5em; margin-bottom: 10px; }
-        .header p { color: #555; font-size: 1.2em; }
-        .menu-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 500px; }
-        .menu-btn { display: block; text-decoration: none; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border-left: 8px solid #2e7d32; transition: transform 0.2s; }
-        .menu-btn:hover { transform: scale(1.02); }
-        .menu-btn h2 { color: #333; margin: 0 0 10px 0; }
-        .menu-btn p { color: #666; margin: 0; }
+        .capa {
+            max-width: 640px;
+            margin: 0 auto 18px;
+            background: linear-gradient(150deg, var(--azul-escuro) 0%, var(--azul) 55%, var(--verde-escuro) 100%);
+            color: #fff;
+            border-radius: var(--raio);
+            box-shadow: var(--sombra);
+            padding: 28px 22px;
+        }
+
+        .capa h1 { margin: 8px 0 6px; font-size: 1.6em; line-height: 1.2; }
+        .capa p { margin: 0; color: #d7e5d7; font-size: 0.98em; }
+        .capa .tag {
+            display: inline-block;
+            background: var(--dourado);
+            color: var(--tinta);
+            font-weight: 700;
+            font-size: 0.75em;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 3px 14px;
+            border-radius: 999px;
+        }
+
+        .menu-item {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            max-width: 640px;
+            margin: 0 auto 14px;
+            background: var(--cartao);
+            border-radius: var(--raio);
+            box-shadow: var(--sombra);
+            padding: 18px;
+            text-decoration: none;
+            color: inherit;
+            border-left: 8px solid var(--verde);
+            transition: transform 0.15s;
+        }
+
+        .menu-item:active { transform: scale(0.98); }
+        .menu-item .icone {
+            flex: none;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            background: var(--verde-claro);
+            border-radius: 14px;
+        }
+        .menu-item h2 { margin: 0 0 3px; font-size: 1.1em; color: var(--azul); }
+        .menu-item p { margin: 0; font-size: 0.92em; color: var(--tinta-suave); }
+        .menu-item.azul { border-left-color: var(--azul); }
+        .menu-item.azul .icone { background: #e3ecf5; }
+        .menu-item.dourado { border-left-color: var(--dourado); }
+        .menu-item.dourado .icone { background: var(--dourado-claro); }
+
+        .sobre {
+            max-width: 640px;
+            margin: 18px auto 0;
+            background: var(--verde-claro);
+            border: 1px solid #bcd9c2;
+            border-radius: var(--raio);
+            padding: 16px 18px;
+            font-size: 0.92em;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Soja Baixo Carbono</h1>
-        <p>Escolha um desafio e teste seus conhecimentos</p>
+
+    <div class="capa">
+        <span class="tag">Feira agropecuária · Estande SBC</span>
+        <h1>🌱 Soja Baixo Carbono</h1>
+        <p>Desafios rápidos para conhecer o Programa SBC: produza mais, emita menos e valorize sua soja. Toque em um jogo para começar.</p>
     </div>
 
-    <div class="menu-container">
-        <a href="jogo1.html" class="menu-btn">
-            <h2>1. Dashboard da Safra</h2>
-            <p>Simule a rentabilidade e a pegada de carbono da sua lavoura.</p>
-        </a>
-        <a href="jogo2.html" class="menu-btn">
-            <h2>2. Decisão Rápida (Manejo)</h2>
-            <p>Aceite ou rejeite práticas agrícolas no dia a dia do campo.</p>
-        </a>
-        <a href="#" class="menu-btn" style="border-left-color: #ccc; opacity: 0.7;">
-            <h2>3. Quiz Alta Pressão</h2>
-            <p>Em breve...</p>
-        </a>
+    <a href="jogo1.html" class="menu-item">
+        <div class="icone">🧮</div>
+        <div>
+            <h2>Calculadora de Carbono</h2>
+            <p>Monte o sistema da sua fazenda e veja o índice de emissões (kg CO₂eq/t) cair até o padrão SBC.</p>
+        </div>
+    </a>
+
+    <a href="jogo2.html" class="menu-item">
+        <div class="icone">⚖️</div>
+        <div>
+            <h2>Decisão Rápida</h2>
+            <p>10 situações reais do dia a dia do campo: aceitar ou rejeitar cada prática? Pontos por sequência.</p>
+        </div>
+    </a>
+
+    <a href="jogo3.html" class="menu-item azul">
+        <div class="icone">⚡</div>
+        <div>
+            <h2>Quiz Alta Pressão</h2>
+            <p>8 perguntas, 15 segundos cada, números oficiais do Programa SBC. Entre no ranking do estande.</p>
+        </div>
+    </a>
+
+    <a href="jogo4.html" class="menu-item dourado">
+        <div class="icone">🧠</div>
+        <div>
+            <h2>Jogo da Memória SBC</h2>
+            <p>Ligue cada prática ao seu benefício: SPD, FBN, coinoculação, ILPF e manejos integrados.</p>
+        </div>
+    </a>
+
+    <div class="sobre">
+        <strong>Programa SBC – Soja Baixo Carbono</strong> · iniciativa da Embrapa Soja com 7 empresas apoiadoras.
+        Selo de certificação voluntária, de 3ª parte, para soja produzida com redução da intensidade de emissões de GEEs —
+        mensurável, reportável e verificável (MRV). As práticas que cortam emissões também aumentam a produtividade e reduzem custos.
     </div>
+
+    <footer class="rodape">
+        Embrapa Soja · Londrina, PR
+    </footer>
+
 </body>
 </html>

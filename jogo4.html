@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Memória SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        .grade-carta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .grade-carta.modo12 { grid-template-columns: repeat(4, 1fr); }
+        .grade-carta.modo8 { grid-template-columns: repeat(4, 1fr); }
+
+        @media (max-width: 420px) {
+            .grade-carta { gap: 7px; }
+        }
+
+        .carta {
+            position: relative;
+            aspect-ratio: 3 / 4;
+            perspective: 600px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .carta-face {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6px;
+            border-radius: 12px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transition: transform 0.35s;
+            font-weight: 700;
+        }
+
+        .carta-verso {
+            background: linear-gradient(145deg, var(--azul), var(--verde-escuro));
+            color: #fff;
+            font-size: 1.6em;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .carta-frente {
+            background: #fff;
+            transform: rotateY(180deg);
+            border: 2px solid #cfdccf;
+            font-size: 0.8em;
+            line-height: 1.25;
+            color: var(--tinta);
+            box-shadow: var(--sombra);
+        }
+
+        .carta-frente .icone-grande { font-size: 2.2em; line-height: 1; display: block; }
+
+        .carta.virada .carta-verso { transform: rotateY(180deg); }
+        .carta.virada .carta-frente { transform: rotateY(0deg); }
+        .carta.parcial .carta-frente { border-color: var(--dourado); background: var(--dourado-claro); }
+        .carta.resolvida { opacity: 0.45; cursor: default; }
+        .carta.resolvida .carta-frente { border-color: var(--verde); background: var(--verde-claro); }
+    </style>
+</head>
+<body>
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Jogo da Memória SBC</h1>
+        </div>
+    </header>
+
+    <!-- Escolha do modo -->
+    <main class="cartao" id="tela-escolha">
+        <h2>Escolha o desafio</h2>
+        <p class="sub">Ligue cada prática SBC ao seu benefício. Menos jogadas = melhor ranking.</p>
+        <button class="botao" onclick="iniciar('icones')">🌱 Nível 1 — Ícones das práticas (rápido)</button>
+        <button class="botao secundario" onclick="iniciar('pares')">🎯 Nível 2 — Prática ↔ Benefício (completo)</button>
+        <section style="margin-top:18px;">
+            <h2 style="font-size:1em;">🏅 Menos jogadas do estande</h2>
+            <ul class="lista-ranking" id="ranking-inicial"></ul>
+        </section>
+    </main>
+
+    <!-- Jogo -->
+    <div class="placar oculto" id="placar-jogo">
+        <div class="placar-item">
+            <div class="valor" id="jogadas">0</div>
+            <div class="nome">Jogadas</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="pares-restantes">0</div>
+            <div class="nome">Pares restantes</div>
+        </div>
+    </div>
+
+    <main class="cartao oculto" id="tela-jogo" style="padding:16px;">
+        <div class="grade-carta" id="grade"></div>
+    </main>
+
+    <!-- Fim -->
+    <main class="cartao tela-final oculto" id="tela-final">
+        <div class="trofeu">🧠</div>
+        <h2>Todas as práticas emparelhadas!</h2>
+        <p style="font-size:1.1em;">Você completou em <strong id="final-jogadas" style="color:var(--azul)">0</strong> jogadas.</p>
+        <p class="sub" id="final-msg"></p>
+        <section style="margin-top:14px;text-align:left;">
+            <h2 style="font-size:1em;">🏅 Melhores do estande</h2>
+            <ul class="lista-ranking" id="ranking"></ul>
+        </section>
+        <button class="botao" onclick="location.reload()">Jogar de novo</button>
+        <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+    </main>
+
+    <footer class="rodape">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+
+        // Pares: [rótuloA, rótuloB] — A = prática, B = benefício/número oficial.
+        var PARES_COMPLETOS = [
+            ["🚜 SPD", "60 t CO₂eq/ha em 20 anos"],
+            ["🦠 FBN", "Fim da adubação nitrogenada"],
+            ["🧬 Coinoculação", "Bradyrhizobium + Azospirillum"],
+            ["🌳 ILPF", "Árvores sequestram CO₂ + renda extra"],
+            ["🔬 MIP/MID", "Aplicar só quando necessário"],
+            ["📈 Produtividade", "Menos CO₂eq por tonelada de grãos"]
+        ];
+
+        var PARES_ICONES = [
+            ["🚜 SPD", "🚜 SPD"],
+            ["🦠 FBN", "🦠 FBN"],
+            ["🌳 ILPF", "🌳 ILPF"],
+            ["🔬 MIP", "🔬 MIP"]
+        ];
+
+        var modoAtual = "pares";
+        var cartas = [];
+        var primeira = null;
+        var segunda = null;
+        var jogadas = 0;
+        var bloqueio = false;
+        var paresRestantes = 0;
+
+        function embaralhar(arr) {
+            var a = arr.slice();
+            for (var i = a.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var t = a[i]; a[i] = a[j]; a[j] = t;
+            }
+            return a;
+        }
+
+        function iniciar(modo) {
+            modoAtual = modo;
+            var pares = modo === "icones" ? PARES_ICONES : PARES_COMPLETOS;
+            paresRestantes = pares.length;
+
+            cartas = [];
+            pares.forEach(function (par, idPar) {
+                cartas.push({ idPar: idPar, rotulo: par[0] });
+                cartas.push({ idPar: idPar, rotulo: par[1] });
+            });
+            cartas = embaralhar(cartas);
+
+            document.getElementById("tela-escolha").classList.add("oculto");
+            document.getElementById("tela-final").classList.add("oculto");
+            document.getElementById("placar-jogo").classList.remove("oculto");
+            document.getElementById("tela-jogo").classList.remove("oculto");
+
+            var grade = document.getElementById("grade");
+            grade.innerHTML = "";
+            cartas.forEach(function (c, i) {
+                var b = document.createElement("button");
+                b.className = "carta";
+                b.dataset.indice = i;
+                b.innerHTML =
+                    '<div class="carta-face carta-verso">🌱</div>' +
+                    '<div class="carta-face carta-frente">' +
+                    (c.rotulo.length <= 10
+                        ? '<span><span class="icone-grande">' + c.rotulo.split(" ")[0] + "</span>" + escapar(c.rotulo.split(" ")[1] || "") + "</span>"
+                        : escapar(c.rotulo)) +
+                    "</div>";
+                b.onclick = function () { virar(b); };
+                grade.appendChild(b);
+            });
+
+            atualizarPlacar();
+        }
+
+        function escapar(t) {
+            var d = document.createElement("div");
+            d.textContent = t;
+            return d.innerHTML;
+        }
+
+        function atualizarPlacar() {
+            document.getElementById("jogadas").textContent = jogadas;
+            document.getElementById("pares-restantes").textContent = paresRestantes;
+        }
+
+        function virar(botao) {
+            var carta = cartas[botao.dataset.indice];
+            if (bloqueio || botao.classList.contains("virada") || botao.classList.contains("resolvida")) return;
+
+            botao.classList.add("virada");
+
+            if (!primeira) {
+                primeira = { botao: botao, carta: carta };
+                return;
+            }
+
+            segunda = { botao: botao, carta: carta };
+            jogadas++;
+            atualizarPlacar();
+            bloqueio = true;
+
+            if (primeira.carta.idPar === segunda.carta.idPar) {
+                // Par encontrado
+                setTimeout(function () {
+                    primeira.botao.classList.add("resolvida");
+                    segunda.botao.classList.add("resolvida");
+                    paresRestantes--;
+                    atualizarPlacar();
+                    SBCH.som("acerto");
+                    if (paresRestantes > 0) {
+                        primeira = null; segunda = null; bloqueio = false;
+                    } else {
+                        finalizar();
+                    }
+                }, 450);
+            } else {
+                primeira.botao.classList.add("parcial");
+                segunda.botao.classList.add("parcial");
+                setTimeout(function () {
+                    [primeira, segunda].forEach(function (c) {
+                        c.botao.classList.remove("virada", "parcial");
+                    });
+                    primeira = null; segunda = null; bloqueio = false;
+                    SBCH.som("erro");
+                }, 900);
+            }
+        }
+
+        function finalizar() {
+            setTimeout(function () {
+                document.getElementById("tela-jogo").classList.add("oculto");
+                document.getElementById("placar-jogo").classList.add("oculto");
+                document.getElementById("tela-final").classList.remove("oculto");
+                document.getElementById("final-jogadas").textContent = jogadas;
+                document.getElementById("final-msg").textContent =
+                    modoAtual === "icones"
+                        ? "Nível 1 concluído! Tente o Nível 2 e associe cada prática ao seu número oficial."
+                        : "Você associou todas as práticas aos benefícios que o selo SBC mensura.";
+                SBCH.desenharRanking(document.getElementById("ranking"), "memoria_" + modoAtual, " jogadas");
+                SBCH.pedirNomeESalvar("memoria_" + modoAtual, jogadas, false, function () {
+                    SBCH.desenharRanking(document.getElementById("ranking"), "memoria_" + modoAtual, " jogadas");
+                });
+                SBCH.confete();
+                SBCH.som("vitoria");
+            }, 600);
+        }
+
+        SBCH.desenharRanking(document.getElementById("ranking-inicial"), "memoria_pares", " jogadas");
+    </script>
+</body>
+</html>

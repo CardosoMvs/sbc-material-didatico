@@ -3,82 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Soja Baixo Carbono</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; color: #333; }
-        .dashboard { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { color: #5B9B3A; text-align: center; }
-        .bar-container { background-color: #ddd; border-radius: 5px; margin: 10px 0 20px; height: 30px; position: relative; }
-        .bar { height: 100%; border-radius: 5px; transition: width 0.5s ease; }
-        #carbon-bar { background-color: #d9534f; width: 100%; }
-        #profit-bar { background-color: #5cb85c; width: 30%; }
-        .label { position: absolute; top: 5px; left: 10px; color: white; font-weight: bold; }
-        .toggle-group { margin-top: 20px; }
-        .toggle-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
-        input[type="checkbox"] { transform: scale(1.5); cursor: pointer; }
-    </style>
+    <title>Calculadora de Carbono SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
 </head>
 <body>
-    <div class="dashboard">
-        <h1>Dashboard da Safra SBC</h1>
-        
-        <h3>Pegada de Carbono (Emissões)</h3>
-        <div class="bar-container">
-            <div id="carbon-bar" class="bar"></div>
-            <span class="label" id="carbon-text">Alta</span>
-        </div>
 
-        <h3>Rentabilidade & Produtividade</h3>
-        <div class="bar-container">
-            <div id="profit-bar" class="bar"></div>
-            <span class="label" id="profit-text">Média</span>
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Calculadora de Carbono</h1>
         </div>
+    </header>
 
-        <div class="toggle-group">
-            <h3>Práticas de Manejo:</h3>
-            <div class="toggle-item">
-                <label>Sistema Plantio Direto (SPD)</label>
-                <input type="checkbox" onchange="updateDashboard(30, 20, this)">
-            </div>
-            <div class="toggle-item">
-                <label>Fixação Biológica de Nitrogênio (FBN)</label>
-                <input type="checkbox" onchange="updateDashboard(20, 25, this)">
-            </div>
-            <div class="toggle-item">
-                <label>Integração Lavoura-Pecuária-Floresta (ILPF)</label>
-                <input type="checkbox" onchange="updateDashboard(40, 15, this)">
-            </div>
-            <div class="toggle-item">
-                <label>Manejo Integrado (MIP)</label>
-                <input type="checkbox" onchange="updateDashboard(10, 10, this)">
-            </div>
-        </div>
-    </div>
+    <main id="tela-calculo">
+        <section class="cartao">
+            <h2>Monte seu sistema de produção</h2>
+            <p class="sub">Partimos do <strong>baseline regional</strong>: uma lavoura convencional com índice de emissões 100. Escolha as práticas da sua fazenda e veja a <strong>intensidade de emissões (IEGEE)</strong> cair — é esse índice, em kg CO₂eq por tonelada de grãos, que o selo SBC mede.</p>
 
+            <label style="display:block;margin-top:14px;font-weight:600;">Área de soja da fazenda: <span id="area-valor" style="color:var(--azul)">200</span> ha</label>
+            <input type="range" id="area" min="50" max="1000" step="50" value="200" style="width:100%;accent-color:var(--verde);height:36px;">
+
+            <div style="margin-top:14px;">
+                <div class="barra">
+                    <div class="barra-preenchimento" id="iegee-barra" style="width:100%;background:#b0503f;"></div>
+                    <span class="barra-rotulo" id="iegee-texto">Índice 100 · Baseline</span>
+                </div>
+                <p class="sub" id="status-texto" style="margin-top:6px;">Sistema convencional — ainda longe do padrão SBC.</p>
+            </div>
+        </section>
+
+        <section class="cartao">
+            <h2>Práticas do Programa SBC</h2>
+            <div id="praticas"></div>
+        </section>
+
+        <section class="cartao" id="resultado" style="text-align:center;">
+            <h2>Resultado da sua fazenda</h2>
+            <div class="placar">
+                <div class="placar-item">
+                    <div class="valor" id="res-reducao">0%</div>
+                    <div class="nome">Redução IEGEE</div>
+                </div>
+                <div class="placar-item">
+                    <div class="valor" id="res-co2">0 t</div>
+                    <div class="nome">CO₂eq imobilizado/ano*</div>
+                </div>
+            </div>
+            <p class="sub" id="res-msg"></p>
+            <button class="botao secundario" onclick="finalizar()">Ver se está apto ao selo SBC</button>
+            <p class="sub">*Estimativa educativa: 3 t CO₂eq/ha·ano imobilizadas pelo SPD (Embrapa, 20 anos de monitoramento).</p>
+        </section>
+    </main>
+
+    <main id="tela-final" class="oculto">
+        <section class="cartao tela-final">
+            <div class="trofeu" id="final-icone">🌱</div>
+            <h2 id="final-titulo">Sistema em transição</h2>
+            <span class="classe-sbc bronze" id="final-classe">Em transição</span>
+            <p id="final-resumo" style="font-size:1.05em;"></p>
+            <div id="final-dicas" style="text-align:left;margin-top:8px;"></div>
+            <button class="botao" onclick="location.reload()">Recalcular</button>
+            <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+        </section>
+        <section class="cartao">
+            <h2>🏅 Melhores sistemas do estande (hoje)</h2>
+            <ul class="lista-ranking" id="ranking"></ul>
+        </section>
+    </main>
+
+    <footer class="rodape">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja<br>
+        Certificação voluntária de 3ª parte · Mensurável, Reportável e Verificável (MRV)
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
     <script>
-        let carbon = 100;
-        let profit = 30;
+        "use strict";
 
-        function updateDashboard(carbonImpact, profitImpact, checkbox) {
-            if (checkbox.checked) {
-                carbon -= carbonImpact;
-                profit += profitImpact;
+        // Pesos baseados nos degraus da Figura 1 (CT 100) e nos dados do folder SBC.
+        var PRATICAS = [
+            {
+                id: "spd", icone: "🚜", nome: "Sistema Plantio Direto (SPD)",
+                desc: "Revololvimento mínimo + rotação e diversificação de culturas.",
+                peso: 35,
+                co2: true,
+                fonte: "Imobiliza 3 t CO₂eq/ha·ano (60 t em 20 anos)."
+            },
+            {
+                id: "fbn", icone: "🦠", nome: "Fixação Biológica do Nitrogênio",
+                desc: "Fim da adubação nitrogenada química + inoculantes.",
+                peso: 20,
+                fonte: "Evita emissões de N₂O, gás com potencial 298× maior que o CO₂."
+            },
+            {
+                id: "coinoculacao", icone: "🧬", nome: "Coinoculação (Bradyrhizobium + Azospirillum)",
+                desc: "Aumenta a eficiência da fixação de nitrogênio.",
+                peso: 10,
+                fonte: "Mais eficiência da FBN, mais produtividade, menos custo."
+            },
+            {
+                id: "ilpf", icone: "🌳", nome: "Integração Lavoura-Pecuária-Floresta",
+                desc: "Diversifica o sistema; o componente arbóreo sequestra CO₂.",
+                peso: 15,
+                co2: true,
+                fonte: "Aumenta o sequestro de carbono e gera renda extra."
+            },
+            {
+                id: "manejos", icone: "🔬", nome: "Manejos Integrados (pragas, doenças e daninhas)",
+                desc: "Monitorar e aplicar produto químico só quando necessário.",
+                peso: 15,
+                fonte: "Menos trânsito de máquinas = menos queima de combustível fóssil."
+            },
+            {
+                id: "produtividade", icone: "📈", nome: "Aumentar produtividade e reduzir perdas",
+                desc: "Menos emissões por tonelada produzida.",
+                peso: 15,
+                fonte: "Dividir por mais grãos reduz o kg CO₂eq/t — o coração do IEGEE."
+            }
+        ];
+
+        var area = 200;
+
+        function montarPraticas() {
+            var cont = document.getElementById("praticas");
+            PRATICAS.forEach(function (p) {
+                var item = document.createElement("label");
+                item.style.cssText = "display:flex;gap:12px;align-items:flex-start;padding:12px;border-bottom:1px solid #eee;cursor:pointer;margin-bottom:6px;";
+                item.innerHTML =
+                    '<input type="checkbox" id="chk-' + p.id + '" onchange="recalcular()" style="width:26px;height:26px;margin-top:3px;accent-color:var(--verde);flex:none;">' +
+                    "<span><strong>" + p.icone + " " + p.nome + "</strong><br>" +
+                    '<span class="sub">' + p.desc + " " + p.fonte + "</span></span>";
+                cont.appendChild(item);
+            });
+        }
+
+        function estado() {
+            var ativas = PRATICAS.filter(function (p) {
+                return document.getElementById("chk-" + p.id).checked;
+            });
+            var soma = ativas.reduce(function (a, p) { return a + p.peso; }, 0);
+            // O uso integrado das tecnologias pode reduzir em pelo menos 50% (CT 100).
+            if (ativas.length === PRATICAS.length) soma = Math.min(soma + 5, 65);
+            return { ativas: ativas, reducao: soma };
+        }
+
+        function recalcular() {
+            var e = estado();
+            var indice = Math.max(35, 100 - e.reducao);
+
+            var barra = document.getElementById("iegee-barra");
+            barra.style.width = indice + "%";
+            barra.style.background = indice >= 50 ? "var(--verde)" : (indice >= 75 ? "var(--dourado)" : "#b0503f");
+
+            var classe = indice <= 50 ? "Nível SBC 🌱" : (indice <= 75 ? "Em transição" : "Baseline convencional");
+            document.getElementById("iegee-texto").textContent = "Índice " + indice + " · " + classe;
+
+            document.getElementById("status-texto").textContent =
+                indice <= 50
+                    ? "Redução de " + e.reducao + "% nas emissões — faixa do padrão SBC (≥50% com uso integrado das tecnologias)."
+                    : "Adote mais práticas integradas: o Programa SBC estima redução de ~30% (e até ≥50% com o conjunto completo).";
+
+            document.getElementById("res-reducao").textContent = e.reducao + "%";
+
+            var co2 = 0;
+            if (document.getElementById("chk-spd").checked) co2 += area * 3;
+            if (document.getElementById("chk-ilpf").checked) co2 += area * 1;
+            document.getElementById("res-co2").textContent =
+                co2.toLocaleString("pt-BR") + " t";
+            document.getElementById("res-msg").textContent = e.ativas.length
+                ? "Práticas adotadas: " + e.ativas.map(function (p) { return p.nome; }).join(" · ")
+                : "Nenhuma prática selecionada ainda.";
+        }
+
+        function finalizar() {
+            var e = estado();
+            var indice = Math.max(35, 100 - e.reducao);
+            var classe, titulo, icone, dicas;
+
+            if (indice <= 40) {
+                classe = "Ouro SBC"; titulo = "Sistema pronto para o selo SBC!";
+                icone = "🏆"; document.getElementById("final-classe").className = "classe-sbc ouro";
+            } else if (indice <= 50) {
+                classe = "Prata SBC"; titulo = "Quase lá — padrão SBC alcançado";
+                icone = "🥈"; document.getElementById("final-classe").className = "classe-sbc prata";
+            } else if (indice <= 75) {
+                classe = "Bronze SBC"; titulo = "Sistema em transição";
+                icone = "🥉"; document.getElementById("final-classe").className = "classe-sbc bronze";
             } else {
-                carbon += carbonImpact;
-                profit -= profitImpact;
+                classe = "Baseline"; titulo = "Sistema convencional";
+                icone = "🚜"; document.getElementById("final-classe").className = "classe-sbc";
             }
 
-            // Atualiza barra de Carbono (quanto menor, mais verde)
-            const carbonBar = document.getElementById('carbon-bar');
-            carbonBar.style.width = carbon + '%';
-            carbonBar.style.backgroundColor = carbon <= 40 ? '#5cb85c' : (carbon <= 70 ? '#f0ad4e' : '#d9534f');
-            document.getElementById('carbon-text').innerText = carbon + '%';
+            document.getElementById("final-icone").textContent = icone;
+            document.getElementById("final-titulo").textContent = titulo;
+            document.getElementById("final-classe").textContent = classe;
 
-            // Atualiza barra de Rentabilidade
-            const profitBar = document.getElementById('profit-bar');
-            profitBar.style.width = Math.min(profit, 100) + '%';
-            document.getElementById('profit-text').innerText = profit + '%';
+            var faltantes = PRATICAS.filter(function (p) {
+                return !document.getElementById("chk-" + p.id).checked;
+            });
+            var dicasEl = document.getElementById("final-dicas");
+            dicasEl.innerHTML = faltantes.length
+                ? "<strong>Para reduzir ainda mais o IEGEE:</strong><ul style='margin:6px 0 0;padding-left:20px;'>" +
+                  faltantes.map(function (p) { return "<li>" + p.nome + "</li>"; }).join("") + "</ul>"
+                : "<p>✅ Você adotou <strong>todo o conjunto integrado de tecnologias SBC</strong> — é assim que se alcança redução de pelo menos 50% nas emissões.</p>";
+
+            document.getElementById("tela-calculo").classList.add("oculto");
+            document.getElementById("tela-final").classList.remove("oculto");
+            window.scrollTo(0, 0);
+            SBCH.desenharRanking(document.getElementById("ranking"), "iegee", "%");
+
+            var pontos = e.reducao;
+            var registro = SBCH.carregarRanking("iegee");
+            var jaRegistrado = registro.some(function (r) { return r.valor === pontos; });
+            if (pontos > 0 && !jaRegistrado) {
+                SBCH.pedirNomeESalvar("iegee", pontos, true, function () {
+                    SBCH.desenharRanking(document.getElementById("ranking"), "iegee", "%");
+                });
+                SBCH.confete();
+                SBCH.som("vitoria");
+            }
         }
+
+        document.getElementById("area").addEventListener("input", function () {
+            area = parseInt(this.value, 10);
+            document.getElementById("area-valor").textContent = area;
+            recalcular();
+        });
+
+        montarPraticas();
+        recalcular();
     </script>
 </body>
 </html>

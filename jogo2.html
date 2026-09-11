@@ -3,98 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decisão Rápida - SBC</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 90vh; color: #333; }
-        .card-container { background: white; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.3); text-align: center; position: relative; }
-        .card-header { background: #2e7d32; color: white; padding: 15px; font-weight: bold; }
-        .card-body { padding: 40px 20px; min-height: 150px; display: flex; align-items: center; justify-content: center; font-size: 1.4em; font-weight: bold; }
-        .feedback { display: none; padding: 15px; font-size: 1em; color: white; }
-        .actions { display: flex; width: 100%; border-top: 1px solid #eee; }
-        .btn { flex: 1; padding: 20px; border: none; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .btn-reject { background: #fff; color: #d9534f; border-right: 1px solid #eee; }
-        .btn-reject:hover { background: #fdf0ef; }
-        .btn-accept { background: #fff; color: #5cb85c; }
-        .btn-accept:hover { background: #eff8f0; }
-        .btn-next { display: none; width: 100%; padding: 15px; background: #222; color: white; border: none; font-size: 1.1em; cursor: pointer; }
-        .nav-back { position: absolute; top: 20px; left: 20px; color: white; text-decoration: none; font-weight: bold; }
-    </style>
+    <title>Decisão Rápida SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
 </head>
 <body>
-    <a href="index.html" class="nav-back">← Voltar</a>
-    
-    <div class="card-container">
-        <div class="card-header" id="card-counter">Situação 1 de 3</div>
-        <div class="card-body" id="card-text">
-            Carregando...
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Decisão Rápida</h1>
         </div>
-        <div class="feedback" id="feedback-box"></div>
-        <div class="actions" id="action-buttons">
-            <button class="btn btn-reject" onclick="makeChoice(false)">✖ Convencional</button>
-            <button class="btn btn-accept" onclick="makeChoice(true)">✔ Prática SBC</button>
+    </header>
+
+    <div class="placar">
+        <div class="placar-item">
+            <div class="valor" id="pts">0</div>
+            <div class="nome">Pontos</div>
         </div>
-        <button class="btn-next" id="next-btn" onclick="nextCard()">Próxima Situação ➔</button>
+        <div class="placar-item">
+            <div class="valor" id="streak">🔥 0</div>
+            <div class="nome">Sequência</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="prog">1/10</div>
+            <div class="nome">Situação</div>
+        </div>
     </div>
 
+    <main class="cartao" id="carta-area" style="padding:0;overflow:hidden;">
+        <div style="background:var(--azul);color:#fff;padding:12px 18px;font-weight:700;font-size:0.9em;">
+            No dia a dia da fazenda, você decide:
+        </div>
+        <div id="carta-texto" style="padding:26px 22px;min-height:120px;display:flex;align-items:center;font-size:1.15em;font-weight:600;line-height:1.4;">
+            Carregando...
+        </div>
+
+        <div class="feedback" id="feedback" style="margin:0 16px 14px;"></div>
+
+        <div id="acoes" style="display:flex;">
+            <button class="botao neutro" id="btn-nao" onclick="decidir(false)" style="flex:1;min-height:66px;border-radius:0;color:var(--carmim);font-size:1.05em;">✖ Convencional</button>
+            <button class="botao" id="btn-sim" onclick="decidir(true)" style="flex:1;min-height:66px;border-radius:0;font-size:1.05em;">✔ Prática SBC</button>
+        </div>
+        <button class="botao secundario oculto" id="btn-proxima" onclick="proxima()" style="width:100%;min-height:60px;border-radius:0;">Próxima situação ➜</button>
+    </main>
+
+    <main class="cartao tela-final oculto" id="tela-final">
+        <div class="trofeu" id="trofeu">🌱</div>
+        <h2 id="final-titulo">Fim de jogo</h2>
+        <span class="classe-sbc bronze" id="final-classe">Bronze SBC</span>
+        <p id="final-msg" style="font-size:1.05em;"></p>
+        <p class="sub" id="final-detalhe"></p>
+        <button class="botao" onclick="location.reload()">Jogar de novo</button>
+        <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+    </main>
+
+    <footer class="rodape">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
     <script>
-        const cards = [
+        "use strict";
+
+        var CARTAS = [
             {
-                text: "Converter o preparo convencional do solo para o Sistema Plantio Direto.",
-                isSBC: true,
-                feedback: "Correto! O Sistema Plantio Direto imobiliza cerca de 3 toneladas de CO2 equivalente por ano.",
-                feedbackColor: "#5cb85c"
+                texto: "Manter a palha da soja sobre o solo e semear direto na palha, sem arar o solo.",
+                sbc: true,
+                exp: "É o coração do Sistema Plantio Direto: revolvimento mínimo. Em 20 anos, o SPD imobiliza 60 t de CO₂eq/ha — 3 t por ano — além de matéria orgânica para o solo."
             },
             {
-                text: "Substituir a inoculação por adubação nitrogenada química pesada na soja.",
-                isSBC: false,
-                feedback: "Atenção! A eliminação da adubação nitrogenada química na soja e o uso adequado de inoculantes reduz as emissões de CO2 e os custos.",
-                feedbackColor: "#d9534f"
+                texto: "Arar e gradear o solo a cada safra, como sempre foi feito.",
+                sbc: false,
+                exp: "O preparo convencional expõe a matéria orgânica e libera CO₂. Converter para o SPD é o primeiro degrau do modelo de redução do SBC."
             },
             {
-                text: "Aplicar produtos químicos preventivamente, sem acompanhamento e monitoramento das pragas.",
-                isSBC: false,
-                feedback: "Evite! Aplicar somente quando necessário reduz o trânsito de máquinas e a queima de combustíveis fósseis.",
-                feedbackColor: "#d9534f"
+                texto: "Eliminar a adubação nitrogenada química da soja e usar inoculantes.",
+                sbc: true,
+                exp: "Com a Fixação Biológica do Nitrogênio, a soja tira o N do ar. Evita-se adubo derivado de petróleo e a emissão de óxido nitroso (N₂O) — 298× mais potente que o CO₂."
+            },
+            {
+                texto: "Aplicar ureia pesada na soja 'para garantir', sem recomendação técnica.",
+                sbc: false,
+                exp: "Nitrogênio químico em excesso emite N₂O e aumenta custo sem retorno. A coinoculação com Bradyrhizobium + Azospirillum é o caminho da FBN eficiente."
+            },
+            {
+                texto: "Monitorar pragas e doenças e aplicar produto químico só quando necessário.",
+                sbc: true,
+                exp: "Manejo Integrado: menos aplicações significa menos trânsito de máquinas, menos combustível fóssil queimado e economia para a fazenda."
+            },
+            {
+                texto: "Aplicar defensivos preventivamente em calendário fixo, sem monitorar a lavoura.",
+                sbc: false,
+                exp: "Sem monitoramento, você gasta, emite e ainda seleciona resistência. Os manejos integrados de pragas, doenças e plantas daninhas pedem: aplicar só quando necessário."
+            },
+            {
+                texto: "Incluir um componente florestal: integrar lavoura, pecuária e árvores (ILPF).",
+                sbc: true,
+                exp: "As árvores aumentam o sequestro de CO₂, diversificam a produção e ainda geram renda extra (madeira, erva, lenha)."
+            },
+            {
+                texto: "Rodar o mesmo cultivo todos os anos, sem rotação de culturas.",
+                sbc: false,
+                exp: "Rotação e diversificação de culturas são premissas do SPD pleno — sem elas, o sistema perde a capacidade de imobilizar carbono e controlar pragas."
+            },
+            {
+                texto: "Corrigir a acidez do solo e calibrar a adubação com análise de solo.",
+                sbc: true,
+                exp: "Adubação e correção de solo bem feitas melhoram o carbono orgânico do solo e o balanço de gases de efeito estufa do sistema."
+            },
+            {
+                texto: "Perder grãos na colheita: 'perda pequena não faz diferença'.",
+                sbc: false,
+                exp: "Faz! O IEGEE é calculado por tonelada de grãos: menos perdas e mais produtividade dividem as emissões por mais produto — é assim que o índice cai."
             }
         ];
 
-        let currentCard = 0;
+        var indice = 0;
+        var pontos = 0;
+        var sequencia = 0;
+        var melhorSequencia = 0;
+        var acertos = 0;
 
-        function loadCard() {
-            document.getElementById('card-counter').innerText = `Situação ${currentCard + 1} de ${cards.length}`;
-            document.getElementById('card-text').innerText = cards[currentCard].text;
-            document.getElementById('feedback-box').style.display = 'none';
-            document.getElementById('action-buttons').style.display = 'flex';
-            document.getElementById('next-btn').style.display = 'none';
+        function atualizarPlacar() {
+            document.getElementById("pts").textContent = pontos;
+            document.getElementById("streak").textContent = "🔥 " + sequencia;
+            document.getElementById("prog").textContent = (indice + 1) + "/" + CARTAS.length;
         }
 
-        function makeChoice(accepted) {
-            const card = cards[currentCard];
-            const isCorrect = (accepted === card.isSBC);
-            
-            const feedbackBox = document.getElementById('feedback-box');
-            feedbackBox.style.display = 'block';
-            feedbackBox.style.backgroundColor = card.feedbackColor; // Mostra a cor associada à explicação da prática
-            feedbackBox.innerText = card.feedback;
+        function carregarCarta() {
+            atualizarPlacar();
+            document.getElementById("carta-texto").textContent = CARTAS[indice].texto;
+            document.getElementById("feedback").className = "feedback";
+            document.getElementById("feedback").style.display = "none";
+            document.getElementById("acoes").style.display = "flex";
+            document.getElementById("btn-proxima").classList.add("oculto");
+        }
 
-            document.getElementById('action-buttons').style.display = 'none';
-            
-            if (currentCard < cards.length - 1) {
-                document.getElementById('next-btn').style.display = 'block';
+        function decidir(escolheuSBC) {
+            var carta = CARTAS[indice];
+            var acertou = (escolheuSBC === carta.sbc);
+            var fb = document.getElementById("feedback");
+
+            if (acertou) {
+                sequencia++;
+                melhorSequencia = Math.max(melhorSequencia, sequencia);
+                acertos++;
+                pontos += 10 + (sequencia - 1) * 5; // bônus por sequência
+                fb.className = "feedback ok";
+                fb.innerHTML = "<strong>✔ Correto! +10 pts" + (sequencia > 1 ? " (sequência 🔥" + sequencia + ")" : "") + "</strong><br>" + carta.exp;
+                SBCH.som("acerto");
+                if (sequencia >= 3) SBCH.confete();
             } else {
-                document.getElementById('next-btn').style.display = 'block';
-                document.getElementById('next-btn').innerText = "Voltar ao Menu Principal";
-                document.getElementById('next-btn').onclick = () => window.location.href = 'index.html';
+                sequencia = 0;
+                fb.className = "feedback erro";
+                fb.innerHTML = "<strong>✖ " + (escolheuSBC ? "Essa não é uma prática SBC." : "Essa é justamente uma prática SBC!") + "</strong><br>" + carta.exp;
+                SBCH.som("erro");
+            }
+
+            document.getElementById("acoes").style.display = "none";
+            var proximaBtn = document.getElementById("btn-proxima");
+            proximaBtn.classList.remove("oculto");
+            proximaBtn.textContent = indice < CARTAS.length - 1 ? "Próxima situação ➜" : "Ver resultado 🏁";
+            atualizarPlacar();
+        }
+
+        function proxima() {
+            indice++;
+            if (indice < CARTAS.length) {
+                carregarCarta();
+            } else {
+                finalizar();
             }
         }
 
-        function nextCard() {
-            currentCard++;
-            loadCard();
+        function finalizar() {
+            var classe, titulo, icone;
+            if (pontos >= 130) {
+                classe = "Ouro SBC"; titulo = "Produtor de elite SBC!"; icone = "🏆";
+                document.getElementById("final-classe").className = "classe-sbc ouro";
+            } else if (pontos >= 100) {
+                classe = "Prata SBC"; titulo = "Muito bom — sua fazenda entende de carbono"; icone = "🥈";
+                document.getElementById("final-classe").className = "classe-sbc prata";
+            } else if (pontos >= 60) {
+                classe = "Bronze SBC"; titulo = "Bom começo — dá para afinar o manejo"; icone = "🥉";
+                document.getElementById("final-classe").className = "classe-sbc bronze";
+            } else {
+                classe = "Em transição"; titulo = "Ainda vale uma conversa no estande"; icone = "🌱";
+                document.getElementById("final-classe").className = "classe-sbc";
+            }
+
+            document.getElementById("trofeu").textContent = icone;
+            document.getElementById("final-titulo").textContent = titulo;
+            document.getElementById("final-classe").textContent = classe;
+            document.getElementById("final-msg").textContent =
+                "Você acertou " + acertos + " de " + CARTAS.length + " decisões.";
+            document.getElementById("final-detalhe").textContent =
+                "Maior sequência: 🔥" + melhorSequencia + " · Práticas SBC reconhecidas no jogo: SPD, FBN, coinoculação, ILPF, manejos integrados.";
+
+            document.getElementById("carta-area").classList.add("oculto");
+            document.querySelector(".placar").classList.add("oculto");
+            document.getElementById("tela-final").classList.remove("oculto");
+
+            SBCH.pedirNomeESalvar("decisao", pontos, true, function () { });
+            SBCH.confete();
+            SBCH.som("vitoria");
         }
 
-        // Inicia o jogo
-        loadCard();
+        carregarCarta();
     </script>
 </body>
 </html>

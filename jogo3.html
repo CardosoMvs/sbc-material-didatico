@@ -3,156 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Alta Pressão - SBC</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .timer { font-size: 2em; color: #d9534f; font-weight: bold; }
-        .score { font-size: 1.2em; color: #5cb85c; }
-        .quiz-container { background: #2a2a2a; width: 100%; max-width: 500px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .question { font-size: 1.3em; margin-bottom: 20px; text-align: center; }
-        .btn-option { display: block; width: 100%; padding: 15px; margin-bottom: 10px; background: #333; color: white; border: 2px solid #444; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: 0.2s; }
-        .btn-option:hover { background: #444; border-color: #5cb85c; }
-        .ranking-board { display: none; text-align: center; }
-        .ranking-list { list-style: none; padding: 0; text-align: left; }
-        .ranking-list li { background: #333; margin: 5px 0; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; }
-        .btn-back { display: block; width: 100%; padding: 15px; margin-top: 20px; background: #2e7d32; color: white; border: none; border-radius: 8px; text-decoration: none; text-align: center; font-size: 1.1em; }
-    </style>
+    <title>Quiz Alta Pressão SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
 </head>
 <body>
 
-    <div class="header" id="game-header">
-        <div class="score">Pontos: <span id="score-display">0</span></div>
-        <div class="timer" id="timer-display">15s</div>
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Quiz Alta Pressão</h1>
+        </div>
+    </header>
+
+    <div class="placar" id="cabecalho-jogo">
+        <div class="placar-item">
+            <div class="valor" id="pontos">0</div>
+            <div class="nome">Pontos</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="progresso">1/8</div>
+            <div class="nome">Pergunta</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="timer" style="color:var(--carmim)">15s</div>
+            <div class="nome">Tempo</div>
+        </div>
     </div>
 
-    <div class="quiz-container" id="quiz-area">
-        <div class="question" id="question-text">Carregando...</div>
-        <div id="options-area"></div>
-    </div>
+    <main class="cartao" id="area-quiz">
+        <div id="pergunta-texto" style="font-size:1.15em;font-weight:600;line-height:1.4;margin-bottom:16px;">Carregando...</div>
+        <div id="opcoes"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="botao secundario oculto" id="btn-proxima" onclick="proxima()" style="margin-top:12px;">Próxima pergunta ➜</button>
+    </main>
 
-    <div class="quiz-container ranking-board" id="ranking-area">
-        <h2>Fim de Jogo!</h2>
-        <p>Sua pontuação: <strong id="final-score">0</strong></p>
-        <h3>Top Produtores (Hoje)</h3>
-        <ul class="ranking-list" id="ranking-list"></ul>
-        <a href="index.html" class="btn-back">Voltar ao Menu</a>
-        <button class="btn-back" onclick="location.reload()" style="background: #444; margin-top: 10px;">Jogar Novamente</button>
-    </div>
+    <main class="cartao tela-final oculto" id="area-final">
+        <div class="trofeu" id="trofeu">🏆</div>
+        <h2 id="final-titulo">Fim de jogo!</h2>
+        <p style="font-size:1.1em;">Sua pontuação: <strong id="final-pontos" style="color:var(--azul)">0</strong></p>
+        <p class="sub" id="final-msg"></p>
+        <section style="margin-top:14px;text-align:left;">
+            <h2 style="font-size:1em;">🏅 Top produtores do estande</h2>
+            <ul class="lista-ranking" id="ranking"></ul>
+        </section>
+        <button class="botao" onclick="location.reload()">Jogar de novo</button>
+        <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+    </main>
 
+    <footer class="rodape">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
     <script>
-        const questions = [
+        "use strict";
+
+        // Perguntas baseadas no Comunicado Técnico 100 e no Folder SBC (Embrapa Soja).
+        var PERGUNTAS = [
             {
-                q: "A eliminação da adubação nitrogenada química na soja reduz a emissão de qual gás altamente prejudicial?",
-                options: ["Óxido Nitroso", "Gás Carbônico", "Metano"],
-                answer: 0
+                q: "Convertendo o preparo convencional para o Sistema Plantio Direto, quantas toneladas de CO₂eq por hectare são imobilizadas em 20 anos?",
+                opcoes: ["6 toneladas", "30 toneladas", "60 toneladas"],
+                resp: 2,
+                exp: "60 t em 20 anos = 3 t de CO₂eq imobilizadas por hectare por ano (Embrapa)."
             },
             {
-                q: "No Sistema Plantio Direto, quantas toneladas de CO2 equivalente por hectare são imobilizadas ao longo de 20 anos?",
-                options: ["10 toneladas", "30 toneladas", "60 toneladas"],
-                answer: 2
+                q: "A eliminação da adubação nitrogenada química na soja reduz a emissão de qual gás altamente prejudicial ao clima?",
+                opcoes: ["Óxido nitroso (N₂O)", "Gás carbônico (CO₂)", "Metano (CH₄)"],
+                resp: 0,
+                exp: "N₂O tem potencial de aquecimento global 298× maior que o CO₂. A FBN elimina essa fonte."
             },
             {
-                q: "Qual prática biológica aumenta a eficiência da fixação de nitrogênio na soja?",
-                options: ["Uso intenso de ureia", "Coinoculação (Bradyrhizobium + Azospirillum)", "Preparo convencional do solo"],
-                answer: 1
+                q: "Quais bactérias são usadas na coinoculação que aumenta a eficiência da fixação de nitrogênio?",
+                opcoes: ["Rhizobium + Pseudomonas", "Bradyrhizobium + Azospirillum", "Azotobacter + Bacillus"],
+                resp: 1,
+                exp: "Bradyrhizobium + Azospirillum é a coinoculação recomendada pela Embrapa para a soja."
+            },
+            {
+                q: "Qual o potencial estimado de redução das emissões de GEEs na soja ao adotar as tecnologias sustentáveis preconizadas pela pesquisa?",
+                opcoes: ["~10%", "~30%", "~70%"],
+                resp: 1,
+                exp: "O Programa SBC estima ~30% — e com o uso integrado completo, pelo menos 50%."
+            },
+            {
+                q: "No ciclo simplificado do carbono, quanto do CO₂ retirado da atmosfera pela fotossíntese fica retido no solo?",
+                opcoes: ["10% a 20%", "40% a 50%", "80% a 90%"],
+                resp: 0,
+                exp: "80–90% retorna à atmosfera na decomposição; 10–20% fica retido no solo como matéria orgânica."
+            },
+            {
+                q: "Quais são as premissas básicas para o Sistema Plantio Direto ser efetivo?",
+                opcoes: ["Arado, grade e niveladora", "Revololvimento mínimo, rotação e diversificação de culturas", "Irrigação, adubação foliar e semente certificada"],
+                resp: 1,
+                exp: "Sem revolvimento mínimo + rotação + diversificação, não é SPD pleno."
+            },
+            {
+                q: "O conceito central do selo SBC mede as emissões em qual unidade?",
+                opcoes: ["kg CO₂eq por tonelada de grãos", "t CO₂eq por hectare", "kg de insumos por saca"],
+                resp: 0,
+                exp: "É o IEGEE (intensidade de emissões): kg CO₂eq/t de grãos, comparado a um baseline regional."
+            },
+            {
+                q: "O que significa o sistema de controle MRV exigido pelo selo SBC?",
+                opcoes: ["Máquinas, Rotas e Veículos", "Mensurável, Reportável e Verificável", "Monitoramento, Rotação e Variedade"],
+                resp: 1,
+                exp: "MRV: mensurável, reportável e verificável — critério internacional para certificações."
+            },
+            {
+                q: "A certificação SBC é:",
+                opcoes: ["Obrigatória para vender soja", "Voluntária, aplicada por empresa especializada de 3ª parte", "Feita pela própria cooperativa"],
+                resp: 1,
+                exp: "Adesão voluntária, com certificação de 3ª parte e protocolo com base científica."
+            },
+            {
+                q: "Manejo Integrado de Pragas reduz emissões principalmente porque:",
+                opcoes: ["Usa inseticidas biológicos mais caros", "Reduz o trânsito de máquinas e a queima de combustíveis fósseis", "Aumenta o uso de fertilizantes"],
+                resp: 1,
+                exp: "Aplicar só quando necessário = menos aplicações, menos diesel queimado."
+            },
+            {
+                q: "Na Integração Lavoura-Pecuária-Floresta, o componente arbóreo traz:",
+                opcoes: ["Mais sequestro de CO₂ e renda extra", "Apenas sombra para o gado", "Aumento das emissões de metano"],
+                resp: 0,
+                exp: "Árvores sequestram mais CO₂ e diversificam a renda da fazenda."
+            },
+            {
+                q: "Quantas empresas apoiadoras compõem hoje o Programa SBC junto com a Embrapa?",
+                opcoes: ["3", "5", "7"],
+                resp: 2,
+                exp: "Bayer, Bunge, Cargill, Coamo, Cocamar, GDM e UPL — sete apoiadoras."
             }
         ];
 
-        let currentQ = 0;
-        let score = 0;
-        let timeLeft = 15;
-        let timerInterval;
+        var TOTAL = 8;                 // perguntas por partida (de 12 no banco)
+        var perguntasSorteadas = [];
+        var indice = 0;
+        var pontos = 0;
+        var acertos = 0;
+        var tempoRestante = 15;
+        var intervalo = null;
+        var respondida = false;
 
-        function startGame() {
-            loadQuestion();
+        function embaralhar(arr) {
+            var a = arr.slice();
+            for (var i = a.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var t = a[i]; a[i] = a[j]; a[j] = t;
+            }
+            return a;
         }
 
-        function startTimer() {
-            clearInterval(timerInterval);
-            timeLeft = 15;
-            document.getElementById('timer-display').innerText = timeLeft + 's';
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer-display').innerText = timeLeft + 's';
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    handleAnswer(-1); // Tempo esgotado
+        function iniciar() {
+            perguntasSorteadas = embaralhar(PERGUNTAS).slice(0, TOTAL);
+            carregarPergunta();
+        }
+
+        function carregarPergunta() {
+            respondida = false;
+            var p = perguntasSorteadas[indice];
+            document.getElementById("pontos").textContent = pontos;
+            document.getElementById("progresso").textContent = (indice + 1) + "/" + TOTAL;
+            document.getElementById("pergunta-texto").textContent = p.q;
+            document.getElementById("feedback").className = "feedback";
+            document.getElementById("btn-proxima").classList.add("oculto");
+
+            var area = document.getElementById("opcoes");
+            area.innerHTML = "";
+            p.opcoes.forEach(function (op, i) {
+                var b = document.createElement("button");
+                b.className = "opcao";
+                b.textContent = op;
+                b.onclick = function () { responder(i, b); };
+                area.appendChild(b);
+            });
+
+            iniciarTimer();
+        }
+
+        function iniciarTimer() {
+            clearInterval(intervalo);
+            tempoRestante = 15;
+            document.getElementById("timer").textContent = "15s";
+            intervalo = setInterval(function () {
+                tempoRestante--;
+                document.getElementById("timer").textContent = tempoRestante + "s";
+                if (tempoRestante <= 5) document.getElementById("timer").style.color = "var(--carmim)";
+                if (tempoRestante <= 0) {
+                    clearInterval(intervalo);
+                    responder(-1, null); // tempo esgotado
                 }
             }, 1000);
         }
 
-        function loadQuestion() {
-            if (currentQ >= questions.length) {
-                endGame();
-                return;
-            }
-            
-            const qData = questions[currentQ];
-            document.getElementById('question-text').innerText = qData.q;
-            
-            const optionsArea = document.getElementById('options-area');
-            optionsArea.innerHTML = '';
-            
-            qData.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-option';
-                btn.innerText = opt;
-                btn.onclick = () => handleAnswer(index);
-                optionsArea.appendChild(btn);
+        function responder(escolha, botao) {
+            if (respondida) return;
+            respondida = true;
+            clearInterval(intervalo);
+
+            var p = perguntasSorteadas[indice];
+            var acertou = escolha === p.resp;
+            var fb = document.getElementById("feedback");
+
+            var botoes = document.querySelectorAll("#opcoes .opcao");
+            botoes.forEach(function (b, i) {
+                b.disabled = true;
+                if (i === p.resp) b.classList.add("certa");
             });
+            if (escolha !== -1 && !acertou && botao) botao.classList.add("errada");
 
-            startTimer();
-        }
-
-        function handleAnswer(selectedIndex) {
-            clearInterval(timerInterval);
-            
-            if (selectedIndex === questions[currentQ].answer) {
-                // Ganha pontos baseados no tempo restante
-                score += (timeLeft * 10) + 50; 
-                document.getElementById('score-display').innerText = score;
+            if (acertou) {
+                acertos++;
+                pontos += 50 + tempoRestante * 10; // mais rápido = mais pontos
+                fb.className = "feedback ok";
+                fb.innerHTML = "<strong>✔ Correto! +" + (50 + tempoRestante * 10) + " pts</strong><br>" + p.exp;
+                SBCH.som("acerto");
+            } else {
+                fb.className = "feedback erro";
+                fb.innerHTML = "<strong>" + (escolha === -1 ? "⏰ Tempo esgotado!" : "✖ Resposta errada.") + "</strong><br>" + p.exp;
+                SBCH.som("erro");
             }
 
-            currentQ++;
-            loadQuestion();
+            document.getElementById("pontos").textContent = pontos;
+            var prox = document.getElementById("btn-proxima");
+            prox.classList.remove("oculto");
+            prox.textContent = indice < TOTAL - 1 ? "Próxima pergunta ➜" : "Ver resultado 🏁";
         }
 
-        function endGame() {
-            document.getElementById('game-header').style.display = 'none';
-            document.getElementById('quiz-area').style.display = 'none';
-            document.getElementById('ranking-area').style.display = 'block';
-            document.getElementById('final-score').innerText = score;
-
-            saveRanking(score);
+        function proxima() {
+            indice++;
+            if (indice < TOTAL) carregarPergunta();
+            else finalizar();
         }
 
-        function saveRanking(newScore) {
-            let ranking = JSON.parse(localStorage.getItem('sbc_ranking')) || [];
-            
-            // Pede o nome do jogador
-            let playerName = prompt("Parabéns! Digite seu nome ou nome da fazenda para o ranking:");
-            if (!playerName) playerName = "Produtor Anônimo";
+        function finalizar() {
+            document.getElementById("cabecalho-jogo").classList.add("oculto");
+            document.getElementById("area-quiz").classList.add("oculto");
+            document.getElementById("area-final").classList.remove("oculto");
+            document.getElementById("final-pontos").textContent = pontos;
+            document.getElementById("final-msg").textContent =
+                "Você acertou " + acertos + " de " + TOTAL + " perguntas. O quiz sorteia 8 de um banco de 12 — jogue de novo e venha perguntas novas!";
 
-            ranking.push({ name: playerName, score: newScore });
-            ranking.sort((a, b) => b.score - a.score); // Ordena do maior para o menor
-            ranking = ranking.slice(0, 5); // Mantém apenas o Top 5
+            if (pontos >= 900) {
+                document.getElementById("trofeu").textContent = "🏆";
+                document.getElementById("final-titulo").textContent = "Nível consultor Embrapa!";
+            } else if (pontos >= 600) {
+                document.getElementById("trofeu").textContent = "🥈";
+                document.getElementById("final-titulo").textContent = "Nível produtor SBC!";
+            } else {
+                document.getElementById("trofeu").textContent = "🌱";
+                document.getElementById("final-titulo").textContent = "Bom começo!";
+            }
 
-            localStorage.setItem('sbc_ranking', JSON.stringify(ranking));
-            displayRanking(ranking);
-        }
-
-        function displayRanking(ranking) {
-            const list = document.getElementById('ranking-list');
-            list.innerHTML = '';
-            ranking.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${index + 1}. ${entry.name}</span> <strong>${entry.score} pts</strong>`;
-                list.appendChild(li);
+            SBCH.desenharRanking(document.getElementById("ranking"), "quiz", " pts");
+            SBCH.pedirNomeESalvar("quiz", pontos, true, function () {
+                SBCH.desenharRanking(document.getElementById("ranking"), "quiz", " pts");
             });
+            SBCH.confete();
+            SBCH.som("vitoria");
         }
 
-        startGame();
+        iniciar();
     </script>
 </body>
 </html>

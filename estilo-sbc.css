@@ -1,0 +1,314 @@
+/* ============================================================
+   Identidade visual SBC – Soja Baixo Carbono (Embrapa Soja)
+   Design system compartilhado pelos jogos do estande.
+   100% offline: nenhuma fonte ou recurso externo.
+   ============================================================ */
+
+:root {
+    --verde-escuro: #1b4d2a;
+    --verde: #2e7d32;
+    --verde-vivo: #43a047;
+    --verde-claro: #e7f3e9;
+    --azul: #123a5f;
+    --azul-escuro: #0d2a45;
+    --dourado: #e5a812;
+    --dourado-claro: #fdf3d7;
+    --carmim: #c62828;
+    --carmim-claro: #fdecea;
+    --tinta: #1f2d24;
+    --tinta-suave: #5c6b60;
+    --fundo: #eef3ee;
+    --cartao: #ffffff;
+    --sombra: 0 6px 18px rgba(13, 42, 69, 0.12);
+    --raio: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    padding: 16px;
+    min-height: 100vh;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--tinta);
+    background: linear-gradient(180deg, #dfe9df 0%, var(--fundo) 240px, var(--fundo) 100%);
+    -webkit-tap-highlight-color: rgba(46, 125, 50, 0.15);
+}
+
+/* ---------- Cabeçalho padrão dos jogos ---------- */
+.topo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 640px;
+    margin: 0 auto 18px;
+}
+
+.voltar {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--cartao);
+    color: var(--verde-escuro);
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: var(--sombra);
+}
+
+.voltar:active { transform: scale(0.94); }
+
+.titulo-bloco { min-width: 0; }
+
+.selo {
+    display: inline-block;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--verde-escuro);
+    background: var(--verde-claro);
+    border: 1px solid #bcd9c2;
+    border-radius: 999px;
+    padding: 2px 12px;
+}
+
+.titulo {
+    margin: 4px 0 0;
+    font-size: 1.35em;
+    font-weight: 700;
+    color: var(--azul);
+    line-height: 1.2;
+}
+
+/* ---------- Cartão ---------- */
+.cartao {
+    max-width: 640px;
+    margin: 0 auto 16px;
+    background: var(--cartao);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    padding: 20px;
+}
+
+.cartao h2 { margin: 0 0 6px; color: var(--azul); font-size: 1.15em; }
+.cartao p { margin: 6px 0; }
+.sub { color: var(--tinta-suave); font-size: 0.95em; }
+
+/* ---------- Botões ---------- */
+.botao {
+    display: block;
+    width: 100%;
+    min-height: 60px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 14px;
+    background: var(--verde);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1.05em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.2s ease;
+}
+
+.botao:active { transform: scale(0.97); }
+.botao.secundario { background: var(--azul); }
+.botao.neutro { background: #e2e8e2; color: var(--tinta); }
+.botao + .botao { margin-top: 10px; }
+
+/* ---------- Barra de progresso ---------- */
+.barra {
+    position: relative;
+    height: 34px;
+    background: #dde6dd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.barra-preenchimento {
+    height: 100%;
+    border-radius: 10px;
+    background: var(--verde);
+    transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+.barra-rotulo {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Opções / cartas clicáveis ---------- */
+.opcao {
+    display: block;
+    width: 100%;
+    min-height: 60px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border: 2px solid #d7e0d7;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--tinta);
+    font-family: inherit;
+    font-size: 1.02em;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+
+.opcao:active { transform: scale(0.98); }
+.opcao.certa { border-color: var(--verde); background: var(--verde-claro); }
+.opcao.errada { border-color: var(--carmim); background: var(--carmim-claro); }
+.opcao:disabled { cursor: default; }
+
+/* ---------- Feedback ---------- */
+.feedback {
+    margin-top: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 0.98em;
+    display: none;
+}
+
+.feedback.ok { display: block; background: var(--verde-claro); border-left: 6px solid var(--verde); }
+.feedback.erro { display: block; background: var(--carmim-claro); border-left: 6px solid var(--carmim); }
+
+/* ---------- Placar / estatísticas ---------- */
+.placar {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.placar-item {
+    flex: 1;
+    background: var(--cartao);
+    border-radius: 12px;
+    box-shadow: var(--sombra);
+    padding: 10px 8px;
+    text-align: center;
+}
+
+.placar-item .valor { font-size: 1.3em; font-weight: 700; color: var(--azul); }
+.placar-item .nome { font-size: 0.78em; color: var(--tinta-suave); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ---------- Ranking ---------- */
+.lista-ranking { list-style: none; margin: 8px 0 0; padding: 0; }
+
+.lista-ranking li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background: #f2f6f2;
+}
+
+.lista-ranking li.primeiro { background: var(--dourado-claro); border: 1px solid var(--dourado); }
+.lista-ranking li .nome-rank { font-weight: 600; overflow-wrap: anywhere; }
+.lista-ranking li .valor-rank { font-weight: 700; color: var(--azul); white-space: nowrap; }
+.vazio-rank { color: var(--tinta-suave); font-style: italic; }
+
+/* ---------- Modal (entrada de nome no touch) ---------- */
+.modal-fundo {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 42, 69, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 50;
+}
+
+.modal-caixa {
+    width: 100%;
+    max-width: 420px;
+    background: var(--cartao);
+    border-radius: var(--raio);
+    padding: 22px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.modal-caixa h3 { margin: 0 0 6px; color: var(--azul); }
+.modal-caixa input {
+    width: 100%;
+    margin: 12px 0;
+    padding: 14px;
+    font-size: 1.1em;
+    font-family: inherit;
+    border: 2px solid #d7e0d7;
+    border-radius: 10px;
+}
+
+/* ---------- Tela final ---------- */
+.tela-final { text-align: center; }
+.tela-final .trofeu { font-size: 3em; line-height: 1; }
+.tela-final h2 { font-size: 1.5em; }
+
+.classe-sbc {
+    display: inline-block;
+    margin: 10px 0;
+    padding: 8px 22px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--verde);
+}
+
+.classe-sbc.ouro { background: var(--dourado); color: var(--tinta); }
+.classe-sbc.prata { background: #8a9aa8; }
+.classe-sbc.bronze { background: #a05a2c; }
+
+/* ---------- Confete ---------- */
+.confete {
+    position: fixed;
+    top: -12px;
+    width: 10px;
+    height: 16px;
+    border-radius: 3px;
+    z-index: 40;
+    pointer-events: none;
+    animation: cair 1.8s ease-in forwards;
+}
+
+@keyframes cair {
+    to { transform: translateY(105vh) rotate(540deg); opacity: 0.7; }
+}
+
+/* ---------- Rodapé ---------- */
+.rodape {
+    max-width: 640px;
+    margin: 24px auto 8px;
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--tinta-suave);
+}
+
+/* ---------- Telas alternáveis ---------- */
+.oculto { display: none !important; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 420px) {
+    body { padding: 12px; font-size: 16px; }
+    .cartao { padding: 16px; }
+    .titulo { font-size: 1.2em; }
+}

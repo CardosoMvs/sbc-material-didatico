@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decisão Rápida - SBC</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 90vh; color: #333; }
+        .card-container { background: white; width: 100%; max-width: 400px; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.3); text-align: center; position: relative; }
+        .card-header { background: #2e7d32; color: white; padding: 15px; font-weight: bold; }
+        .card-body { padding: 40px 20px; min-height: 150px; display: flex; align-items: center; justify-content: center; font-size: 1.4em; font-weight: bold; }
+        .feedback { display: none; padding: 15px; font-size: 1em; color: white; }
+        .actions { display: flex; width: 100%; border-top: 1px solid #eee; }
+        .btn { flex: 1; padding: 20px; border: none; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-reject { background: #fff; color: #d9534f; border-right: 1px solid #eee; }
+        .btn-reject:hover { background: #fdf0ef; }
+        .btn-accept { background: #fff; color: #5cb85c; }
+        .btn-accept:hover { background: #eff8f0; }
+        .btn-next { display: none; width: 100%; padding: 15px; background: #222; color: white; border: none; font-size: 1.1em; cursor: pointer; }
+        .nav-back { position: absolute; top: 20px; left: 20px; color: white; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="nav-back">← Voltar</a>
+    
+    <div class="card-container">
+        <div class="card-header" id="card-counter">Situação 1 de 3</div>
+        <div class="card-body" id="card-text">
+            Carregando...
+        </div>
+        <div class="feedback" id="feedback-box"></div>
+        <div class="actions" id="action-buttons">
+            <button class="btn btn-reject" onclick="makeChoice(false)">✖ Convencional</button>
+            <button class="btn btn-accept" onclick="makeChoice(true)">✔ Prática SBC</button>
+        </div>
+        <button class="btn-next" id="next-btn" onclick="nextCard()">Próxima Situação ➔</button>
+    </div>
+
+    <script>
+        const cards = [
+            {
+                text: "Converter o preparo convencional do solo para o Sistema Plantio Direto.",
+                isSBC: true,
+                feedback: "Correto! O Sistema Plantio Direto imobiliza cerca de 3 toneladas de CO2 equivalente por ano.",
+                feedbackColor: "#5cb85c"
+            },
+            {
+                text: "Substituir a inoculação por adubação nitrogenada química pesada na soja.",
+                isSBC: false,
+                feedback: "Atenção! A eliminação da adubação nitrogenada química na soja e o uso adequado de inoculantes reduz as emissões de CO2 e os custos.",
+                feedbackColor: "#d9534f"
+            },
+            {
+                text: "Aplicar produtos químicos preventivamente, sem acompanhamento e monitoramento das pragas.",
+                isSBC: false,
+                feedback: "Evite! Aplicar somente quando necessário reduz o trânsito de máquinas e a queima de combustíveis fósseis.",
+                feedbackColor: "#d9534f"
+            }
+        ];
+
+        let currentCard = 0;
+
+        function loadCard() {
+            document.getElementById('card-counter').innerText = `Situação ${currentCard + 1} de ${cards.length}`;
+            document.getElementById('card-text').innerText = cards[currentCard].text;
+            document.getElementById('feedback-box').style.display = 'none';
+            document.getElementById('action-buttons').style.display = 'flex';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function makeChoice(accepted) {
+            const card = cards[currentCard];
+            const isCorrect = (accepted === card.isSBC);
+            
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.style.display = 'block';
+            feedbackBox.style.backgroundColor = card.feedbackColor; // Mostra a cor associada à explicação da prática
+            feedbackBox.innerText = card.feedback;
+
+            document.getElementById('action-buttons').style.display = 'none';
+            
+            if (currentCard < cards.length - 1) {
+                document.getElementById('next-btn').style.display = 'block';
+            } else {
+                document.getElementById('next-btn').style.display = 'block';
+                document.getElementById('next-btn').innerText = "Voltar ao Menu Principal";
+                document.getElementById('next-btn').onclick = () => window.location.href = 'index.html';
+            }
+        }
+
+        function nextCard() {
+            currentCard++;
+            loadCard();
+        }
+
+        // Inicia o jogo
+        loadCard();
+    </script>
+</body>
+</html>

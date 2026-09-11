@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Alta Pressão - SBC</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .timer { font-size: 2em; color: #d9534f; font-weight: bold; }
+        .score { font-size: 1.2em; color: #5cb85c; }
+        .quiz-container { background: #2a2a2a; width: 100%; max-width: 500px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .question { font-size: 1.3em; margin-bottom: 20px; text-align: center; }
+        .btn-option { display: block; width: 100%; padding: 15px; margin-bottom: 10px; background: #333; color: white; border: 2px solid #444; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: 0.2s; }
+        .btn-option:hover { background: #444; border-color: #5cb85c; }
+        .ranking-board { display: none; text-align: center; }
+        .ranking-list { list-style: none; padding: 0; text-align: left; }
+        .ranking-list li { background: #333; margin: 5px 0; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; }
+        .btn-back { display: block; width: 100%; padding: 15px; margin-top: 20px; background: #2e7d32; color: white; border: none; border-radius: 8px; text-decoration: none; text-align: center; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="game-header">
+        <div class="score">Pontos: <span id="score-display">0</span></div>
+        <div class="timer" id="timer-display">15s</div>
+    </div>
+
+    <div class="quiz-container" id="quiz-area">
+        <div class="question" id="question-text">Carregando...</div>
+        <div id="options-area"></div>
+    </div>
+
+    <div class="quiz-container ranking-board" id="ranking-area">
+        <h2>Fim de Jogo!</h2>
+        <p>Sua pontuação: <strong id="final-score">0</strong></p>
+        <h3>Top Produtores (Hoje)</h3>
+        <ul class="ranking-list" id="ranking-list"></ul>
+        <a href="index.html" class="btn-back">Voltar ao Menu</a>
+        <button class="btn-back" onclick="location.reload()" style="background: #444; margin-top: 10px;">Jogar Novamente</button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "A eliminação da adubação nitrogenada química na soja reduz a emissão de qual gás altamente prejudicial?",
+                options: ["Óxido Nitroso", "Gás Carbônico", "Metano"],
+                answer: 0
+            },
+            {
+                q: "No Sistema Plantio Direto, quantas toneladas de CO2 equivalente por hectare são imobilizadas ao longo de 20 anos?",
+                options: ["10 toneladas", "30 toneladas", "60 toneladas"],
+                answer: 2
+            },
+            {
+                q: "Qual prática biológica aumenta a eficiência da fixação de nitrogênio na soja?",
+                options: ["Uso intenso de ureia", "Coinoculação (Bradyrhizobium + Azospirillum)", "Preparo convencional do solo"],
+                answer: 1
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+        let timeLeft = 15;
+        let timerInterval;
+
+        function startGame() {
+            loadQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 15;
+            document.getElementById('timer-display').innerText = timeLeft + 's';
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = timeLeft + 's';
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleAnswer(-1); // Tempo esgotado
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQ >= questions.length) {
+                endGame();
+                return;
+            }
+            
+            const qData = questions[currentQ];
+            document.getElementById('question-text').innerText = qData.q;
+            
+            const optionsArea = document.getElementById('options-area');
+            optionsArea.innerHTML = '';
+            
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(index);
+                optionsArea.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function handleAnswer(selectedIndex) {
+            clearInterval(timerInterval);
+            
+            if (selectedIndex === questions[currentQ].answer) {
+                // Ganha pontos baseados no tempo restante
+                score += (timeLeft * 10) + 50; 
+                document.getElementById('score-display').innerText = score;
+            }
+
+            currentQ++;
+            loadQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('game-header').style.display = 'none';
+            document.getElementById('quiz-area').style.display = 'none';
+            document.getElementById('ranking-area').style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+
+            saveRanking(score);
+        }
+
+        function saveRanking(newScore) {
+            let ranking = JSON.parse(localStorage.getItem('sbc_ranking')) || [];
+            
+            // Pede o nome do jogador
+            let playerName = prompt("Parabéns! Digite seu nome ou nome da fazenda para o ranking:");
+            if (!playerName) playerName = "Produtor Anônimo";
+
+            ranking.push({ name: playerName, score: newScore });
+            ranking.sort((a, b) => b.score - a.score); // Ordena do maior para o menor
+            ranking = ranking.slice(0, 5); // Mantém apenas o Top 5
+
+            localStorage.setItem('sbc_ranking', JSON.stringify(ranking));
+            displayRanking(ranking);
+        }
+
+        function displayRanking(ranking) {
+            const list = document.getElementById('ranking-list');
+            list.innerHTML = '';
+            ranking.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${index + 1}. ${entry.name}</span> <strong>${entry.score} pts</strong>`;
+                list.appendChild(li);
+            });
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

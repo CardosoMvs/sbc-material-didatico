@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Soja Baixo Carbono</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; color: #333; }
+        .dashboard { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #5B9B3A; text-align: center; }
+        .bar-container { background-color: #ddd; border-radius: 5px; margin: 10px 0 20px; height: 30px; position: relative; }
+        .bar { height: 100%; border-radius: 5px; transition: width 0.5s ease; }
+        #carbon-bar { background-color: #d9534f; width: 100%; }
+        #profit-bar { background-color: #5cb85c; width: 30%; }
+        .label { position: absolute; top: 5px; left: 10px; color: white; font-weight: bold; }
+        .toggle-group { margin-top: 20px; }
+        .toggle-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        input[type="checkbox"] { transform: scale(1.5); cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Dashboard da Safra SBC</h1>
+        
+        <h3>Pegada de Carbono (Emissões)</h3>
+        <div class="bar-container">
+            <div id="carbon-bar" class="bar"></div>
+            <span class="label" id="carbon-text">Alta</span>
+        </div>
+
+        <h3>Rentabilidade & Produtividade</h3>
+        <div class="bar-container">
+            <div id="profit-bar" class="bar"></div>
+            <span class="label" id="profit-text">Média</span>
+        </div>
+
+        <div class="toggle-group">
+            <h3>Práticas de Manejo:</h3>
+            <div class="toggle-item">
+                <label>Sistema Plantio Direto (SPD)</label>
+                <input type="checkbox" onchange="updateDashboard(30, 20, this)">
+            </div>
+            <div class="toggle-item">
+                <label>Fixação Biológica de Nitrogênio (FBN)</label>
+                <input type="checkbox" onchange="updateDashboard(20, 25, this)">
+            </div>
+            <div class="toggle-item">
+                <label>Integração Lavoura-Pecuária-Floresta (ILPF)</label>
+                <input type="checkbox" onchange="updateDashboard(40, 15, this)">
+            </div>
+            <div class="toggle-item">
+                <label>Manejo Integrado (MIP)</label>
+                <input type="checkbox" onchange="updateDashboard(10, 10, this)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let carbon = 100;
+        let profit = 30;
+
+        function updateDashboard(carbonImpact, profitImpact, checkbox) {
+            if (checkbox.checked) {
+                carbon -= carbonImpact;
+                profit += profitImpact;
+            } else {
+                carbon += carbonImpact;
+                profit -= profitImpact;
+            }
+
+            // Atualiza barra de Carbono (quanto menor, mais verde)
+            const carbonBar = document.getElementById('carbon-bar');
+            carbonBar.style.width = carbon + '%';
+            carbonBar.style.backgroundColor = carbon <= 40 ? '#5cb85c' : (carbon <= 70 ? '#f0ad4e' : '#d9534f');
+            document.getElementById('carbon-text').innerText = carbon + '%';
+
+            // Atualiza barra de Rentabilidade
+            const profitBar = document.getElementById('profit-bar');
+            profitBar.style.width = Math.min(profit, 100) + '%';
+            document.getElementById('profit-text').innerText = profit + '%';
+        }
+    </script>
+</body>
+</html>

@@ -3,69 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maquete SBC — Evolução do Manejo</title>
+    <title>Maquete da Fazenda – SBC</title>
     <link rel="stylesheet" href="estilo-sbc.css">
     <style>
-        /* ---------- Moldura da maquete ---------- */
-        .moldura {
-            border: 10px solid #6d5231;
-            border-radius: 20px;
-            box-shadow: inset 0 0 0 3px #4f3a20, var(--sombra);
-            overflow: hidden;
-            background: #9ec27c;
-        }
-        #paisagem { display: block; width: 100%; height: auto; }
-        #paisagem text { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+        /* Jogo 5 foge do padrão: em vez de quiz, uma super maquete
+           digital explorable — diorama em SVG dentro de moldura de
+           madeira, com evolução do manejo do Ano 1 ao Ano 3. */
 
-        .g-talhao { cursor: pointer; }
-        .borda-talhao { fill: none; stroke: var(--dourado); stroke-width: 4; opacity: 0; transition: opacity .25s; }
-        .g-talhao.ativo .borda-talhao { opacity: 1; }
-        .g-talhao.evoluiu { animation: pular .5s ease; }
-        .g-talhao:hover .solo-talhao { filter: brightness(1.05); }
+        .topo, .hud-maquete { max-width: 1080px; }
 
-        .dica-talhao {
-            margin-top: 12px;
+        /* ---------- HUD do explorador ---------- */
+        .hud-maquete { margin-bottom: 14px; }
+        .dica-hud {
+            text-align: center;
             font-size: 0.88em;
             color: var(--tinta-suave);
-            background: var(--verde-claro);
-            border: 2px solid #bcd9c2;
+            margin: 10px 0 0;
+        }
+
+        .ano-seletor { display: flex; gap: 8px; margin-top: 14px; }
+        .ano-btn {
+            flex: 1;
+            padding: 10px 6px 8px;
+            border: 2.5px solid #cfdccf;
+            border-radius: 14px;
+            background: #fff;
+            font-family: inherit;
+            font-size: 1em;
+            font-weight: 900;
+            color: var(--tinta);
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(27, 77, 42, 0.14);
+            transition: transform 0.08s, box-shadow 0.08s, background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .ano-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(27, 77, 42, 0.14); }
+        .ano-btn small {
+            display: block;
+            font-size: 0.72em;
+            font-weight: 700;
+            opacity: 0.75;
+            margin-top: 2px;
+        }
+        .ano-btn.ativo { background: var(--verde); border-color: var(--verde-escuro); color: #fff; box-shadow: 0 4px 0 var(--verde-escuro); }
+        .ano-btn.ativo small { opacity: 0.9; }
+
+        .barra-maquete { margin-top: 14px; }
+
+        /* ---------- Caixa da maquete (moldura de madeira, diorama) ---------- */
+        .maquete-box {
+            max-width: 1080px;
+            margin: 0 auto 16px;
+            padding: 10px;
+            background: #6b4a2b;
+            background-image:
+                repeating-linear-gradient(93deg, rgba(0,0,0,0.13) 0 2px, rgba(255,255,255,0.04) 2px 4px, transparent 4px 11px),
+                linear-gradient(180deg, #7a5533 0%, #5d3f24 100%);
+            border: 3px solid #3f2a13;
+            border-radius: 22px;
+            box-shadow: var(--sombra), inset 0 0 26px rgba(0, 0, 0, 0.4);
+            animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards;
+        }
+        #cena { display: block; width: 100%; height: auto; border-radius: 14px; }
+
+        /* ---------- Ficha de exploração ---------- */
+        .ficha-cabeca { display: flex; align-items: center; gap: 12px; }
+        .ficha-icone {
+            flex: none;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7em;
+            background: #f3ead9;
+            border: 2.5px solid #7a5b36;
+            border-radius: 14px;
+            transform: rotate(-3deg);
+        }
+        .ficha-cabeca h2 { margin: 0; flex: 1; font-size: 1.1em; color: var(--verde-escuro); }
+        .ficha-fechar {
+            flex: none;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
-            padding: 10px 14px;
-            min-height: 2.6em;
+            border: 2.5px solid #cfdccf;
+            background: #fff;
+            font-family: inherit;
+            font-size: 1.05em;
+            font-weight: 900;
+            color: var(--tinta-suave);
+            cursor: pointer;
+        }
+        .ficha-anos { display: flex; gap: 6px; margin: 12px 0 4px; }
+        .ficha-tab {
+            padding: 7px 16px;
+            border-radius: 999px;
+            border: 2px solid #cfdccf;
+            background: #fff;
+            font-family: inherit;
+            font-size: 0.85em;
+            font-weight: 800;
+            color: var(--tinta-suave);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .ficha-tab.ativo { background: var(--azul); border-color: var(--azul); color: #fff; }
+        .ficha-corpo h3 { margin: 10px 0 4px; color: var(--verde-escuro); font-size: 1.05em; }
+        .ficha-corpo p { margin: 6px 0; }
+        .ficha-sbc {
+            margin-top: 12px;
+            padding: 11px 14px;
+            background: var(--dourado-claro);
+            border: 2px solid var(--dourado);
+            border-left-width: 8px;
+            border-radius: 12px;
+            font-size: 0.93em;
+        }
+        .ficha-sbc strong { color: #8a6d0b; }
+        .ficha-nova { display: inline-block; margin-left: 8px; font-size: 0.7em; vertical-align: middle; padding: 3px 10px; border-radius: 999px; background: var(--verde); color: #fff; font-weight: 900; letter-spacing: 0.04em; }
+
+        /* ---------- SVG: classes de cena e animação ---------- */
+        #cena text { user-select: none; }
+        .hotspot { cursor: pointer; }
+        .hs-icone { font-size: 15px; text-anchor: middle; }
+        .ok-tx { font-size: 13px; fill: #fff; font-weight: 900; text-anchor: middle; }
+        .placa-t1 { text-anchor: middle; fill: #fff; font-size: 12px; font-weight: 900; letter-spacing: 0.03em; text-transform: uppercase; }
+        .placa-t2 { text-anchor: middle; fill: #ffe3b3; font-size: 11px; font-weight: 700; }
+
+        .an-pulso { transform-box: fill-box; transform-origin: center; animation: pulso 1.9s ease-out infinite; }
+        @keyframes pulso {
+            0% { transform: scale(1); opacity: 0.9; }
+            70% { transform: scale(2); opacity: 0; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .an-entrar { animation: surgir 0.5s ease-out backwards; }
+        @keyframes surgir { from { opacity: 0; } }
+
+        .an-girar { transform-box: fill-box; transform-origin: center; animation: girarSol 18s linear infinite; }
+        @keyframes girarSol { to { transform: rotate(360deg); } }
+
+        .an-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: balancar 4.5s ease-in-out infinite alternate; }
+        @keyframes balancar { from { transform: rotate(-1.8deg); } to { transform: rotate(1.8deg); } }
+
+        .an-helice { transform-box: fill-box; transform-origin: center; animation: helice 0.3s linear infinite; }
+        @keyframes helice { to { transform: rotate(360deg); } }
+        .an-drone { animation: droneVoa 16s ease-in-out infinite; }
+        @keyframes droneVoa {
+            0% { transform: translate(-120px, -18px); }
+            25% { transform: translate(70px, 34px); }
+            50% { transform: translate(130px, -26px); }
+            75% { transform: translate(-10px, 30px); }
+            100% { transform: translate(-120px, -18px); }
         }
 
-        /* ---------- Vidas da maquete ---------- */
-        .drone-g { animation: droneVoar 24s linear infinite; }
-        @keyframes droneVoar { from { transform: translateX(-90px); } to { transform: translateX(1050px); } }
-        .drone-bob { animation: bobDrone 3.2s ease-in-out infinite alternate; }
-        @keyframes bobDrone { to { transform: translateY(7px); } }
-        .rotor { animation: girar .4s linear infinite; transform-box: fill-box; transform-origin: center; }
-
-        .ave { animation: voarAve 3.4s ease-in-out infinite alternate; }
-        @keyframes voarAve { to { transform: translate(-16px, -9px); } }
-
-        .nuvem { animation: deriva 26s ease-in-out infinite alternate; }
-        @keyframes deriva { to { transform: translateX(24px); } }
-
-        .correnteza { stroke-dasharray: 5 45; animation: fluir 2.6s linear infinite; }
-        @keyframes fluir { to { stroke-dashoffset: -50; } }
-
-        .vaca-g { transition: transform 1.4s ease-in-out; }
-        .vaca-comendo .vaca-cabeca { animation: mastigar .4s ease-in-out infinite; transform-box: fill-box; transform-origin: 20% 80%; }
-        @keyframes mastigar {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(-9deg); }
+        .an-ave { animation: aveVoa 34s linear infinite; }
+        @keyframes aveVoa {
+            from { transform: translate(-160px, 0); }
+            to { transform: translate(1360px, -34px); }
+        }
+        .an-nuvem-cena { animation: nuvemCeu 52s linear infinite; }
+        @keyframes nuvemCeu {
+            from { transform: translateX(-280px); }
+            to { transform: translateX(1360px); }
+        }
+        .an-sombra-nuvem { animation: nuvemSombra 28s linear infinite; }
+        @keyframes nuvemSombra {
+            from { transform: translateX(-360px); }
+            to { transform: translateX(1500px); }
         }
 
-        .borboleta { animation: flutuar 5s ease-in-out infinite alternate; }
-        @keyframes flutuar { to { transform: translate(-14px, -10px); } }
-        .asaA { animation: asaA .38s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: right center; }
-        .asaB { animation: asaB .38s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
-        @keyframes asaA { to { transform: scaleX(.3); } }
-        @keyframes asaB { to { transform: scaleX(.3); } }
+        .an-agua { stroke-dasharray: 6 20; animation: aguaAnda 2.8s linear infinite; }
+        @keyframes aguaAnda { to { stroke-dashoffset: -52; } }
 
-        .raios { animation: girar 40s linear infinite; transform-box: fill-box; transform-origin: center; }
-        @keyframes girar { to { transform: rotate(360deg); } }
+        .an-asas { transform-box: fill-box; transform-origin: center; animation: baterAsas 0.55s ease-in-out infinite alternate; }
+        @keyframes baterAsas { from { transform: scaleX(1); } to { transform: scaleX(0.3); } }
+        .an-flutuar { animation: flutuarB 7s ease-in-out infinite alternate; }
+        @keyframes flutuarB {
+            from { transform: translate(0, 0); }
+            to { transform: translate(22px, -16px); }
+        }
+        .an-zumbir { animation: zumbir 0.5s ease-in-out infinite alternate; }
+        @keyframes zumbir { from { transform: translate(0, 0); } to { transform: translate(7px, -5px); } }
+
+        .an-vaca { transform-box: fill-box; transform-origin: 50% 100%; animation: vacaPastar 4s ease-in-out infinite alternate; }
+        @keyframes vacaPastar { from { transform: rotate(0deg); } to { transform: rotate(4deg); } }
     </style>
 </head>
 <body>
@@ -78,187 +199,86 @@
         </div>
     </header>
 
-    <div class="placar">
-        <div class="placar-item">
-            <div class="valor" id="h-pontos">0</div>
-            <div class="nome">Pontos</div>
+    <!-- HUD: placar, seletor de ano e progresso -->
+    <div class="cartao hud-maquete">
+        <div class="placar">
+            <div class="placar-item">
+                <div class="valor" id="hud-pontos">0</div>
+                <div class="nome">Pontos</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="hud-descobertas">0/10</div>
+                <div class="nome">Descobertas</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="hud-ano">ANO 1</div>
+                <div class="nome">Safra em cena</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="hud-palhada">~10%</div>
+                <div class="nome">Solo coberto</div>
+            </div>
         </div>
-        <div class="placar-item">
-            <div class="valor" id="h-rodada">1/6</div>
-            <div class="nome">Desafio</div>
+        <div class="barra barra-maquete">
+            <div class="barra-preenchimento" id="barra-progresso" style="width:0%"></div>
+            <div class="barra-rotulo" id="barra-rotulo">Explore a fazenda!</div>
         </div>
-        <div class="placar-item">
-            <div class="valor" id="h-ano">Ano 1</div>
-            <div class="nome">Evolução</div>
+        <div class="ano-seletor">
+            <button class="ano-btn ativo" id="ano-1" onclick="trocarAno(1)">🌱 Ano 1<small>Solo exposto · sem contorno</small></button>
+            <button class="ano-btn" id="ano-2" onclick="trocarAno(2)">🌿 Ano 2<small>Contorno · mais cobertura</small></button>
+            <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">🌳 Ano 3<small>Sistema consolidado</small></button>
         </div>
-        <div class="placar-item">
-            <div class="valor" id="h-cob">27%</div>
-            <div class="nome">Cobertura do solo</div>
-        </div>
+        <p class="dica-hud">💡 Toque nos pontos da paisagem para abrir a ficha de cada elemento. Depois mude o ano e veja o manejo evoluir.</p>
     </div>
 
-    <!-- Maquete -->
-    <main class="cartao" id="tela-maquete" style="padding:16px;">
-        <p class="sub" style="text-align:center;">Uma fazenda em miniatura: <strong>3 talhões</strong> evoluindo ao longo de
-        <strong>3 anos</strong>, um rio com <strong>APP degradada</strong> à esquerda e, à direita, <strong>APP e Reserva
-        Legal preservadas</strong>. Complete os desafios para evoluir o manejo — as vacas já estão pastando!</p>
-
-        <div class="moldura">
-        <svg id="paisagem" viewBox="0 0 960 656" role="img" aria-label="Maquete da fazenda SBC">
-            <defs>
-                <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#bfe3f7"/>
-                    <stop offset="1" stop-color="#eef7e0"/>
-                </linearGradient>
-                <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#86b068"/>
-                    <stop offset="1" stop-color="#5d8b47"/>
-                </linearGradient>
-                <linearGradient id="gSolo" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#96754c"/>
-                    <stop offset="1" stop-color="#7a5a38"/>
-                </linearGradient>
-                <radialGradient id="gMound" cx="0.48" cy="0.22" r="0.95">
-                    <stop offset="0" stop-color="#a3c881"/>
-                    <stop offset="0.55" stop-color="#7fa65f"/>
-                    <stop offset="1" stop-color="#5d8b47"/>
-                </radialGradient>
-                <filter id="fBlur" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="4"/>
-                </filter>
-            </defs>
-
-            <!-- céu -->
-            <rect width="960" height="210" fill="url(#gSky)"/>
-
-            <!-- sol -->
-            <g transform="translate(150,74)">
-                <circle r="46" fill="rgba(255,213,77,.35)"/>
-                <g class="raios" stroke="#ffd54d" stroke-width="3" stroke-linecap="round" opacity=".75">
-                    <line x1="0" y1="-52" x2="0" y2="-60"/><line x1="0" y1="52" x2="0" y2="60"/>
-                    <line x1="-52" y1="0" x2="-60" y2="0"/><line x1="52" y1="0" x2="60" y2="0"/>
-                    <line x1="-38" y1="-38" x2="-44" y2="-44"/><line x1="38" y1="38" x2="44" y2="44"/>
-                    <line x1="38" y1="-38" x2="44" y2="-44"/><line x1="-38" y1="38" x2="-44" y2="44"/>
-                </g>
-                <circle r="24" fill="#ffd54d"/>
-                <circle r="16" fill="#ffe38a"/>
-            </g>
-
-            <!-- nuvens -->
-            <g transform="translate(300,54)"><g class="nuvem">
-                <ellipse rx="34" ry="14" fill="#fff" opacity=".92"/>
-                <ellipse cx="26" cy="6" rx="24" ry="11" fill="#fff" opacity=".92"/>
-                <ellipse cx="-26" cy="7" rx="22" ry="10" fill="#fff" opacity=".9"/>
-            </g></g>
-            <g transform="translate(560,88)"><g class="nuvem" style="animation-delay:1.2s">
-                <ellipse rx="28" ry="11" fill="#fff" opacity=".9"/>
-                <ellipse cx="22" cy="5" rx="18" ry="8" fill="#fff" opacity=".88"/>
-            </g></g>
-            <g transform="translate(872,34)"><g class="nuvem" style="animation-delay:2.4s">
-                <ellipse rx="24" ry="9" fill="#fff" opacity=".85"/>
-                <ellipse cx="18" cy="4" rx="15" ry="7" fill="#fff" opacity=".85"/>
-            </g></g>
-
-            <!-- colinas ao fundo -->
-            <path d="M0,208 C90,150 200,132 320,156 C380,166 440,188 500,208 Z" fill="#9dbb80"/>
-            <path d="M420,208 C520,150 620,146 700,176 C724,186 742,198 752,208 Z" fill="#8fae72"/>
-
-            <!-- Reserva Legal preservada (fragmento denso, ao fundo à direita) -->
-            <path d="M700,208 C706,140 730,96 790,90 C850,84 912,102 944,148 C958,168 958,196 948,210 L700,210 Z" fill="#2e6b34"/>
-            <path d="M742,208 C748,156 772,120 818,114 C862,110 900,126 922,160 C932,176 930,196 922,210 L742,210 Z" fill="#29602f"/>
-            <g id="g-arvores-rl"></g>
-
-            <!-- campo -->
-            <rect y="200" width="960" height="456" fill="url(#gGround)"/>
-            <rect y="196" width="960" height="10" fill="#8fae72" opacity=".7"/>
-
-            <!-- morro do Talhão 2 (relevo 3D) com curvas de nível -->
-            <path d="M340,580 C374,420 424,300 484,288 C546,298 594,430 622,580 Z" fill="url(#gMound)"/>
-            <path d="M410,340 Q484,376 556,340" stroke="rgba(30,60,25,.18)" stroke-width="2.5" fill="none"/>
-            <path d="M382,400 Q484,442 584,400" stroke="rgba(30,60,25,.16)" stroke-width="2.5" fill="none"/>
-            <path d="M366,470 Q484,516 600,470" stroke="rgba(30,60,25,.14)" stroke-width="2.5" fill="none"/>
-            <path d="M376,542 Q484,586 588,542" stroke="rgba(30,60,25,.12)" stroke-width="2.5" fill="none"/>
-
-            <!-- rios: APP degradada (esq.) e APP preservada (dir.) -->
-            <path d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="#cfc39d" stroke-width="54" fill="none" stroke-linecap="round"/>
-            <path d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="#57a3d1" stroke-width="40" fill="none"/>
-            <path d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="#7cc0e8" stroke-width="26" fill="none"/>
-            <path class="correnteza" d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="rgba(255,255,255,.4)" stroke-width="20" fill="none"/>
-            <path d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="#cfc39d" stroke-width="44" fill="none" stroke-linecap="round"/>
-            <path d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="#57a3d1" stroke-width="32" fill="none"/>
-            <path d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="#7cc0e8" stroke-width="20" fill="none"/>
-            <path class="correnteza" style="animation-delay:.9s" d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="rgba(255,255,255,.4)" stroke-width="15" fill="none"/>
-
-            <!-- faixa de APP degradada: solo exposto, voçorocas até o rio -->
-            <path d="M96,306 L150,306 L146,470 L128,558 L88,558 L92,470 Z" fill="#b0906a"/>
-            <ellipse cx="120" cy="380" rx="16" ry="8" fill="#a5835b"/>
-            <ellipse cx="118" cy="500" rx="13" ry="7" fill="#a5835b"/>
-            <path d="M150,352 Q128,362 100,368" stroke="#8a6a43" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85"/>
-            <path d="M148,420 Q126,430 96,438" stroke="#8a6a43" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/>
-            <path d="M142,486 Q122,494 98,502" stroke="#8a6a43" stroke-width="8" fill="none" stroke-linecap="round" opacity=".85"/>
-            <g id="g-arvores-app-d"></g>
-
-            <!-- talhões -->
-            <g id="g-t0" class="g-talhao"></g>
-            <g id="g-t1" class="g-talhao"></g>
-            <g id="g-t2" class="g-talhao"></g>
-
-            <!-- APP preservada: faixa densa entre o Talhão 3 e o rio -->
-            <g id="g-arvores-app-p"></g>
-
-            <!-- placas dos talhões e placas ambientais -->
-            <g id="g-placas"></g>
-            <g id="g-anos"></g>
-
-            <!-- vidas da maquete -->
-            <g id="g-vacas"></g>
-            <g transform="translate(0,84)"><g class="drone-bob"><g class="drone-g"><g class="drone-des">
-                <line x1="-14" y1="-6" x2="14" y2="-6" stroke="#33475a" stroke-width="3" stroke-linecap="round"/>
-                <circle class="rotor" cx="-14" cy="-9" r="7" fill="none" stroke="#5b7386" stroke-width="2" stroke-dasharray="4 4"/>
-                <circle class="rotor" cx="14" cy="-9" r="7" fill="none" stroke="#5b7386" stroke-width="2" stroke-dasharray="4 4"/>
-                <ellipse cx="0" cy="-2" rx="9" ry="5.5" fill="#33475a"/>
-                <ellipse cx="0" cy="-3" rx="6" ry="2.6" fill="#4e687e"/>
-                <circle cx="0" cy="2" r="2.2" fill="#69e0f0"/>
-            </g></g></g></g>
-            <g transform="translate(600,110)"><g class="ave"><path d="M0,0 Q5,-5 10,0 Q15,-5 20,0" stroke="#3a4a42" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>
-            <g transform="translate(660,140)"><g class="ave" style="animation-delay:.8s"><path d="M0,0 Q5,-5 10,0 Q15,-5 20,0" stroke="#3a4a42" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>
-            <g transform="translate(856,332)"><g class="borboleta">
-                <ellipse class="asaA" cx="-4" cy="-2" rx="4.2" ry="5.4" fill="#e8a33f"/>
-                <ellipse class="asaB" cx="4" cy="-2" rx="4.2" ry="5.4" fill="#f2c94c"/>
-                <rect x="-1" y="-5" width="2" height="9" rx="1" fill="#5a4632"/>
-            </g></g>
-            <g transform="translate(700,368)"><g class="borboleta" style="animation-delay:1.6s">
-                <ellipse class="asaA" cx="-4" cy="-2" rx="4.2" ry="5.4" fill="#b07fd8"/>
-                <ellipse class="asaB" cx="4" cy="-2" rx="4.2" ry="5.4" fill="#c99ae6"/>
-                <rect x="-1" y="-5" width="2" height="9" rx="1" fill="#5a4632"/>
-            </g></g>
+    <!-- A super maquete -->
+    <div class="maquete-box">
+        <svg id="cena" viewBox="0 0 1240 820" role="img" aria-label="Maquete da fazenda com três talhões, rios, APP e reserva legal">
+            <g id="g-estatico"></g>
+            <g id="g-ano"></g>
+            <g id="g-efeitos"></g>
+            <g id="g-hotspots"></g>
         </svg>
+    </div>
+
+    <!-- Ficha do elemento explorado -->
+    <main class="cartao ficha oculto" id="ficha">
+        <div class="ficha-cabeca">
+            <div class="ficha-icone" id="ficha-icone">🌾</div>
+            <h2 id="ficha-nome">Elemento</h2>
+            <button class="ficha-fechar" id="ficha-fechar" onclick="fecharFicha()" aria-label="Fechar ficha">✕</button>
         </div>
-
-        <div class="dica-talhao" id="dica-talhao">👆 Toque num talhão para conhecer o sistema dele.</div>
+        <div class="ficha-anos" id="ficha-anos">
+            <button class="ficha-tab" data-fano="1">Ano 1</button>
+            <button class="ficha-tab" data-fano="2">Ano 2</button>
+            <button class="ficha-tab" data-fano="3">Ano 3</button>
+        </div>
+        <div class="ficha-corpo">
+            <h3 id="ficha-titulo">—</h3>
+            <p id="ficha-texto">—</p>
+            <div class="ficha-sbc" id="ficha-sbc"><strong>Conexão SBC:</strong> —</div>
+        </div>
     </main>
-    <!-- Desafio -->
-    <main class="cartao" id="tela-desafio">
-        <span class="rodada-chip" id="rodada-chip">Desafio 1/6</span>
-        <p class="pergunta" id="pergunta">…</p>
-        <div id="opcoes"></div>
-        <div class="feedback" id="feedback" style="display:none;"></div>
-        <button class="botao oculto" id="btn-proxima" style="width:100%;">Próximo ➜</button>
-    </main>
 
-    <!-- Fim -->
+    <!-- Fim da exploração -->
     <main class="cartao tela-final oculto" id="tela-final">
-        <div class="trofeu" id="trofeu">🏞️</div>
-        <h2 id="final-titulo">Fazenda evoluída!</h2>
-        <span class="classe-sbc bronze" id="final-classe">Bronze SBC</span>
-        <p id="final-msg" style="font-size:1.05em;"></p>
-        <p class="sub" id="final-detalhe"></p>
+        <div class="trofeu">🏞️</div>
+        <h2>Fazenda 100% explorada!</h2>
+        <p style="font-size:1.1em;">Você fez <strong id="final-pontos" style="color:var(--azul)">0</strong> pontos percorrendo a evolução do manejo.</p>
+        <span class="classe-sbc" id="final-classe">—</span>
+        <p class="sub" id="final-msg"></p>
         <section style="margin-top:14px;text-align:left;">
-            <h2 style="font-size:1em;">🏅 Melhores fazendas do estande</h2>
+            <h2 style="font-size:1em;">🏅 Melhores exploradores do estande</h2>
             <ul class="lista-ranking" id="ranking"></ul>
         </section>
-        <button class="botao" onclick="location.reload()">Reconstruir a maquete</button>
+        <button class="botao" onclick="location.reload()">Explorar de novo</button>
         <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+    </main>
+
+    <!-- Recordes enquanto explora -->
+    <main class="cartao" id="cartao-recordes">
+        <h2 style="font-size:1em;">🏅 Exploradores do estande</h2>
+        <ul class="lista-ranking" id="ranking-inicial"></ul>
     </main>
 
     <footer class="rodape">
@@ -269,556 +289,748 @@
     <script src="jogos-sbc.js"></script>
     <script>
         "use strict";
-
-        /* ================= Configuração dos talhões (briefing) ================= */
-        var TALHOES = [
-            {
-                nome: "Talhão 1", placaX: 239, esp: 12,
-                poly: [[146, 336], [330, 324], [346, 540], [132, 556]],
-                anos: [
-                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.06, verde: 0, cobertura: 8 },
-                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.40, verde: 0, cobertura: 40 },
-                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.85, verde: 0, cobertura: 92 }
-                ]
+        /* ============================================================
+           DADOS — pontos de exploração da maquete (fichas por ano)
+           ============================================================ */
+        var HOTSPOTS = {
+            t1: {
+                icone: "🌾", nome: "Talhão 1 · Evolução da palhada", pos: [250, 420],
+                sbc: "palhada abundante é o carro-chefe do Sistema Plantio Direto — o degrau de entrada do SBC.",
+                anos: {
+                    1: ["Ano 1 · Solo quase nu", "Soja na safra e milho na safrinha, em sucessão. Quase sem palhada: só 0–10% do solo coberto. Sem cobertura, a chuva bate direto na terra: compacta, leva nutrientes e seca a lavoura."],
+                    2: ["Ano 2 · Cobertura em crescimento", "Mesmo sistema, manejo melhor: cerca de 40% do solo coberto pelos restos de soja e milho. A palhada amortece o impacto da chuva e a água começa a infiltrar em vez de escorrer."],
+                    3: ["Ano 3 · Solo todo protegido", "Mais de 90% do solo coberto — praticamente nada de terra exposta. A palhada segura a umidade, alimenta os microrganismos e guarda carbono no solo: o Plantio Direto consolidado."]
+                }
             },
-            {
-                nome: "Talhão 2", placaX: 483, esp: 22,
-                poly: [[398, 346], [568, 332], [588, 530], [382, 546]],
-                anos: [
-                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.10, verde: 0, cobertura: 12 },
-                    { linhas: "curvas", culturas: ["soja", "trigo", "aveia"], palha: 0.55, verde: 0.15, cobertura: 55 },
-                    { linhas: "curvas", culturas: ["soja", "milho", "braquiaria"], palha: 0.72, verde: 0.28, cobertura: 88 }
-                ]
+            t2: {
+                icone: "⛰️", nome: "Talhão 2 · Plantio em contorno", pos: [560, 330],
+                sbc: "plantar acompanhando as curvas do relevo freia a água da chuva e evita a perda do solo — economia e menos emissões.",
+                anos: {
+                    1: ["Ano 1 · Morro abaixo", "Área com relevo forte e linhas retas no sentido da vertente. A chuva ganha velocidade, abre ravinas e carrega embora o solo mais fértil. Olhe as ravinas e a água barrenta chegando ao rio da esquerda."],
+                    2: ["Ano 2 · Curvas de nível", "Soja + trigo + aveia, agora plantadas acompanhando o relevo. As linhas em contorno frenam a água e a palhada segura o solo: as ravinas do Ano 1 estabilizam."],
+                    3: ["Ano 3 · Relevo domado", "Sistema consolidado: soja + milho + braquiária, tudo em contorno e coberto de palhada. O relevo continua o mesmo — mas agora trabalha a favor da lavoura, não contra."]
+                }
             },
-            {
-                nome: "Talhão 3", placaX: 719, esp: 12,
-                poly: [[636, 336], [810, 324], [824, 540], [614, 556]],
-                anos: [
-                    { linhas: "curvas", culturas: ["soja", "braquiaria", "crotalaria"], palha: 0.35, verde: 0.45, cobertura: 60 },
-                    { linhas: "curvas", culturas: ["soja", "milheto", "trigo"], palha: 0.45, verde: 0.45, cobertura: 80 },
-                    { linhas: "curvas", culturas: ["soja", "milho", "braquiaria"], palha: 0.68, verde: 0.32, cobertura: 93 }
-                ]
+            t3: {
+                icone: "🌱", nome: "Talhão 3 · Manejo avançado", pos: [940, 420],
+                sbc: "diversificar espécies é diversificar raízes: mais vida no solo, menos pragas e um sistema de baixo carbono.",
+                anos: {
+                    1: ["Ano 1 · Já nasce avançado", "O talhão mais evoluído da maquete: plantio todo em contorno, solo coberto com braquiária e crotalária em flor — que fixa nitrogênio e alimenta os polinizadores."],
+                    2: ["Ano 2 · Mais diversidade", "Soja + milheto + trigo em contorno. Cada espécie tem raiz e época diferentes: o solo fica sempre ocupado, alimentado e vivo."],
+                    3: ["Ano 3 · Consórcio braquiária-milho", "Soja consorciada com braquiária e milho — o nível mais alto de diversidade da maquete. Grande quantidade de palhada, solo sempre protegido e um sistema resiliente."]
+                }
+            },
+            appd: {
+                icone: "💧", nome: "APP degradada", pos: [115, 640],
+                sbc: "APP recuperada é exigência legal e o primeiro filtro que protege a água dos insumos do campo.",
+                anos: {
+                    1: ["APP degradada · lado esquerdo", "Aqui a mata ciliar é frágil: poucas árvores, margem exposta e a lavoura chegando perto demais do rio. Sem a faixa de mata, sedimento e insumos entram direto na água."],
+                    2: ["APP degradada · ainda vulnerável", "Compare com o rio da direita: lá a faixa de mata protege a água. Neste lado, a erosão do Talhão 2 ainda suja o curso d'água."],
+                    3: ["APP degradada · falta a mata", "Com o manejo evoluído chega menos barro ao rio — mas sem a faixa de mata a APP continua vulnerável. A lei manda recuperar a mata ciliar."]
+                }
+            },
+            appp: {
+                icone: "🌳", nome: "APP preservada", pos: [1105, 420],
+                sbc: "mata ciliar limpa a água de graça: é um serviço ambiental que o SBC valoriza.",
+                anos: {
+                    1: ["APP preservada · faixa viva", "Faixa larga, contínua e densa de mata ciliar entre o talhão e o rio. As raízes seguram a margem, a copa sombreia a água e a floresta filtra o que escorre do campo."],
+                    2: ["APP preservada · corredor de fauna", "Mata ciliar madura: além de proteger a água, funciona como corredor — as aves que cruzam a maquete usam essa conexão entre fragmentos."],
+                    3: ["APP preservada · água limpa", "Paisagem completa: palhada no campo e mata na margem. A água chega clara ao rio — o resultado de proteger o caminho todo."]
+                }
+            },
+            rl: {
+                icone: "🏞️", nome: "Reserva Legal", pos: [940, 232],
+                sbc: "floresta em pé é carbono estocado: a RL entra na conta de emissões da fazenda.",
+                anos: {
+                    1: ["RL preservada e excedente", "O fragmento florestal maior, ao fundo da maquete. Enquanto a APP protege o rio, a Reserva Legal sustenta a biodiversidade em escala: habitat, conexão entre remanescentes e carbono estocado nas árvores."],
+                    2: ["RL preservada e excedente", "Com o manejo evoluindo nos talhões, a RL vira o núcleo de vida da paisagem: dela saem polinizadores, aves e inimigos naturais de pragas."],
+                    3: ["RL preservada e excedente", "Sistema no seu melhor: produção intensiva nos talhões e natureza protegida ao redor. É essa combinação que faz um sistema agrícola resiliente e de baixo carbono."]
+                }
+            },
+            drone: {
+                icone: "🛸", nome: "Drone de monitoramento", pos: [700, 295],
+                sbc: "monitoramento preciso é a base para decidir melhor e provar resultados na MRV.",
+                anos: {
+                    1: ["Drone sobrevoando os talhões", "Do alto, o drone enxerga o que o olho perde: falhas de plantio, erosão começando e quanto do solo está de fato coberto por palhada."],
+                    2: ["Drone sobrevoando os talhões", "Com o contorno adotado, as imagens mostram a água parando nas curvas de nível — e a palhada segurando o solo entre as linhas."],
+                    3: ["Drone sobrevoando os talhões", "No sistema consolidado, o drone comprova: mais de 90% de cobertura. Monitorar bem = dados para a MRV e para o selo SBC."]
+                }
+            },
+            vacas: {
+                icone: "🐄", nome: "Vacas na pastagem", pos: [790, 178],
+                sbc: "integração lavoura-pecuária diversifica a renda e mantém o solo coberto o ano todo.",
+                anos: {
+                    1: ["Pecuária ao lado da lavoura", "As vacas pastam um capim braquiária recuperado, ao lado dos talhões. O pasto bem manejado recicla nutrientes e mantém raízes vivas no solo."],
+                    2: ["Pasto no sistema", "Com o manejo evoluindo no campo, o pasto rotacionado completa o ciclo: animal, lavoura e cobertura trabalhando juntos."],
+                    3: ["Integração consolidada", "Lavoura + pecuária + floresta: as vacas pastam onde o sistema planta. Diversidade de renda, de raízes e de vida."]
+                }
+            },
+            bio: {
+                icone: "🦋", nome: "Biodiversidade", pos: [960, 620],
+                sbc: "biodiversidade é resiliência: um sistema diversificado sofre menos com pragas, secas e chuvas fortes.",
+                anos: {
+                    1: ["Os primeiros polinizadores", "Com crotalária em flor e solo vivo, aparecem os primeiros polinizadores. A biodiversidade de uma fazenda começa na cobertura do solo."],
+                    2: ["Mais flores, mais vida", "Mais cobertura e mais flores: abelhas, borboletas e aves encontram alimento e abrigo dentro da própria fazenda."],
+                    3: ["Paisagem cheia de vida", "Polinizadores, aves e mata conectada: o retrato de um sistema agrícola saudável — o SBC premia exatamente esse caminho."]
+                }
+            },
+            sede: {
+                icone: "🏠", nome: "Sede da fazenda", pos: [632, 205],
+                sbc: "sem dado não há selo: a MRV transforma o manejo em certificação.",
+                anos: {
+                    1: ["Sede · onde o dado nasce", "Da sede sai o registro da safra: produção, insumos e práticas anotados com rigor. É o começo do MRV — mensurável, reportável e verificável."],
+                    2: ["Sede · acompanhando a evolução", "Cada mudança de manejo vira registro: contorno aqui, cobertura ali. É o diário da fazenda que a auditoria vai conferir."],
+                    3: ["Sede · o caminho do selo", "Com três anos de dados, dá para provar a redução de emissões. É assim que o manejo virou selo: Soja Baixo Carbono."]
+                }
             }
-        ];
-        var estadoAno = [1, 1, 1];
-
-        var DICAS = [
-            "🌱 Talhão 1 — soja + milho safrinha em sucessão. A história dele é a palhada: de 0–10% no Ano 1 até mais de 90% no Ano 3.",
-            "⛰️ Talhão 2 — relevo forte! Do Ano 2 as linhas seguem as curvas do terreno (plantio em contorno), com trigo, aveia e depois braquiária na cobertura.",
-            "🐄 Talhão 3 — o mais avançado: contorno desde o Ano 1, braquiária, crotalária, milheto, trigo… e o consórcio braquiária–milho no Ano 3. É aqui que as vacas pastam!"
-        ];
-
-        var PLACAS = [
-            ["TALHÃO 1", "EVOLUÇÃO DA PALHADA", "Soja e milho em sucessão"],
-            ["TALHÃO 2", "PLANTIO EM CONTORNO", "Em área com relevo forte"],
-            ["TALHÃO 3", "MANEJO AVANÇADO", "Diversidade de coberturas"]
-        ];
-        /* ================= Desafios (briefing da maquete) ================= */
-        var RODADAS = [
-            {
-                talhao: 0,
-                pergunta: "Talhão 1 · Ano 1 → Ano 2: o solo está quase descoberto (0–10% de palhada). Como começar a protegê-lo mantendo a soja e o milho?",
-                opcoes: [
-                    { t: "Sucessão soja → milho safrinha, deixando a palha da colheita sobre o solo", ok: true, por: "É a própria sucessão que vai acumulando palhada ano após ano." },
-                    { t: "Arar e gradear o solo antes do milho para 'arejar a terra'", ok: false, por: "O preparo convencional expõe o solo e devolve o carbono ao ar — o caminho é palha, não arado." },
-                    { t: "Queimar os restos da colheita para plantar limpo", ok: false, por: "A queima destrói justamente a palha que protege o solo e imobiliza carbono." }
-                ]
-            },
-            {
-                talhao: 0,
-                pergunta: "Talhão 1 · Ano 2 → Ano 3: já dá para ver 40% de cobertura. Como chegar ao solo praticamente todo protegido?",
-                opcoes: [
-                    { t: "Manter a sucessão soja–milho todos os anos até superar 90% de palhada", ok: true, por: "A constância da sucessão acumula palhada: no Ano 3, mais de 90% do solo coberto." },
-                    { t: "Deixar a área em pousio descoberto entre as safras", ok: false, por: "Solo nu perde água, matéria orgânica e carbono — o contrário da proteção." },
-                    { t: "Retirar a palha da área para vender como cama de aviário", ok: false, por: "Sem palha não há SPD pleno: a cobertura é o segredo do balanço de carbono." }
-                ]
-            },
-            {
-                talhao: 1,
-                pergunta: "Talhão 2 · Ano 1 → Ano 2: relevo forte e linhas retas morro abaixo — a água leva solo adentro. O que fazer?",
-                opcoes: [
-                    { t: "Plantar em contorno, acompanhando as curvas do relevo", ok: true, por: "As curvas de nível quebram a velocidade da enxurrada e seguram o solo." },
-                    { t: "Manter as linhas retas no sentido da vertente e aumentar a velocidade da operação", ok: false, por: "Linha reta morro abaixo é canal de erosão: quanto mais água corre, mais solo vai embora." },
-                    { t: "Reduzir a palhada para o solo 'secar mais rápido'", ok: false, por: "No relevo forte, é a palha + contorno que protegem; solo nu é erosão garantida." }
-                ]
-            },
-            {
-                talhao: 1,
-                pergunta: "Talhão 2 · Ano 2 → Ano 3: o contorno já está funcionando. Como consolidar o sistema?",
-                opcoes: [
-                    { t: "Soja → milho safrinha → braquiária como cobertura de solo", ok: true, por: "A braquiária forma palhada abundante e raízes profundas: solo protegido o ano todo." },
-                    { t: "Voltar ao plantio reto morro abaixo para economizar diesel", ok: false, por: "Sem contorno, a enxurrada volta — e o diesel economizado não paga a erosão." },
-                    { t: "Abrir terra novo nas encostas para plantar mais", ok: false, por: "Expansão sobre área frágil degrada o solo e a água — o SBC valoriza intensificar a área já aberta." }
-                ]
-            },
-            {
-                talhao: 2,
-                pergunta: "Talhão 3 · Ano 1 → Ano 2: já é contorno desde o início, com braquiária e crotalária. Qual cobertura diversifica mais?",
-                opcoes: [
-                    { t: "Soja + milheto + trigo no mesmo sistema, em contorno", ok: true, por: "Mais espécies = mais raízes diferentes explorando o solo e mais palhada variada." },
-                    { t: "Soja solteira, sem nenhuma cobertura entre as safras", ok: false, por: "Monocultivo sem cobertura empobrece o sistema — a diversidade é o que move o carbono." },
-                    { t: "Trocar a braquiária por solo nu 'para descansar'", ok: false, por: "Descanso para o solo é com planta de cobertura, não com terra exposta." }
-                ]
-            },
-            {
-                talhao: 2,
-                pergunta: "Talhão 3 · Ano 2 → Ano 3: último passo para o manejo mais avançado da maquete!",
-                opcoes: [
-                    { t: "Consórcio braquiária–milho: topo de diversidade e palhada", ok: true, por: "É o nível máximo da maquete: alta diversidade, contorno e muito solo coberto." },
-                    { t: "Queimar a palhada acumulada para facilitar a semeadura", ok: false, por: "Queimar é jogar fora anos de carbono imobilizado no solo." },
-                    { t: "Avançar a lavoura até a beira do rio preservado", ok: false, por: "A faixa de APP preservada fica entre o Talhão 3 e o rio — ela protege a água e não se toca." }
-                ]
-            }
-        ];
-
-        /* ================= Motor de desenho da maquete (SVG) ================= */
-        var SVGNS = "http://www.w3.org/2000/svg";
-
-        function gid(id) { return document.getElementById(id); }
-        function lerp(a, b, t) { return a + (b - a) * t; }
-        function lerpP(p, q, t) { return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)]; }
-        function meio(p, q) { return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; }
-        function rng(seed) {
-            var s = seed >>> 0;
-            return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-        }
-        function polyPath(p) {
-            var d = "M" + p[0][0] + "," + p[0][1];
-            for (var i = 1; i < p.length; i++) d += " L" + p[i][0] + "," + p[i][1];
-            return d + " Z";
-        }
-        function areaPol(p) {
-            var a = 0;
-            for (var i = 0; i < p.length; i++) {
-                var q = p[(i + 1) % p.length];
-                a += p[i][0] * q[1] - q[0] * p[i][1];
-            }
-            return Math.abs(a) / 2;
-        }
-        function pontoEm(x, y, p) {
-            var dentro = false;
-            for (var i = 0, j = p.length - 1; i < p.length; j = i++) {
-                if ((p[i][1] > y) !== (p[j][1] > y) &&
-                    x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) dentro = !dentro;
-            }
-            return dentro;
-        }
-
-        /* ---------- plantinhas desenhadas (soja, milho, trigo, aveia, braquiária, crotalária, milheto) ---------- */
-        var PLANTAS = {
-            soja: '<path d="M0,0 L0,-13" stroke="#3d8443" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                '<ellipse cx="-5" cy="-8" rx="5" ry="2.6" fill="#43a047" transform="rotate(-24 -5 -8)"/>' +
-                '<ellipse cx="5" cy="-8" rx="5" ry="2.6" fill="#43a047" transform="rotate(24 5 -8)"/>' +
-                '<ellipse cx="0" cy="-15" rx="4.4" ry="2.6" fill="#4caf50"/>',
-            milho: '<path d="M0,0 L0,-23" stroke="#3d8443" stroke-width="2.4" stroke-linecap="round"/>' +
-                '<path d="M0,-7 Q-7,-10 -9,-17" stroke="#3d8443" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
-                '<path d="M0,-11 Q7,-14 9,-21" stroke="#3d8443" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
-                '<ellipse cx="2.5" cy="-13" rx="2.6" ry="5.2" fill="#e8c33f" transform="rotate(7 2.5 -13)"/>',
-            trigo: '<path d="M0,0 L0,-17" stroke="#c9a94f" stroke-width="1.7" stroke-linecap="round"/>' +
-                '<ellipse cx="0" cy="-19" rx="2.7" ry="6" fill="#d9b64a"/>' +
-                '<path d="M-2,-25 L-3.2,-28 M2,-25 L3.2,-28" stroke="#d9b64a" stroke-width="1" stroke-linecap="round"/>',
-            aveia: '<path d="M0,0 Q1,-9 -1.5,-15" stroke="#a8b06a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
-                '<ellipse cx="-4.5" cy="-15" rx="4.6" ry="2" fill="#cfc08a" transform="rotate(-32 -4.5 -15)"/>' +
-                '<ellipse cx="2" cy="-12" rx="4.2" ry="2" fill="#d9cfa0" transform="rotate(22 2 -12)"/>',
-            braquiaria: '<path d="M0,0 Q-7,-7 -11,-14" stroke="#4c9a50" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                '<path d="M0,0 Q-2,-9 -3.5,-17" stroke="#43a047" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                '<path d="M0,0 Q3,-9 2,-17" stroke="#4c9a50" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                '<path d="M0,0 Q7,-7 11,-14" stroke="#3d8443" stroke-width="2" fill="none" stroke-linecap="round"/>',
-            crotalaria: '<path d="M0,0 L0,-16" stroke="#3d8443" stroke-width="1.8" stroke-linecap="round"/>' +
-                '<circle cx="0" cy="-18.5" r="3.4" fill="#f2c94c"/>' +
-                '<circle cx="-3.6" cy="-15.6" r="2.6" fill="#e8b93c"/>' +
-                '<circle cx="3.6" cy="-15.6" r="2.6" fill="#f6d465"/>',
-            milheto: '<path d="M0,0 L0,-16" stroke="#7f9a4a" stroke-width="1.7" stroke-linecap="round"/>' +
-                '<path d="M0,0 Q-6,-6 -8,-12" stroke="#7f9a4a" stroke-width="1.5" fill="none" stroke-linecap="round"/>' +
-                '<ellipse cx="0.6" cy="-18.5" rx="3" ry="5.4" fill="#c9a94f" transform="rotate(6 0.6 -18.5)"/>'
         };
-        function plantaHTML(tipo, x, y, s) {
-            return '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')">' + PLANTAS[tipo] + "</g>";
-        }
 
-        /* ---------- árvores e placas ---------- */
-        var CORES_ARV = ["#2f7d33", "#3f9a44", "#357f3a", "#2a7a30"];
-        function arvoreHTML(x, y, t, cor) {
-            return '<g transform="translate(' + x + "," + y + ')">' +
-                '<ellipse cx="0" cy="2" rx="' + t * 0.42 + '" ry="' + t * 0.13 + '" fill="rgba(20,40,18,.25)"/>' +
-                '<rect x="-1.8" y="' + -t * 0.38 + '" width="3.6" height="' + t * 0.42 + '" rx="1.6" fill="#6d4a24"/>' +
-                '<circle cx="0" cy="' + -t * 0.66 + '" r="' + t * 0.42 + '" fill="' + cor + '"/>' +
-                '<circle cx="' + -t * 0.2 + '" cy="' + -t * 0.55 + '" r="' + t * 0.3 + '" fill="' + cor + '"/>' +
-                '<circle cx="' + t * 0.22 + '" cy="' + -t * 0.72 + '" r="' + t * 0.28 + '" fill="' + cor + '"/>' +
-                '<circle cx="' + -t * 0.05 + '" cy="' + -t * 0.72 + '" r="' + t * 0.16 + '" fill="#4fae57" opacity=".85"/>' +
-                "</g>";
-        }
-        function arvoreSecaHTML(x, y, t) {
-            return '<g transform="translate(' + x + "," + y + ')">' +
-                '<path d="M0,0 L1.5,' + -t * 0.6 + " M1.5," + -t * 0.6 + " L" + -t * 0.3 + "," + -t +
-                " M1.5," + -t * 0.6 + " L" + t * 0.35 + "," + -t * 0.85 +
-                '" stroke="#6d5136" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
-                '<ellipse cx="' + -t * 0.3 + '" cy="' + (-t - 2) + '" rx="' + t * 0.18 + '" ry="' + t * 0.09 + '" fill="#7a8a4a" opacity=".55"/>' +
-                "</g>";
-        }
-        function placaTalhaoHTML(x, y, linhas) {
-            var w = 176;
-            return '<g transform="translate(' + x + "," + y + ')">' +
-                '<rect x="-4" y="44" width="8" height="22" rx="2" fill="#6d4a24"/>' +
-                '<rect x="' + -w / 2 + '" y="0" width="' + w + '" height="46" rx="7" fill="#8a5a2b" stroke="#6d4a24" stroke-width="3"/>' +
-                '<text x="0" y="14" text-anchor="middle" font-size="12" font-weight="900" fill="#ffd54d" letter-spacing="1">' + linhas[0] + "</text>" +
-                '<text x="0" y="28" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">' + linhas[1] + "</text>" +
-                '<text x="0" y="40" text-anchor="middle" font-size="9.5" font-weight="700" fill="#ffe9c9">' + linhas[2] + "</text>" +
-                "</g>";
-        }
-        function placaAmbienteHTML(x, y, txt, rot) {
-            var w = txt.length * 6.3 + 18;
-            return '<g transform="translate(' + x + "," + y + ") rotate(" + rot + ')">' +
-                '<rect x="' + -w / 2 + '" y="-13" width="' + w + '" height="26" rx="6" fill="#fff" stroke="#7a5b36" stroke-width="2.5"/>' +
-                '<text x="0" y="4" text-anchor="middle" font-size="11" font-weight="900" fill="#4f3a20" letter-spacing=".4">' + txt + "</text>" +
-                "</g>";
-        }
-        function plateAnoHTML(x, y, t) {
-            return '<g id="plate-ano-' + t + '" transform="translate(' + x + "," + y + ')">' +
-                '<rect x="-34" y="-13" width="68" height="26" rx="13" fill="#0d2a45" stroke="#e5a812" stroke-width="2"/>' +
-                '<text x="0" y="4.5" text-anchor="middle" font-size="13" font-weight="900" fill="#ffd54d">Ano 1</text>' +
-                "</g>";
-        }
+        var PALHADA_HUD = { 1: "~10%", 2: "~40%", 3: ">90%" };
 
-        /* ---------- vacas ---------- */
-        function vacaHTML() {
-            return '<g class="vaca-corpo">' +
-                '<ellipse cx="0" cy="15" rx="23" ry="4.6" fill="rgba(20,30,15,.25)"/>' +
-                '<rect x="-14" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
-                '<rect x="-6" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
-                '<rect x="4" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
-                '<rect x="11" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
-                '<ellipse cx="0" cy="-1" rx="19" ry="11" fill="#f6f1e6" stroke="#d8cfc2" stroke-width="1"/>' +
-                '<ellipse cx="-7" cy="-3" rx="6.5" ry="4.5" fill="#3a2f28"/>' +
-                '<ellipse cx="6" cy="2.5" rx="5" ry="3.6" fill="#3a2f28"/>' +
-                '<path d="M-19,-4 Q-24,4 -21,10" stroke="#d8cfc2" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                '<g class="vaca-cabeca">' +
-                    '<ellipse cx="21" cy="-11" rx="5" ry="7" fill="#f6f1e6" transform="rotate(18 21 -11)"/>' +
-                    '<ellipse cx="25" cy="-5.5" rx="4.6" ry="3.4" fill="#e2a9a2"/>' +
-                    '<circle cx="24" cy="-5.5" r="0.9" fill="#a05a4c"/>' +
-                    '<circle cx="19.5" cy="-13.5" r="1.2" fill="#2a2622"/>' +
-                    '<ellipse cx="15" cy="-17" rx="3" ry="1.8" fill="#e8e0d2" transform="rotate(-30 15 -17)"/>' +
-                "</g>" +
-                "</g>";
-        }
-
-        /* ---------- construção dos talhões ---------- */
-        var talGrupos = [];
-
-        function montarTalhoes() {
-            for (var t = 0; t < 3; t++) {
-                (function (t) {
-                    var cfg = TALHOES[t];
-                    var p = cfg.poly;
-                    var D = p[3], C = p[2];
-                    var cx = (D[0] + C[0]) / 2, cy = C[1] + cfg.esp + 8;
-                    var rx = Math.max(40, Math.abs(C[0] - D[0]) / 2 + 6);
-
-                    var g = gid("g-t" + t);
-                    g.innerHTML =
-                        '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="12" fill="rgba(30,45,22,.22)" filter="url(#fBlur)"/>' +
-                        '<path d="M' + D[0] + "," + D[1] + " L" + C[0] + "," + C[1] + " L" + C[0] + "," + (C[1] + cfg.esp) +
-                        " L" + D[0] + "," + (D[1] + cfg.esp) + ' Z" fill="#6b4f30"/>' +
-                        '<path class="solo-talhao" d="' + polyPath(p) + '" fill="url(#gSolo)"/>' +
-                        '<path class="veu-palha" d="' + polyPath(p) + '" fill="#d9c07e" opacity="0"/>' +
-                        '<path class="veu-verde" d="' + polyPath(p) + '" fill="#43a047" opacity="0"/>' +
-                        '<g class="g-linhas"></g>' +
-                        '<g class="g-palha"></g>' +
-                        '<g class="g-plantas"></g>' +
-                        '<path class="borda-talhao" d="' + polyPath(p) + '"/>';
-                    g.setAttribute("aria-label", cfg.nome);
-                    g.addEventListener("click", function () { mostrarDica(t); });
-                    talGrupos.push(g);
-                })(t);
-            }
-        }
-
-        /* redesenha um talhão conforme o ano corrente */
-        function renderAno(t) {
-            var cfg = TALHOES[t];
-            var ano = estadoAno[t];
-            var ac = cfg.anos[ano - 1];
-            var p = cfg.poly;
-            var A = p[0], B = p[1], C = p[2], D = p[3];
-            var g = talGrupos[t];
-
-            g.querySelector(".veu-palha").setAttribute("opacity", (ac.palha * 0.85).toFixed(2));
-            g.querySelector(".veu-verde").setAttribute("opacity", (ac.verde * 0.85).toFixed(2));
-
-            /* linhas de plantio */
-            var linhas = "";
-            var N = 8;
-            var caminhos = [];
-            for (var i = 0; i < N; i++) {
-                var t0 = (i + 0.5) / N;
-                var p1 = lerpP(A, D, t0);
-                var p2 = lerpP(B, C, t0);
-                if (ac.linhas === "curvas") {
-                    var m = meio(p1, p2);
-                    var ctrl = [m[0], m[1] + 18 + t0 * 46];
-                    linhas += '<path d="M' + p1[0] + "," + p1[1] + " Q" + ctrl[0] + "," + ctrl[1] + " " + p2[0] + "," + p2[1] + '"/>';
-                    caminhos.push({ tipo: "q", p1: p1, ctrl: ctrl, p2: p2 });
-                } else {
-                    linhas += '<path d="M' + p1[0] + "," + p1[1] + " L" + p2[0] + "," + p2[1] + '"/>';
-                    caminhos.push({ tipo: "l", p1: p1, p2: p2 });
-                }
-            }
-            g.querySelector(".g-linhas").innerHTML =
-                '<g fill="none" stroke="#4c9a50" stroke-width="5" stroke-linecap="round" opacity="' +
-                (1 - ac.palha * 0.3).toFixed(2) + '">' + linhas + "</g>";
-
-            /* plantas ao longo das linhas */
-            var plantas = "";
-            var us = [0.14, 0.34, 0.54, 0.74];
-            var rnd = rng(t * 977 + ano * 131);
-            for (var li = 0; li < caminhos.length; li++) {
-                var c = caminhos[li];
-                for (var u = 0; u < us.length; u++) {
-                    var uu = us[u];
-                    var pt;
-                    if (c.tipo === "q") {
-                        var w1 = (1 - uu) * (1 - uu), w2 = 2 * (1 - uu) * uu, w3 = uu * uu;
-                        pt = [w1 * c.p1[0] + w2 * c.ctrl[0] + w3 * c.p2[0],
-                              w1 * c.p1[1] + w2 * c.ctrl[1] + w3 * c.p2[1]];
-                    } else {
-                        pt = lerpP(c.p1, c.p2, uu);
-                    }
-                    var tipo = ac.culturas[(li + u) % ac.culturas.length];
-                    plantas += plantaHTML(tipo, pt[0].toFixed(1), pt[1].toFixed(1), (0.95 + rnd() * 0.35).toFixed(2));
-                }
-            }
-            g.querySelector(".g-plantas").innerHTML = plantas;
-
-            /* palhada espalhada */
-            var palha = "";
-            var n = Math.round(ac.palha * areaPol(p) / 450);
-            var r2 = rng(t * 313 + ano * 7001);
-            var minX = 999, minY = 999, maxX = 0, maxY = 0;
-            p.forEach(function (v) {
-                minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
-                minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
-            });
-            var colocadas = 0, guarda = 0;
-            while (colocadas < n && guarda < n * 30) {
-                guarda++;
-                var sx = minX + r2() * (maxX - minX);
-                var sy = minY + r2() * (maxY - minY);
-                if (!pontoEm(sx, sy, p)) continue;
-                colocadas++;
-                var ang = r2() * 360;
-                var cor = r2() < 0.5 ? "#d9c07e" : "#c9ab5f";
-                palha += '<g transform="translate(' + sx.toFixed(0) + "," + sy.toFixed(0) + ") rotate(" + ang.toFixed(0) + ')">' +
-                    '<path d="M0,0 q3,1 7,3" stroke="' + cor + '" stroke-width="2" fill="none" stroke-linecap="round" opacity=".85"/></g>';
-            }
-            g.querySelector(".g-palha").innerHTML = palha;
-
-            /* placa do ano */
-            gid("plate-ano-" + t).querySelector("text").textContent = "Ano " + ano;
-        }
-
-        function mostrarDica(t) {
-            gid("dica-talhao").textContent = DICAS[t];
-            talGrupos.forEach(function (g, i) { g.classList.toggle("ativo", i === t); });
-            SBCH.som("clique");
-        }
-
-        /* ---------- vegetação ambiental (APP e RL) ---------- */
-        function plantarAmbiente() {
-            var rl = "", app = "", deg = "";
-            var r = rng(4242);
-            /* Reserva Legal: fragmento denso ao fundo, à direita */
-            for (var i = 0; i < 18; i++) {
-                var x = 710 + (i % 6) * 38 + r() * 14;
-                var y = 104 + (i % 3) * 30 + r() * 16;
-                rl += arvoreHTML(x.toFixed(0), y.toFixed(0), (24 + (i % 4) * 4).toFixed(0), CORES_ARV[i % 4]);
-            }
-            gid("g-arvores-rl").innerHTML = rl;
-
-            /* APP preservada: faixa contínua entre o Talhão 3 e o rio */
-            for (var j = 0; j < 20; j++) {
-                var ax = 840 + (j % 2) * 26 + r() * 12;
-                var ay = 296 + j * 15;
-                app += arvoreHTML(ax.toFixed(0), ay.toFixed(0), (26 + (j % 3) * 6).toFixed(0), CORES_ARV[(j + 1) % 4]);
-            }
-            app += arvoreHTML(846, 606, 46, CORES_ARV[0]) + arvoreHTML(886, 592, 40, CORES_ARV[1]);
-            gid("g-arvores-app-p").innerHTML = app;
-
-            /* APP degradada: poucas árvores, murchas */
-            deg += arvoreSecaHTML(122, 368, 22) + arvoreSecaHTML(108, 452, 17) + arvoreSecaHTML(128, 512, 13);
-            gid("g-arvores-app-d").innerHTML = deg;
-        }
-
-        /* ---------- placas e plaquinhas de ano ---------- */
-        function montarPlacas() {
-            var html = "";
-            for (var t = 0; t < 3; t++) {
-                html += placaTalhaoHTML(TALHOES[t].placaX, 590, PLACAS[t]);
-                html += plateAnoHTML(TALHOES[t].placaX, TALHOES[t].poly[0][1] - 22, t);
-            }
-            html += placaAmbienteHTML(122, 292, "APP degradada", -3);
-            html += placaAmbienteHTML(866, 570, "APP preservada", 2);
-            html += placaAmbienteHTML(826, 84, "RL preservada e excedente", -2);
-            gid("g-placas").innerHTML = html;
-        }
-
-        /* ---------- vacas ---------- */
-        var vacas = [];
-        function soltarVaca(pontos, esc) {
-            var el = document.createElementNS(SVGNS, "g");
-            el.setAttribute("class", "vaca-g");
-            el.style.transform = "translate(" + pontos[0][0] + "px," + pontos[0][1] + "px)";
-            el.innerHTML = vacaHTML();
-            el.querySelector(".vaca-corpo").style.transform = "scale(" + esc + ")";
-            gid("g-vacas").appendChild(el);
-            vacas.push({ el: el, pontos: pontos, idx: 0, x: pontos[0][0], esc: esc });
-        }
-        var PONTOS_T3 = [[664, 468], [700, 482], [682, 506], [716, 452]];
-        var PONTOS_T2 = [[438, 470], [472, 480], [456, 502]];
-        var vacaT2Soltou = false;
-
-        function pastar() {
-            vacas.forEach(function (v) {
-                var prox = (v.idx + 1) % v.pontos.length;
-                v.idx = prox;
-                var alvo = v.pontos[prox];
-                v.el.querySelector(".vaca-corpo").style.transform =
-                    "scaleX(" + (alvo[0] < v.x ? -1 : 1) + ") scale(" + v.esc + ")";
-                v.x = alvo[0];
-                v.el.style.transform = "translate(" + alvo[0] + "px," + alvo[1] + "px)";
-                setTimeout(function () {
-                    v.el.classList.add("vaca-comendo");
-                    if (Math.random() < 0.5) SBCH.popupPontos(v.el, "🌿");
-                    setTimeout(function () { v.el.classList.remove("vaca-comendo"); }, 1300);
-                }, 1200);
-            });
-        }
-
-        /* ================= Lógica do jogo ================= */
-        var rodadaAtual = 0;
-        var tentativas = 0;
+        /* ---------- estado ---------- */
+        var anoAtual = 1;
+        var descobertas = {};
+        var descCount = 0;
         var pontos = 0;
+        var anosVistos = { 1: true };
+        var bonusEvolucao = false;
+        var finalizado = false;
+        var fichaAberta = null;
+        var fichaAno = 1;
+
+        /* ---------- utilidades ---------- */
+        function rng(seed) {
+            return function () {
+                seed = (seed * 1664525 + 1013904223) % 4294967296;
+                return seed / 4294967296;
+            };
+        }
+        function num(v) { return Math.round(v * 10) / 10; }
+
+        /* Geometria dos talhões */
+        var T1 = { x: 170, y: 250, w: 280, h: 510 };
+        var T2 = { x: 490, y: 250, w: 320, h: 510 };
+        var T3 = { x: 850, y: 250, w: 215, h: 510 };
+        var M1 = { cx: 610, cy: 470, rx: 128, ry: 98 };
+        var M2 = { cx: 730, cy: 640, rx: 95, ry: 72 };
+        /* ============================================================
+           CENA — construção procedural da maquete em SVG
+           ============================================================ */
+
+        function defsSvg() {
+            return (
+                '<defs>' +
+                '<linearGradient id="gCeu" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#8ecbf2"/><stop offset="70%" stop-color="#c4e5f8"/><stop offset="100%" stop-color="#e3f2e0"/>' +
+                '</linearGradient>' +
+                '<linearGradient id="gTerra" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#bcd992"/><stop offset="55%" stop-color="#9cc479"/><stop offset="100%" stop-color="#7cae67"/>' +
+                '</linearGradient>' +
+                '<linearGradient id="gAguaLimpa" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#6cc4e8"/><stop offset="100%" stop-color="#2f8fc0"/>' +
+                '</linearGradient>' +
+                '<linearGradient id="gAguaSuja" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#a8a26b"/><stop offset="100%" stop-color="#7d7448"/>' +
+                '</linearGradient>' +
+                '<radialGradient id="gMorroVerde" cx="0.38" cy="0.3" r="0.85">' +
+                '<stop offset="0%" stop-color="#b1dc9a"/><stop offset="55%" stop-color="#79b069"/><stop offset="100%" stop-color="#4e8a4e"/>' +
+                '</radialGradient>' +
+                '<radialGradient id="gMorroSeco" cx="0.38" cy="0.3" r="0.85">' +
+                '<stop offset="0%" stop-color="#d3b47e"/><stop offset="55%" stop-color="#b28c52"/><stop offset="100%" stop-color="#8a6a3a"/>' +
+                '</radialGradient>' +
+                '<linearGradient id="gT3" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#57a05c"/><stop offset="100%" stop-color="#3d8b4a"/>' +
+                '</linearGradient>' +
+                '<radialGradient id="gVinheta" cx="0.5" cy="0.5" r="0.72">' +
+                '<stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.16)"/>' +
+                '</radialGradient>' +
+                '<clipPath id="clip-t2"><rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" rx="14"/></clipPath>' +
+                '<clipPath id="clip-t1"><rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" rx="14"/></clipPath>' +
+                '<clipPath id="clip-t3"><rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" rx="14"/></clipPath>' +
+                '</defs>'
+            );
+        }
+
+        /* Árvore: tronco + copa em 3 círculos, com sombra e balanço do vento */
+        function arvore(x, y, s, pal, atraso) {
+            pal = pal || ['#2f7a3a', '#3c9448', '#56ad57'];
+            return (
+                '<g transform="translate(' + num(x) + ',' + num(y) + ') scale(' + s + ')">' +
+                '<g class="an-sway" style="animation-delay:' + (atraso || 0) + 's">' +
+                '<ellipse cx="3" cy="2.5" rx="13" ry="4" fill="rgba(20,45,20,0.22)"/>' +
+                '<rect x="-1.7" y="-13" width="3.4" height="15" rx="1.4" fill="#6b4a2b"/>' +
+                '<circle cx="0" cy="-19" r="10.5" fill="' + pal[0] + '"/>' +
+                '<circle cx="-7" cy="-13.5" r="8" fill="' + pal[1] + '"/>' +
+                '<circle cx="7" cy="-14.5" r="7.5" fill="' + pal[2] + '"/>' +
+                '</g></g>'
+            );
+        }
+
+        function floresta(r, qtd, palettes, seed) {
+            var rnd = rng(seed), s = '';
+            for (var i = 0; i < qtd; i++) {
+                var x = r.x + 10 + rnd() * (r.w - 20);
+                var y = r.y + 12 + rnd() * (r.h - 24);
+                var sc = 0.7 + rnd() * 0.55;
+                var pal = palettes[(rnd() * palettes.length) | 0];
+                s += arvore(x, y, sc, pal, num(rnd() * 3));
+            }
+            return s;
+        }
+
+        function vaca(x, y, s, flip, atraso) {
+            var dir = flip ? ' scale(-1,1)' : '';
+            return (
+                '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')' + dir + '">' +
+                '<ellipse cx="0" cy="13" rx="18" ry="4.5" fill="rgba(20,45,20,0.2)"/>' +
+                '<g class="an-vaca" style="animation-delay:' + (atraso || 0) + 's">' +
+                '<rect x="-12" y="4" width="3.4" height="9" rx="1.6" fill="#e8e2d8"/>' +
+                '<rect x="-4" y="5" width="3.4" height="8" rx="1.6" fill="#e8e2d8"/>' +
+                '<rect x="4" y="5" width="3.4" height="8" rx="1.6" fill="#e8e2d8"/>' +
+                '<rect x="10" y="4" width="3.4" height="9" rx="1.6" fill="#e8e2d8"/>' +
+                '<ellipse cx="0" cy="-2" rx="17" ry="10" fill="#fafafa" stroke="#c9c2b8" stroke-width="1"/>' +
+                '<ellipse cx="-5" cy="-4" rx="6" ry="4.6" fill="#3a3a3a"/>' +
+                '<ellipse cx="6" cy="1" rx="5" ry="3.8" fill="#3a3a3a"/>' +
+                '<path d="M-16,-6 q-5,6 -3,13" stroke="#c9c2b8" stroke-width="1.7" fill="none"/>' +
+                '<circle cx="17" cy="-7" r="6.5" fill="#fafafa" stroke="#c9c2b8" stroke-width="1"/>' +
+                '<ellipse cx="12" cy="-11" rx="3" ry="1.8" fill="#dcd5cb"/>' +
+                '<ellipse cx="22" cy="-11" rx="3" ry="1.8" fill="#dcd5cb"/>' +
+                '<ellipse cx="20" cy="-4" rx="4.2" ry="3" fill="#f2cfc9"/>' +
+                '</g></g>'
+            );
+        }
+
+        /* Placa de madeira da maquete (como na física) */
+        function placa(x, y, linha1, linha2, larg) {
+            larg = larg || 150;
+            var h = linha2 ? 40 : 26;
+            var s = '<g transform="translate(' + x + ',' + y + ')">';
+            s += '<rect x="-2.5" y="0" width="5" height="24" fill="#6b4a2b"/>';
+            s += '<rect x="' + (-larg / 2) + '" y="' + (-h - 24) + '" width="' + larg + '" height="' + h + '" rx="4" fill="#8a5a33" stroke="#5d3a1e" stroke-width="2"/>';
+            s += '<text y="' + (-h - 24 + 16) + '" class="placa-t1">' + linha1 + '</text>';
+            if (linha2) s += '<text y="' + (-h - 24 + 31) + '" class="placa-t2">' + linha2 + '</text>';
+            return s + '</g>';
+        }
+
+        function nuvemCena(x, y, s, atraso) {
+            return (
+                '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')" opacity="0.92">' +
+                '<g class="an-nuvem-cena" style="animation-delay:' + atraso + 's">' +
+                '<ellipse cx="0" cy="0" rx="34" ry="13" fill="#fff"/>' +
+                '<ellipse cx="22" cy="-6" rx="21" ry="11" fill="#fff"/>' +
+                '<ellipse cx="-20" cy="-4" rx="17" ry="9" fill="#fff"/>' +
+                '</g></g>'
+            );
+        }
+
+        /* ---------- paisagem fixa (não muda com o ano) ---------- */
+        function cenaEstatica() {
+            var rnd = rng(20210901); // data do início do SBC :)
+            var s = '';
+
+            /* céu, sol e nuvens */
+            s += '<rect x="0" y="0" width="1240" height="160" fill="url(#gCeu)"/>';
+            s += '<g transform="translate(1140,58)">';
+            s += '<g class="an-girar" opacity="0.85">';
+            for (var r = 0; r < 8; r++) {
+                var a = r * Math.PI / 4;
+                s += '<line x1="' + num(Math.cos(a) * 27) + '" y1="' + num(Math.sin(a) * 27) + '" x2="' + num(Math.cos(a) * 36) + '" y2="' + num(Math.sin(a) * 36) + '" stroke="#f5b800" stroke-width="3.4" stroke-linecap="round"/>';
+            }
+            s += '</g><circle r="22" fill="#ffd54d" stroke="#f5b800" stroke-width="3"/></g>';
+            s += nuvemCena(180, 42, 1, 0) + nuvemCena(620, 66, 0.75, 17) + nuvemCena(940, 30, 0.9, 34);
+
+            /* colinas distantes */
+            s += '<path d="M0,152 C 150,120 260,138 420,124 C 610,108 760,132 940,118 C 1080,108 1180,128 1240,116 L1240,162 L0,162 Z" fill="#a9c79a"/>';
+            s += '<path d="M0,160 C 200,140 420,152 640,142 C 860,132 1060,150 1240,138 L1240,170 L0,170 Z" fill="#8fb989" opacity="0.9"/>';
+
+            /* terra base */
+            s += '<rect x="0" y="150" width="1240" height="670" fill="url(#gTerra)"/>';
+
+            /* Reserva Legal (topo direito, atrás da APP) */
+            s += '<rect x="878" y="128" width="362" height="146" rx="20" fill="#2e6b35" stroke="#1e4a24" stroke-width="3"/>';
+            s += floresta({ x: 878, y: 128, w: 362, h: 146 }, 34, [['#1f5c2a', '#2e7a3a', '#3f9448'], ['#266b30', '#357f3c', '#4a9c50']], 777);
+
+            /* sede da fazenda */
+            s += '<g>';
+            s += '<ellipse cx="633" cy="212" rx="62" ry="10" fill="rgba(20,45,20,0.14)"/>';
+            s += '<rect x="605" y="172" width="52" height="34" fill="#f3e3c3" stroke="#8a5a33" stroke-width="2"/>';
+            s += '<polygon points="601,172 631,152 661,172" fill="#b3402e" stroke="#8a2b1e" stroke-width="2"/>';
+            s += '<rect x="625" y="190" width="11" height="16" rx="2" fill="#8a5a33"/>';
+            s += '<rect x="610" y="180" width="10" height="10" fill="#ffe9a8" stroke="#8a5a33" stroke-width="1.5"/>';
+            s += '<rect x="672" y="164" width="22" height="42" rx="8" fill="#d7dee2" stroke="#9aa7ad" stroke-width="2"/>';
+            s += '<ellipse cx="683" cy="164" rx="11" ry="5" fill="#c3ccd1"/>';
+            s += '<line x1="683" y1="152" x2="683" y2="164" stroke="#9aa7ad" stroke-width="2.4"/>';
+            s += '<circle cx="683" cy="150" r="2.6" fill="#e53935"/>';
+            s += arvore(588, 208, 1.15, ['#2f7a3a', '#3c9448', '#56ad57'], 1.2);
+            s += arvore(704, 210, 0.95, ['#35703a', '#43884a', '#58a75c'], 0.4);
+            s += '</g>';
+
+            /* pasto das vacas (integração lavoura-pecuária) */
+            s += '<g>';
+            s += '<rect x="720" y="148" width="130" height="72" rx="14" fill="#8fc46b" stroke="#6da04e" stroke-width="2.5"/>';
+            s += '<rect x="726" y="154" width="118" height="60" rx="10" fill="none" stroke="#8a5a33" stroke-width="1.8" stroke-dasharray="7 5"/>';
+            s += vaca(755, 196, 0.95, false, 0);
+            s += vaca(798, 183, 0.8, true, 1.1);
+            s += vaca(830, 197, 0.88, false, 2.2);
+            s += '</g>';
+
+            /* estradas */
+            s += '<rect x="450" y="240" width="40" height="540" fill="#d9c9a3"/>';
+            s += '<rect x="810" y="240" width="40" height="540" fill="#d9c9a3"/>';
+            s += '<line x1="460" y1="250" x2="460" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
+            s += '<line x1="480" y1="250" x2="480" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
+            s += '<line x1="820" y1="250" x2="820" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
+            s += '<line x1="840" y1="250" x2="840" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
+            s += '<rect x="0" y="772" width="1240" height="48" fill="#d9c9a3"/>';
+            s += '<line x1="0" y1="782" x2="1240" y2="782" stroke="#c2b28a" stroke-width="3.2"/>';
+            s += '<line x1="0" y1="812" x2="1240" y2="812" stroke="#c2b28a" stroke-width="3.2"/>';
+
+            /* APP degradada (esquerda): solo exposto, poucas árvores, tocos */
+            s += '<rect x="0" y="240" width="170" height="532" fill="#c9ab7c"/>';
+            for (var t = 0; t < 46; t++) {
+                s += '<ellipse cx="' + num(6 + rnd() * 158) + '" cy="' + num(250 + rnd() * 510) + '" rx="' + num(1.6 + rnd() * 3) + '" ry="1.4" fill="#b2924f" opacity="0.6"/>';
+            }
+            s += '<ellipse cx="138" cy="308" rx="9" ry="3.6" fill="#7c4a28"/><circle cx="138" cy="305" r="4" fill="#9a6a3f"/>';
+            s += '<ellipse cx="146" cy="668" rx="8" ry="3.4" fill="#7c4a28"/><circle cx="146" cy="665" r="3.6" fill="#9a6a3f"/>';
+            s += arvore(128, 470, 0.62, ['#5d7a44', '#6e8f52', '#7fa05f'], 0.8);
+            s += arvore(104, 560, 0.5, ['#5d7a44', '#6e8f52', '#7fa05f'], 2.1);
+            s += arvore(142, 370, 0.55, ['#63784a', '#748b55', '#859c62'], 1.5);
+
+            /* rio esquerdo (APP degradada) */
+            var dEsq = 'M 62,0 C 95,140 45,260 78,380 C 108,500 52,600 84,700 C 100,760 72,790 80,820';
+            s += '<path d="' + dEsq + '" fill="none" stroke="#b99a6a" stroke-width="54" stroke-linecap="round"/>';
+            s += '<path d="' + dEsq + '" fill="none" stroke="url(#gAguaSuja)" stroke-width="38" stroke-linecap="round"/>';
+            s += '<path d="' + dEsq + '" fill="none" class="an-agua" stroke="rgba(255,255,255,0.22)" stroke-width="7"/>';
+            s += placa(112, 306, 'APP degradada', null, 128);
+
+            /* APP preservada (direita): faixa densa entre o talhão 3 e o rio */
+            s += '<rect x="1065" y="240" width="100" height="532" rx="10" fill="#3e7d46"/>';
+            s += floresta({ x: 1065, y: 240, w: 100, h: 532 }, 26, [['#2a6e34', '#38853f', '#4c9a4e'], ['#1f5c2a', '#2e7a3a', '#3f9448']], 4242);
+
+            /* rio direito (APP preservada) */
+            var dDir = 'M 1198,0 C 1172,150 1218,300 1188,430 C 1162,550 1206,650 1180,760 C 1172,790 1185,805 1182,820';
+            s += '<path d="' + dDir + '" fill="none" stroke="#6f8f5c" stroke-width="50" stroke-linecap="round"/>';
+            s += '<path d="' + dDir + '" fill="none" stroke="url(#gAguaLimpa)" stroke-width="36" stroke-linecap="round"/>';
+            s += '<path d="' + dDir + '" fill="none" class="an-agua" stroke="rgba(255,255,255,0.4)" stroke-width="7"/>';
+            s += placa(1112, 690, 'APP preservada', null, 132);
+
+            /* placa da RL */
+            s += placa(1010, 200, 'RL preservada e excedente', null, 204);
+
+            /* placas dos talhões */
+            s += placa(310, 760, 'Talhão 1', 'Evolução da palhada', 150);
+            s += placa(650, 760, 'Talhão 2', 'Plantio em contorno', 158);
+            s += placa(957, 760, 'Talhão 3', 'Manejo avançado', 138);
+
+            /* capim na frente da maquete */
+            for (var c = 0; c < 60; c++) {
+                var gx = num(rnd() * 1240), gy = num(776 + rnd() * 10);
+                s += '<path d="M' + gx + ',' + gy + ' q2,-5 4,-6" stroke="#5e8f4a" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+            }
+            return s;
+        }
+
+        /* ---------- efeitos permanentes (sobre os talhões) ---------- */
+        function cenaEfeitos() {
+            var s = '';
+
+            /* sombras de nuvens atravessando o campo */
+            s += '<g transform="translate(0,430)"><g class="an-sombra-nuvem">' +
+                 '<ellipse cx="0" cy="0" rx="150" ry="52" fill="rgba(15,50,25,0.09)"/></g></g>';
+            s += '<g transform="translate(0,620)"><g class="an-sombra-nuvem" style="animation-delay:-13s">' +
+                 '<ellipse cx="0" cy="0" rx="110" ry="40" fill="rgba(15,50,25,0.07)"/></g></g>';
+
+            /* aves cruzando o céu */
+            var aves = [[30, 0], [64, 14], [52, 26]];
+            for (var i = 0; i < aves.length; i++) {
+                s += '<g transform="translate(0,' + aves[i][0] + ')"><g class="an-ave" style="animation-delay:' + aves[i][1] + 's">' +
+                     '<path d="M -9,0 Q -4.5,-6 0,-1 Q 4.5,-6 9,0" fill="none" stroke="#4a6a7a" stroke-width="2.2" stroke-linecap="round"/>' +
+                     '</g></g>';
+            }
+
+            /* drone de monitoramento sobrevoando o talhão 2 */
+            s += '<g transform="translate(650,330)"><g class="an-drone">' +
+                 '<ellipse cx="20" cy="128" rx="24" ry="7" fill="rgba(20,45,20,0.2)"/>' +
+                 '<g>' +
+                 '<line x1="-9" y1="-5" x2="-19" y2="-11" stroke="#37474f" stroke-width="2.6"/>' +
+                 '<line x1="9" y1="-5" x2="19" y2="-11" stroke="#37474f" stroke-width="2.6"/>' +
+                 '<line x1="-9" y1="5" x2="-19" y2="11" stroke="#37474f" stroke-width="2.6"/>' +
+                 '<line x1="9" y1="5" x2="19" y2="11" stroke="#37474f" stroke-width="2.6"/>';
+            var helices = [[-19, -11], [19, -11], [-19, 11], [19, 11]];
+            for (var h = 0; h < helices.length; h++) {
+                var hx = helices[h][0], hy = helices[h][1];
+                s += '<g transform="translate(' + hx + ',' + hy + ')"><g class="an-helice">' +
+                     '<line x1="-8" y1="0" x2="8" y2="0" stroke="#546e7a" stroke-width="2.4"/>' +
+                     '<line x1="0" y1="-8" x2="0" y2="8" stroke="#546e7a" stroke-width="2.4"/>' +
+                     '</g></g>';
+            }
+            s += '<rect x="-11" y="-7" width="22" height="13" rx="5" fill="#37474f"/>' +
+                 '<rect x="-4" y="-3" width="8" height="5" rx="2" fill="#8fd6ff"/>' +
+                 '<circle cx="0" cy="7" r="2.4" fill="#263238"/>' +
+                 '</g></g></g>';
+
+            /* vinheta: profundidade da maquete (não captura cliques) */
+            s += '<rect x="0" y="0" width="1240" height="820" fill="url(#gVinheta)" style="pointer-events:none"/>';
+            return s;
+        }
+        /* ============================================================
+           TALHÕES — camada que muda com o ano selecionado
+           ============================================================ */
+
+        var COR_PALHADA = ['#d9c27e', '#cbb26a', '#e2cf90', '#bfa15a', '#c9a961'];
+
+        function palhada(r, qtd, rnd) {
+            var s = '';
+            for (var i = 0; i < qtd; i++) {
+                var x = r.x + 8 + rnd() * (r.w - 16);
+                var y = r.y + 8 + rnd() * (r.h - 16);
+                var w = 5 + rnd() * 8;
+                s += '<rect x="' + num(x) + '" y="' + num(y) + '" width="' + num(w) + '" height="2.3" rx="1.1" fill="' + COR_PALHADA[(rnd() * 5) | 0] + '" opacity="0.92" transform="rotate(' + ((rnd() * 180) | 0) + ' ' + num(x) + ' ' + num(y) + ')"/>';
+            }
+            return s;
+        }
+
+        function grama(r, qtd, cor, rnd, alt) {
+            var s = '';
+            for (var i = 0; i < qtd; i++) {
+                var x = r.x + 6 + rnd() * (r.w - 12);
+                var y = r.y + 10 + rnd() * (r.h - 20);
+                var a = alt * (0.6 + rnd() * 0.7);
+                s += '<path d="M' + num(x) + ',' + num(y) + ' q' + num(-2 + rnd() * 4) + ',' + num(-a * 0.6) + ' ' + num(-2 + rnd() * 4) + ',' + num(-a) + '" stroke="' + cor + '" stroke-width="1.7" fill="none" stroke-linecap="round"/>';
+            }
+            return s;
+        }
+
+        /* linha ondulada (curva de nível) atravessando o talhão */
+        function faixa(r, yy, cor, w, dash) {
+            return '<path d="M ' + (r.x + 8) + ' ' + yy +
+                ' C ' + (r.x + r.w * 0.3) + ' ' + (yy - 13) + ', ' + (r.x + r.w * 0.7) + ' ' + (yy + 13) + ', ' + (r.x + r.w - 8) + ' ' + yy +
+                '" fill="none" stroke="' + cor + '" stroke-width="' + w + '" stroke-linecap="round"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+        }
+
+        function contornosMorro(m, n, cor, w, dash) {
+            var s = '';
+            for (var k = 1; k <= n; k++) {
+                var f = k / n;
+                s += '<ellipse cx="' + m.cx + '" cy="' + m.cy + '" rx="' + num(m.rx * f) + '" ry="' + num(m.ry * f) + '" fill="none" stroke="' + cor + '" stroke-width="' + w + '" stroke-linecap="round"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+            }
+            return s;
+        }
+
+        /* ---------- Talhão 1: evolução da palhada (soja + milho) ---------- */
+        function talhao1(ano) {
+            var rnd = rng(11 + ano);
+            var p = [0.08, 0.4, 0.93][ano - 1];
+            var solo = ['#b08d5f', '#a3854f', '#6f6038'][ano - 1];
+            var corSoja = ['#79b25c', '#4ea24f', '#2f9e44'][ano - 1];
+            var s = '<g clip-path="url(#clip-t1)">';
+
+            s += '<rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" fill="' + solo + '"/>';
+            /* cobertura de palhada */
+            s += '<rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" fill="#cdb37e" opacity="' + num(p * 0.92) + '"/>';
+            s += palhada(T1, Math.round(p * 520), rnd);
+
+            /* linhas de soja na safra + milho na safrinha (sucessão) */
+            var linha = 0;
+            for (var x = T1.x + 16; x <= T1.x + T1.w - 14; x += 24, linha++) {
+                if (linha % 5 === 4) {
+                    s += '<line x1="' + x + '" y1="' + (T1.y + 14) + '" x2="' + x + '" y2="' + (T1.y + T1.h - 14) + '" stroke="#9ccc65" stroke-width="8" stroke-linecap="round" stroke-dasharray="11 4" opacity="0.95"/>';
+                } else {
+                    s += '<line x1="' + x + '" y1="' + (T1.y + 14) + '" x2="' + x + '" y2="' + (T1.y + T1.h - 14) + '" stroke="' + corSoja + '" stroke-width="' + (5 + ano) + '" stroke-linecap="round" stroke-dasharray="5 4"/>';
+                }
+            }
+            s += '</g>';
+            /* fora do talhão: lavoura avançando perto demais do rio (APP degradada) */
+            for (var e = 0; e < 5; e++) {
+                var ex = 98 + e * 14;
+                s += '<line x1="' + ex + '" y1="330" x2="' + ex + '" y2="700" stroke="' + corSoja + '" stroke-width="4.5" stroke-dasharray="5 4" opacity="0.85"/>';
+            }
+            return s;
+        }
+
+        /* ---------- Talhão 2: relevo e plantio em contorno ---------- */
+        function talhao2(ano) {
+            var rnd = rng(22 + ano);
+            var s = '<g clip-path="url(#clip-t2)">';
+
+            var base = ['#c3a26b', '#94b56d', '#6fa254'][ano - 1];
+            s += '<rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" fill="' + base + '"/>';
+
+            /* dois morros com sombra projetada (3D) */
+            var gMorro = ano === 1 ? 'url(#gMorroSeco)' : 'url(#gMorroVerde)';
+            [M1, M2].forEach(function (m) {
+                s += '<ellipse cx="' + (m.cx + 7) + '" cy="' + (m.cy + 9) + '" rx="' + m.rx + '" ry="' + m.ry + '" fill="rgba(40,60,35,0.35)"/>';
+                s += '<ellipse cx="' + m.cx + '" cy="' + m.cy + '" rx="' + m.rx + '" ry="' + m.ry + '" fill="' + gMorro + '"/>';
+            });
+
+            if (ano === 1) {
+                /* linhas retas morro abaixo + ravinas de erosão */
+                for (var x = T2.x + 16; x <= T2.x + T2.w - 14; x += 20) {
+                    s += '<line x1="' + x + '" y1="' + (T2.y + 12) + '" x2="' + x + '" y2="' + (T2.y + T2.h - 12) + '" stroke="#8a9a55" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 4"/>';
+                }
+                s += '<path d="M618,395 q-12,45 6,80 q16,34 -4,75" fill="none" stroke="#7c4a28" stroke-width="7" stroke-linecap="round" opacity="0.9"/>';
+                s += '<path d="M655,400 q10,50 -6,85 q-12,30 6,70" fill="none" stroke="#7c4a28" stroke-width="6" stroke-linecap="round" opacity="0.9"/>';
+                s += '<path d="M735,585 q-8,35 5,60 q10,25 -2,50" fill="none" stroke="#7c4a28" stroke-width="5.5" stroke-linecap="round" opacity="0.9"/>';
+                s += '<path d="M614,398 q-9,44 7,78" fill="none" stroke="#9a6a3f" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>';
+                s += '<path d="M733,588 q-6,33 4,58" fill="none" stroke="#9a6a3f" stroke-width="2" stroke-linecap="round" opacity="0.9"/>';
+                /* leques de sedimento no pé das ravinas */
+                s += '<ellipse cx="622" cy="556" rx="26" ry="8" fill="#8a5a33" opacity="0.5"/>';
+                s += '<ellipse cx="662" cy="560" rx="20" ry="7" fill="#8a5a33" opacity="0.45"/>';
+                s += '<ellipse cx="740" cy="700" rx="18" ry="6" fill="#8a5a33" opacity="0.5"/>';
+                s += palhada(T2, 46, rnd);
+            } else {
+                /* plantio acompanhando as curvas do relevo */
+                var corLinha = ano === 2 ? '#d9b64e' : '#2f7d3c';
+                var corAlt = ano === 2 ? '#b8cf9a' : '#67b26a';
+                var dash = ano === 2 ? null : '3 3';
+                for (var yy = T2.y + 16; yy <= T2.y + T2.h - 16; yy += 30) {
+                    s += faixa(T2, yy, corLinha, 4.6, dash);
+                }
+                s += contornosMorro(M1, 7, corAlt, 4, dash);
+                s += contornosMorro(M2, 6, corAlt, 4, dash);
+                if (ano === 3) {
+                    /* braquiária fina sobre os morros */
+                    s += grama({ x: T2.x, y: T2.y, w: T2.w, h: T2.h }, 130, '#2f7d3c', rnd, 7);
+                }
+                s += palhada(T2, ano === 2 ? 250 : 420, rnd);
+            }
+            return s + '</g>';
+        }
+        /* ---------- Talhão 3: manejo avançado e diversidade ---------- */
+        function talhao3(ano) {
+            var rnd = rng(33 + ano);
+            var s = '<g clip-path="url(#clip-t3)">';
+
+            s += '<rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" fill="url(#gT3)"/>';
+
+            /* braquiária: base densa de capim */
+            s += grama(T3, 190, '#2f7d3c', rnd, 8);
+
+            /* plantio em contorno no talhão inteiro */
+            for (var yy = T3.y + 18; yy <= T3.y + T3.h - 18; yy += 34) {
+                s += faixa(T3, yy, '#57b05c', 4, '3 4');
+            }
+
+            if (ano === 1) {
+                /* crotalária ochroleuca em flor */
+                for (var i = 0; i < 64; i++) {
+                    var x = T3.x + 10 + rnd() * (T3.w - 20);
+                    var y = T3.y + 14 + rnd() * (T3.h - 28);
+                    s += '<line x1="' + num(x) + '" y1="' + num(y) + '" x2="' + num(x) + '" y2="' + num(y - 4) + '" stroke="#4c8a3a" stroke-width="1.6"/>' +
+                         '<circle cx="' + num(x) + '" cy="' + num(y - 5) + '" r="2.6" fill="#e9c937"/>';
+                }
+            } else if (ano === 2) {
+                /* faixas de trigo + milheto */
+                for (var yy2 = T3.y + 34; yy2 <= T3.y + T3.h - 30; yy2 += 68) {
+                    s += faixa(T3, yy2, '#d9b64e', 5.5);
+                }
+                for (var m = 0; m < 70; m++) {
+                    var mx = T3.x + 8 + rnd() * (T3.w - 16);
+                    var my = T3.y + 12 + rnd() * (T3.h - 24);
+                    s += '<line x1="' + num(mx) + '" y1="' + num(my) + '" x2="' + num(mx) + '" y2="' + num(my - 6) + '" stroke="#c7d17e" stroke-width="1.8" stroke-linecap="round"/>';
+                }
+                s += palhada(T3, 160, rnd);
+            } else {
+                /* consórcio braquiária + milho e muita palhada */
+                for (var mz = 0; mz < 46; mz++) {
+                    var cx = T3.x + 10 + rnd() * (T3.w - 20);
+                    var cy = T3.y + 16 + rnd() * (T3.h - 32);
+                    s += '<line x1="' + num(cx) + '" y1="' + num(cy) + '" x2="' + num(cx) + '" y2="' + num(cy - 13) + '" stroke="#6a9a3a" stroke-width="2.6" stroke-linecap="round"/>' +
+                         '<circle cx="' + num(cx) + '" cy="' + num(cy - 15) + '" r="2.6" fill="#e6c84a"/>';
+                }
+                s += palhada(T3, 220, rnd);
+            }
+            return s + '</g>';
+        }
+
+        /* ---------- vida e água: criaturas e sedimento ---------- */
+        function vidaCena(ano) {
+            var s = '';
+
+            /* pluma de barro no rio esquerdo enquanto houver erosão */
+            if (ano === 1) {
+                s += '<path d="M 78,380 C 108,500 52,600 84,700" fill="none" stroke="#8a6a3a" stroke-width="24" stroke-linecap="round" opacity="0.45"/>';
+                s += '<ellipse cx="82" cy="565" rx="44" ry="13" fill="#8a6a3a" opacity="0.4"/>';
+            } else if (ano === 2) {
+                s += '<path d="M 78,380 C 108,500 52,600 84,700" fill="none" stroke="#8a6a3a" stroke-width="16" stroke-linecap="round" opacity="0.2"/>';
+            }
+
+            /* borboletas aparecem com a diversidade (Ano 2+) */
+            if (ano >= 2) {
+                var cores = ['#f2b134', '#e8788a', '#7ec6e8'];
+                var posis = [[890, 600], [952, 655], [992, 580], [870, 520]];
+                for (var b = 0; b < posis.length; b++) {
+                    var px = posis[b][0] + (ano === 3 ? (b - 1) * 6 : 0);
+                    var py = posis[b][1] - (ano === 3 ? b * 8 : 0);
+                    s += '<g transform="translate(' + px + ',' + py + ')"><g class="an-flutuar" style="animation-delay:' + (b * 0.9) + 's"><g class="an-asas">' +
+                         '<path d="M0,0 C -7,-7 -14,-2 -8,3 C -12,7 -6,10 -2,5 Z" fill="' + cores[b % 3] + '"/>' +
+                         '<path d="M0,0 C 7,-7 14,-2 8,3 C 12,7 6,10 2,5 Z" fill="' + cores[b % 3] + '" opacity="0.85"/>' +
+                         '<rect x="-1" y="-1" width="2" height="7" rx="1" fill="#3a2a1a"/>' +
+                         '</g></g></g>';
+                }
+            }
+
+            /* abelhas no sistema consolidado (Ano 3) */
+            if (ano === 3) {
+                for (var a = 0; a < 4; a++) {
+                    s += '<g transform="translate(' + (880 + a * 34) + ',' + (430 + a * 22) + ')"><g class="an-zumbir" style="animation-delay:' + (a * 0.3) + 's">' +
+                         '<ellipse cx="0" cy="0" rx="3.2" ry="2.2" fill="#f4c430"/>' +
+                         '<rect x="-1" y="-2.3" width="1.4" height="4.6" fill="#3a2a1a"/>' +
+                         '<ellipse cx="-3" cy="-2.5" rx="2.4" ry="1.5" fill="rgba(255,255,255,0.8)"/>' +
+                         '</g></g>';
+                }
+            }
+            return s;
+        }
+
+        /* ---------- montagem da camada do ano ---------- */
+        function montarAno(ano) {
+            var g = document.getElementById("g-ano");
+            g.innerHTML =
+                '<g class="an-entrar">' +
+                talhao1(ano) + talhao2(ano) + talhao3(ano) + vidaCena(ano) +
+                '</g>';
+        }
+        /* ============================================================
+           EXPLORAÇÃO — marcadores, fichas, pontos e final
+           ============================================================ */
+
+        function montarHotspots() {
+            var g = document.getElementById("g-hotspots");
+            var s = '';
+            Object.keys(HOTSPOTS).forEach(function (id) {
+                var h = HOTSPOTS[id];
+                s += '<g class="hotspot" data-id="' + id + '" transform="translate(' + h.pos[0] + ',' + h.pos[1] + ')">';
+                if (descobertas[id]) {
+                    s += '<circle r="14" fill="#1b4d2a" stroke="#fff" stroke-width="2.5"/>' +
+                         '<text y="5" class="ok-tx">✔</text>';
+                } else {
+                    s += '<circle class="an-pulso" r="15" fill="none" stroke="#ffd54d" stroke-width="3"/>' +
+                         '<circle r="15" fill="rgba(255,255,255,0.95)" stroke="#1b4d2a" stroke-width="3"/>' +
+                         '<text y="5.5" class="hs-icone">' + h.icone + '</text>';
+                }
+                s += '<circle r="32" fill="rgba(0,0,0,0)" class="hit"/>';
+                s += '</g>';
+            });
+            g.innerHTML = s;
+
+            Array.prototype.forEach.call(g.querySelectorAll(".hotspot"), function (el) {
+                el.addEventListener("click", function () { abrirFicha(el.getAttribute("data-id")); });
+            });
+        }
 
         function atualizarHud() {
-            gid("h-pontos").textContent = pontos;
-            gid("h-rodada").textContent = Math.min(rodadaAtual + 1, 6) + "/6";
-            gid("h-ano").textContent = "Ano " + Math.min(estadoAno[0], estadoAno[1], estadoAno[2]);
-            var soma = 0;
-            for (var i = 0; i < 3; i++) soma += TALHOES[i].anos[estadoAno[i] - 1].cobertura;
-            gid("h-cob").textContent = Math.round(soma / 3) + "%";
-        }
-
-        function montarRodada() {
-            var rd = RODADAS[rodadaAtual];
-            tentativas = 0;
-            gid("rodada-chip").textContent =
-                "Desafio " + (rodadaAtual + 1) + "/6 · " + TALHOES[rd.talhao].nome + " · Ano " + estadoAno[rd.talhao] + " → Ano " + (estadoAno[rd.talhao] + 1);
-            gid("pergunta").textContent = rd.pergunta;
-            mostrarDica(rd.talhao);
-            talGrupos[rd.talhao].classList.add("ativo");
-
-            var caixa = gid("opcoes");
-            caixa.innerHTML = "";
-            SBCH.embaralhar(rd.opcoes.slice()).forEach(function (op) {
-                var b = document.createElement("button");
-                b.className = "opcao";
-                b.textContent = op.t;
-                b.addEventListener("click", function () { responder(op, b); });
-                caixa.appendChild(b);
+            document.getElementById("hud-pontos").textContent = pontos;
+            document.getElementById("hud-descobertas").textContent = descCount + "/10";
+            document.getElementById("hud-ano").textContent = "ANO " + anoAtual;
+            document.getElementById("hud-palhada").textContent = PALHADA_HUD[anoAtual];
+            var pct = descCount * 10;
+            document.getElementById("barra-progresso").style.width = pct + "%";
+            document.getElementById("barra-rotulo").textContent =
+                descCount === 10 ? "🏆 Fazenda 100% explorada!" : "Descobertas: " + descCount + " de 10";
+            [1, 2, 3].forEach(function (n) {
+                var btn = document.getElementById("ano-" + n);
+                btn.classList.toggle("ativo", n === anoAtual);
             });
-
-            var fb = gid("feedback");
-            fb.className = "feedback";
-            fb.style.display = "none";
-            gid("btn-proxima").classList.add("oculto");
-            atualizarHud();
         }
 
-        function responder(op, botao) {
-            var rd = RODADAS[rodadaAtual];
-            var fb = gid("feedback");
-
-            if (op.ok) {
-                var ganho = tentativas === 0 ? 20 : tentativas === 1 ? 10 : 5;
-                pontos += ganho;
-                estadoAno[rd.talhao]++;
-                talGrupos[rd.talhao].classList.remove("ativo");
-                renderAno(rd.talhao);
-                var gEvoluido = talGrupos[rd.talhao];
-                gEvoluido.classList.add("evoluiu");
-                setTimeout(function () { gEvoluido.classList.remove("evoluiu"); }, 700);
-
-                /* vaca nova quando o Talhão 2 chega à braquiária (Ano 3) */
-                if (rd.talhao === 1 && estadoAno[1] === 3 && !vacaT2Soltou) {
-                    vacaT2Soltou = true;
-                    soltarVaca(PONTOS_T2, 0.95);
-                }
-
-                botao.classList.add("certa");
-                fb.className = "feedback ok";
-                fb.innerHTML = "<strong>✔ Talhão evoluído! +" + ganho + " pts</strong><br>" + op.por;
+        function trocarAno(n) {
+            if (n === anoAtual) return;
+            anoAtual = n;
+            anosVistos[n] = true;
+            SBCH.som("clique");
+            montarAno(anoAtual);
+            atualizarHud();
+            if (fichaAberta) renderFicha(n);
+            if (!bonusEvolucao && anosVistos[1] && anosVistos[2] && anosVistos[3]) {
+                bonusEvolucao = true;
+                pontos += 20;
+                SBCH.popupPontos(document.getElementById("hud-pontos"), "+20 evolução!");
                 SBCH.som("acerto");
-                SBCH.popupPontos(gid("h-pontos"), "+" + ganho);
-                gid("opcoes").querySelectorAll(".opcao").forEach(function (b) { b.disabled = true; });
-                var prox = gid("btn-proxima");
-                prox.classList.remove("oculto");
-                prox.textContent = rodadaAtual < RODADAS.length - 1 ? "Próximo desafio ➜" : "Ver a fazenda pronta 🏁";
+                atualizarHud();
+            }
+        }
+
+        function renderFicha(ano) {
+            fichaAno = ano;
+            var h = HOTSPOTS[fichaAberta];
+            document.getElementById("ficha-icone").textContent = h.icone;
+            document.getElementById("ficha-nome").innerHTML = h.nome +
+                (descobertas[fichaAberta] ? "" : ' <span class="ficha-nova">NOVO +10 pts</span>');
+            document.getElementById("ficha-titulo").textContent = h.anos[ano][0];
+            document.getElementById("ficha-texto").textContent = h.anos[ano][1];
+            document.getElementById("ficha-sbc").innerHTML = "<strong>Conexão SBC:</strong> " + h.sbc;
+            Array.prototype.forEach.call(document.querySelectorAll(".ficha-tab"), function (tab) {
+                tab.classList.toggle("ativo", +tab.getAttribute("data-fano") === ano);
+            });
+        }
+
+        function abrirFicha(id) {
+            fichaAberta = id;
+            var nova = !descobertas[id];
+            if (nova) {
+                descobertas[id] = true;
+                descCount++;
+                pontos += 10;
+                SBCH.som("acerto");
+                SBCH.popupPontos(document.getElementById("hud-pontos"), "+10");
+                montarHotspots();
                 atualizarHud();
             } else {
-                tentativas++;
-                botao.classList.add("errada");
-                botao.disabled = true;
-                fb.className = "feedback erro";
-                fb.innerHTML = "<strong>✖ Não é por aí…</strong><br>" + op.por;
-                SBCH.som("erro");
+                SBCH.som("clique");
             }
-            fb.style.display = "block";
+            var ficha = document.getElementById("ficha");
+            ficha.classList.remove("oculto");
+            renderFicha(anoAtual);
+            if (nova) ficha.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            if (descCount === 10 && !finalizado) setTimeout(finalizar, 700);
         }
 
-        gid("btn-proxima").addEventListener("click", function () {
-            rodadaAtual++;
-            if (rodadaAtual < RODADAS.length) montarRodada();
-            else finalizar();
+        function fecharFicha() {
+            fichaAberta = null;
+            document.getElementById("ficha").classList.add("oculto");
+        }
+
+        Array.prototype.forEach.call(document.querySelectorAll(".ficha-tab"), function (tab) {
+            tab.addEventListener("click", function () {
+                renderFicha(+tab.getAttribute("data-fano"));
+            });
         });
 
         function finalizar() {
-            var classe, titulo, icone;
-            if (pontos >= 100) { classe = "ouro"; titulo = "Fazenda de elite SBC!"; icone = "🏆"; }
-            else if (pontos >= 70) { classe = "prata"; titulo = "Grande evolução na paisagem!"; icone = "🥈"; }
-            else if (pontos >= 40) { classe = "bronze"; titulo = "A fazenda já evoluiu!"; icone = "🥉"; }
-            else { classe = ""; titulo = "A paisagem está em transição"; icone = "🌱"; }
+            finalizado = true;
+            pontos += 30;
+            SBCH.popupPontos(document.getElementById("hud-pontos"), "+30 explorador!");
+            atualizarHud();
 
-            var cEl = gid("final-classe");
-            cEl.className = "classe-sbc " + classe;
-            cEl.textContent = classe === "ouro" ? "Ouro SBC" : classe === "prata" ? "Prata SBC" : classe === "bronze" ? "Bronze SBC" : "Em transição";
-            gid("trofeu").textContent = icone;
-            gid("final-titulo").textContent = titulo;
-            gid("final-msg").textContent = "Você evoluiu os três talhões somando " + pontos + " pontos.";
-            gid("final-detalhe").textContent =
-                "Do Ano 1 ao Ano 3 a paisagem conta a história: mais palhada, plantio em contorno, mais diversidade de coberturas, " +
-                "solo e água protegidos — e o gado integrado na braquiária. É esse conjunto que reduz a intensidade de emissões do SBC.";
+            var tela = document.getElementById("tela-final");
+            tela.classList.remove("oculto");
+            SBCH.animarNumero(document.getElementById("final-pontos"), pontos - 30, pontos, 900, " pts");
+            document.getElementById("final-msg").textContent =
+                "Você percorreu a evolução do manejo: mais palhada, plantio em contorno, diversidade de coberturas " +
+                "e natureza protegida — a receita do Soja Baixo Carbono: produzir mais, emitindo menos.";
+            var classe = document.getElementById("final-classe");
+            if (pontos >= 150) classe.className = "classe-sbc ouro", classe.textContent = "🏅 OURO · Guardião do Carbono";
+            else if (pontos >= 120) classe.className = "classe-sbc prata", classe.textContent = "🥈 PRATA · Produtor de Baixo Carbono";
+            else classe.className = "classe-sbc bronze", classe.textContent = "🥉 BRONZE · Aprendiz do Campo";
 
-            SBCH.desenharRanking(gid("ranking"), "maquete", " pts");
-            gid("tela-maquete").classList.add("oculto");
-            gid("tela-desafio").classList.add("oculto");
-            document.querySelector(".placar").classList.add("oculto");
-            gid("tela-final").classList.remove("oculto");
-
-            SBCH.pedirNomeESalvar("maquete", pontos, true, function () {
-                SBCH.desenharRanking(gid("ranking"), "maquete", " pts");
-            });
-            SBCH.confete();
+            SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
+            SBCH.confete(["#2e7d32", "#e5a812", "#123a5f", "#43a047", "#8a5a33"]);
             SBCH.som("vitoria");
+            SBCH.pedirNomeESalvar("maquete", pontos, true, function () {
+                SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
+                SBCH.desenharRanking(document.getElementById("ranking-inicial"), "maquete", " pts");
+            });
+            tela.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        /* ================= Início ================= */
-        montarTalhoes();
-        plantarAmbiente();
-        montarPlacas();
-        for (var i = 0; i < 3; i++) renderAno(i);
-        soltarVaca(PONTOS_T3, 1);
-        soltarVaca(PONTOS_T3.slice().reverse(), 0.85);
-        setInterval(pastar, 3400);
-        montarRodada();
+        /* ---------- inicialização ---------- */
+        document.getElementById("g-estatico").innerHTML = defsSvg() + cenaEstatica();
+        document.getElementById("g-efeitos").innerHTML = cenaEfeitos();
+        montarAno(1);
+        montarHotspots();
+        atualizarHud();
+        SBCH.desenharRanking(document.getElementById("ranking-inicial"), "maquete", " pts");
     </script>
 </body>
 </html>

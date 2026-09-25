@@ -60,7 +60,7 @@
                 linear-gradient(180deg, #7a5533 0%, #5d3f24 100%);
             border: 3px solid #3f2a13;
             border-radius: 22px;
-            box-shadow: var(--sombra), inset 0 0 26px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--sombra), inset 0 0 26px rgba(0, 0, 0, 0.4), inset 0 3px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.3);
             animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards;
         }
         #cena { display: block; width: 100%; height: auto; border-radius: 14px; }
@@ -421,13 +421,13 @@
             return (
                 '<defs>' +
                 '<linearGradient id="gCeu" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#8ecbf2"/><stop offset="70%" stop-color="#c4e5f8"/><stop offset="100%" stop-color="#e3f2e0"/>' +
+                '<stop offset="0%" stop-color="#67b0e4"/><stop offset="50%" stop-color="#a5d7f2"/><stop offset="82%" stop-color="#d9edf7"/><stop offset="100%" stop-color="#f7eecb"/>' +
                 '</linearGradient>' +
                 '<linearGradient id="gTerra" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#bcd992"/><stop offset="55%" stop-color="#9cc479"/><stop offset="100%" stop-color="#7cae67"/>' +
+                '<stop offset="0%" stop-color="#c6e0a0"/><stop offset="55%" stop-color="#a5cd80"/><stop offset="100%" stop-color="#82b16b"/>' +
                 '</linearGradient>' +
                 '<linearGradient id="gAguaLimpa" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#6cc4e8"/><stop offset="100%" stop-color="#2f8fc0"/>' +
+                '<stop offset="0%" stop-color="#7fd0ee"/><stop offset="100%" stop-color="#2b8ac2"/>' +
                 '</linearGradient>' +
                 '<linearGradient id="gAguaSuja" x1="0" y1="0" x2="0" y2="1">' +
                 '<stop offset="0%" stop-color="#a8a26b"/><stop offset="100%" stop-color="#7d7448"/>' +
@@ -444,6 +444,21 @@
                 '<radialGradient id="gVinheta" cx="0.5" cy="0.5" r="0.72">' +
                 '<stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.16)"/>' +
                 '</radialGradient>' +
+                '<radialGradient id="gSolGlow" cx="0.5" cy="0.5" r="0.5">' +
+                '<stop offset="0%" stop-color="rgba(255,244,196,0.85)"/><stop offset="45%" stop-color="rgba(255,244,196,0.28)"/><stop offset="100%" stop-color="rgba(255,244,196,0)"/>' +
+                '</radialGradient>' +
+                '<linearGradient id="gEstrada" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#e3d4b0"/><stop offset="100%" stop-color="#cdbb92"/>' +
+                '</linearGradient>' +
+                '<linearGradient id="gBevel" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="rgba(255,255,240,0.30)"/><stop offset="18%" stop-color="rgba(255,255,240,0.06)"/><stop offset="100%" stop-color="rgba(20,45,20,0.16)"/>' +
+                '</linearGradient>' +
+                '<linearGradient id="gLuz" x1="0" y1="0" x2="1" y2="1">' +
+                '<stop offset="0%" stop-color="rgba(255,243,205,0.10)"/><stop offset="55%" stop-color="rgba(255,255,255,0)"/><stop offset="100%" stop-color="rgba(25,55,90,0.12)"/>' +
+                '</linearGradient>' +
+                '<linearGradient id="gMadeira" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#a3733f"/><stop offset="100%" stop-color="#7a4f28"/>' +
+                '</linearGradient>' +
                 '<clipPath id="clip-t2"><rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" rx="14"/></clipPath>' +
                 '<clipPath id="clip-t1"><rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" rx="14"/></clipPath>' +
                 '<clipPath id="clip-t3"><rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" rx="14"/></clipPath>' +
@@ -457,11 +472,14 @@
             return (
                 '<g transform="translate(' + num(x) + ',' + num(y) + ') scale(' + s + ')">' +
                 '<g class="an-sway" style="animation-delay:' + (atraso || 0) + 's">' +
-                '<ellipse cx="3" cy="2.5" rx="13" ry="4" fill="rgba(20,45,20,0.22)"/>' +
-                '<rect x="-1.7" y="-13" width="3.4" height="15" rx="1.4" fill="#6b4a2b"/>' +
-                '<circle cx="0" cy="-19" r="10.5" fill="' + pal[0] + '"/>' +
-                '<circle cx="-7" cy="-13.5" r="8" fill="' + pal[1] + '"/>' +
-                '<circle cx="7" cy="-14.5" r="7.5" fill="' + pal[2] + '"/>' +
+                '<ellipse cx="-4" cy="3" rx="14" ry="4.5" fill="rgba(20,45,20,0.25)"/>' +
+                '<rect x="-2.4" y="-13" width="4.8" height="16" rx="1.8" fill="#7a5533"/>' +
+                '<rect x="-1.5" y="-13" width="1.6" height="14" rx="0.8" fill="#96694a"/>' +
+                '<circle cx="0" cy="-19.5" r="10.8" fill="' + pal[0] + '"/>' +
+                '<circle cx="-7.5" cy="-13.5" r="8" fill="' + pal[1] + '"/>' +
+                '<circle cx="7.5" cy="-14.5" r="7.6" fill="' + pal[2] + '"/>' +
+                '<circle cx="-6" cy="-16" r="4.4" fill="rgba(0,0,0,0.10)"/>' +
+                '<circle cx="3.5" cy="-23" r="5" fill="rgba(255,255,235,0.22)"/>' +
                 '</g></g>'
             );
         }
@@ -501,12 +519,31 @@
         }
 
         /* Placa de madeira da maquete (como na física) */
+        /* Trator vermelho parado na estrada — detalhe de vida na fazenda */
+        function trator(x, y, s, flip) {
+            var dir = flip ? ' scale(-1,1)' : '';
+            return (
+                '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')' + dir + '">' +
+                '<ellipse cx="0" cy="13" rx="26" ry="5" fill="rgba(20,45,20,0.25)"/>' +
+                '<rect x="-22" y="-9" width="34" height="16" rx="6" fill="#c23b22"/>' +
+                '<rect x="4" y="-4" width="14" height="12" rx="3" fill="#a92f1a"/>' +
+                '<rect x="-17" y="-26" width="19" height="18" rx="4" fill="#c23b22"/>' +
+                '<rect x="-15" y="-24" width="9" height="8" rx="1.5" fill="#bfe3f2"/>' +
+                '<rect x="-22" y="-11" width="32" height="4" rx="2" fill="#8f2413" opacity="0.6"/>' +
+                '<circle cx="-13" cy="5" r="9" fill="#2f2f2f"/><circle cx="-13" cy="5" r="4" fill="#555"/>' +
+                '<circle cx="12" cy="7" r="6.5" fill="#2f2f2f"/><circle cx="12" cy="7" r="2.8" fill="#555"/>' +
+                '</g>'
+            );
+        }
+
         function placa(x, y, linha1, linha2, larg) {
             larg = larg || 150;
             var h = linha2 ? 40 : 26;
             var s = '<g transform="translate(' + x + ',' + y + ')">';
             s += '<rect x="-2.5" y="0" width="5" height="24" fill="#6b4a2b"/>';
-            s += '<rect x="' + (-larg / 2) + '" y="' + (-h - 24) + '" width="' + larg + '" height="' + h + '" rx="4" fill="#8a5a33" stroke="#5d3a1e" stroke-width="2"/>';
+            s += '<rect x="' + (-larg / 2) + '" y="' + (-h - 24) + '" width="' + larg + '" height="' + h + '" rx="4" fill="url(#gMadeira)" stroke="#5d3a1e" stroke-width="2"/>';
+            s += '<circle cx="' + (-larg / 2 + 9) + '" cy="' + (-h - 15) + '" r="1.7" fill="#d9c9a3"/>';
+            s += '<circle cx="' + (larg / 2 - 9) + '" cy="' + (-h - 15) + '" r="1.7" fill="#d9c9a3"/>';
             s += '<text y="' + (-h - 24 + 16) + '" class="placa-t1">' + linha1 + '</text>';
             if (linha2) s += '<text y="' + (-h - 24 + 31) + '" class="placa-t2">' + linha2 + '</text>';
             return s + '</g>';
@@ -516,9 +553,11 @@
             return (
                 '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')" opacity="0.92">' +
                 '<g class="an-nuvem-cena" style="animation-delay:' + atraso + 's">' +
+                '<ellipse cx="0" cy="3" rx="37" ry="12" fill="#dbe7f0" opacity="0.9"/>' +
                 '<ellipse cx="0" cy="0" rx="34" ry="13" fill="#fff"/>' +
                 '<ellipse cx="22" cy="-6" rx="21" ry="11" fill="#fff"/>' +
                 '<ellipse cx="-20" cy="-4" rx="17" ry="9" fill="#fff"/>' +
+                '<ellipse cx="12" cy="-13" rx="13" ry="7" fill="#fff"/>' +
                 '</g></g>'
             );
         }
@@ -530,18 +569,20 @@
 
             /* céu, sol e nuvens */
             s += '<rect x="0" y="0" width="1240" height="160" fill="url(#gCeu)"/>';
+            s += '<circle cx="1140" cy="58" r="88" fill="url(#gSolGlow)"/>';
             s += '<g transform="translate(1140,58)">';
             s += '<g class="an-girar" opacity="0.85">';
             for (var r = 0; r < 8; r++) {
                 var a = r * Math.PI / 4;
                 s += '<line x1="' + num(Math.cos(a) * 27) + '" y1="' + num(Math.sin(a) * 27) + '" x2="' + num(Math.cos(a) * 36) + '" y2="' + num(Math.sin(a) * 36) + '" stroke="#f5b800" stroke-width="3.4" stroke-linecap="round"/>';
             }
-            s += '</g><circle r="22" fill="#ffd54d" stroke="#f5b800" stroke-width="3"/></g>';
+            s += '</g><circle r="20" fill="#ffe27a"/><circle r="26" fill="#ffd54d" opacity="0.35"/><circle r="14" fill="#fff2b8"/></g>';
             s += nuvemCena(180, 42, 1, 0) + nuvemCena(620, 66, 0.75, 17) + nuvemCena(940, 30, 0.9, 34);
 
-            /* colinas distantes */
-            s += '<path d="M0,152 C 150,120 260,138 420,124 C 610,108 760,132 940,118 C 1080,108 1180,128 1240,116 L1240,162 L0,162 Z" fill="#a9c79a"/>';
-            s += '<path d="M0,160 C 200,140 420,152 640,142 C 860,132 1060,150 1240,138 L1240,170 L0,170 Z" fill="#8fb989" opacity="0.9"/>';
+            /* colinas distantes — profundidade atmosférica */
+            s += '<path d="M0,152 C 140,116 280,134 430,120 C 620,104 770,128 950,114 C 1090,104 1190,124 1240,112 L1240,162 L0,162 Z" fill="#b9d4c0"/>';
+            s += '<rect x="0" y="112" width="1240" height="42" fill="#f7eecb" opacity="0.30"/>';
+            s += '<path d="M0,160 C 200,138 420,150 640,140 C 860,130 1060,148 1240,136 L1240,170 L0,170 Z" fill="#8db887"/>';
 
             /* terra base */
             s += '<rect x="0" y="150" width="1240" height="670" fill="url(#gTerra)"/>';
@@ -574,16 +615,18 @@
             s += vaca(830, 197, 0.88, false, 2.2);
             s += '</g>';
 
-            /* estradas */
-            s += '<rect x="450" y="240" width="40" height="540" fill="#d9c9a3"/>';
-            s += '<rect x="810" y="240" width="40" height="540" fill="#d9c9a3"/>';
+            /* estradas — terra batida com borda definida */
+            s += '<rect x="450" y="240" width="40" height="540" fill="url(#gEstrada)" stroke="#b8a67c" stroke-width="1.5"/>';
+            s += '<rect x="810" y="240" width="40" height="540" fill="url(#gEstrada)" stroke="#b8a67c" stroke-width="1.5"/>';
             s += '<line x1="460" y1="250" x2="460" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
             s += '<line x1="480" y1="250" x2="480" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
             s += '<line x1="820" y1="250" x2="820" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
             s += '<line x1="840" y1="250" x2="840" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
-            s += '<rect x="0" y="772" width="1240" height="48" fill="#d9c9a3"/>';
+            s += '<rect x="0" y="772" width="1240" height="48" fill="url(#gEstrada)" stroke="#b8a67c" stroke-width="1.5"/>';
             s += '<line x1="0" y1="782" x2="1240" y2="782" stroke="#c2b28a" stroke-width="3.2"/>';
             s += '<line x1="0" y1="812" x2="1240" y2="812" stroke="#c2b28a" stroke-width="3.2"/>';
+            s += trator(300, 782, 0.95, false);
+            s += trator(470, 560, 0.7, true);
 
             /* APP degradada (esquerda): solo exposto, poucas árvores, tocos */
             s += '<rect x="0" y="240" width="170" height="532" fill="#c9ab7c"/>';
@@ -595,6 +638,12 @@
             s += arvore(128, 470, 0.62, ['#5d7a44', '#6e8f52', '#7fa05f'], 0.8);
             s += arvore(104, 560, 0.5, ['#5d7a44', '#6e8f52', '#7fa05f'], 2.1);
             s += arvore(142, 370, 0.55, ['#63784a', '#748b55', '#859c62'], 1.5);
+            /* pedras e capim ralo na margem exposta */
+            s += '<ellipse cx="38" cy="336" rx="5" ry="3.2" fill="#9a8a72" stroke="#6e6250" stroke-width="1"/>';
+            s += '<ellipse cx="30" cy="520" rx="4" ry="2.6" fill="#8a7a62" stroke="#6e6250" stroke-width="1"/>';
+            s += '<ellipse cx="58" cy="614" rx="5.4" ry="3" fill="#9a8a72" stroke="#6e6250" stroke-width="1"/>';
+            s += '<ellipse cx="36" cy="706" rx="4.2" ry="2.8" fill="#8a7a62" stroke="#6e6250" stroke-width="1"/>';
+            s += grama({ x: 22, y: 300, w: 130, h: 440 }, 20, '#7f9455', rng(88), 8);
 
             /* rio esquerdo (APP degradada) */
             var dEsq = 'M 62,0 C 95,140 45,260 78,380 C 108,500 52,600 84,700 C 100,760 72,790 80,820';
@@ -613,6 +662,13 @@
             s += '<path d="' + dDir + '" fill="none" stroke="url(#gAguaLimpa)" stroke-width="36" stroke-linecap="round"/>';
             s += '<path d="' + dDir + '" fill="none" class="an-agua" stroke="rgba(255,255,255,0.4)" stroke-width="7"/>';
             s += placa(1112, 690, 'APP preservada', null, 132);
+            /* juncos nas margens e brilho na água limpa */
+            for (var jx = 0; jx < 7; jx++) {
+                var jxx = 1158 + (jx % 2) * 26, jyy = 320 + jx * 58;
+                s += '<path d="M' + jxx + ',' + jyy + ' q3,-9 -1,-15" stroke="#4c8a3a" stroke-width="2" fill="none" stroke-linecap="round"/>';
+            }
+            s += '<ellipse cx="1190" cy="360" rx="7" ry="2.4" fill="rgba(255,255,255,0.8)"/>';
+            s += '<ellipse cx="1152" cy="560" rx="6" ry="2.2" fill="rgba(255,255,255,0.75)"/>';
 
             /* placa da RL */
             s += placa(1010, 200, 'RL preservada e excedente', null, 204);
@@ -669,7 +725,8 @@
                  '<circle cx="0" cy="7" r="2.4" fill="#263238"/>' +
                  '</g></g></g>';
 
-            /* vinheta: profundidade da maquete (não captura cliques) */
+            /* luz direcional do sol + vinheta de profundidade (não capturam cliques) */
+            s += '<rect x="0" y="0" width="1240" height="820" fill="url(#gLuz)" style="pointer-events:none"/>';
             s += '<rect x="0" y="0" width="1240" height="820" fill="url(#gVinheta)" style="pointer-events:none"/>';
             return s;
         }
@@ -733,12 +790,14 @@
             /* linhas de soja na safra + milho na safrinha (sucessão) */
             var linha = 0;
             for (var x = T1.x + 16; x <= T1.x + T1.w - 14; x += 24, linha++) {
+                s += '<line x1="' + (x + 2.5) + '" y1="' + (T1.y + 16) + '" x2="' + (x + 2.5) + '" y2="' + (T1.y + T1.h - 12) + '" stroke="rgba(30,40,15,0.15)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 4"/>';
                 if (linha % 5 === 4) {
                     s += '<line x1="' + x + '" y1="' + (T1.y + 14) + '" x2="' + x + '" y2="' + (T1.y + T1.h - 14) + '" stroke="#9ccc65" stroke-width="8" stroke-linecap="round" stroke-dasharray="11 4" opacity="0.95"/>';
                 } else {
                     s += '<line x1="' + x + '" y1="' + (T1.y + 14) + '" x2="' + x + '" y2="' + (T1.y + T1.h - 14) + '" stroke="' + corSoja + '" stroke-width="' + (5 + ano) + '" stroke-linecap="round" stroke-dasharray="5 4"/>';
                 }
             }
+            s += '<rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" rx="14" fill="url(#gBevel)"/>';
             s += '</g>';
             /* fora do talhão: lavoura avançando perto demais do rio (APP degradada) */
             for (var e = 0; e < 5; e++) {
@@ -794,6 +853,7 @@
                 }
                 s += palhada(T2, ano === 2 ? 250 : 420, rnd);
             }
+            s += '<rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" rx="14" fill="url(#gBevel)"/>';
             return s + '</g>';
         }
         /* ---------- Talhão 3: manejo avançado e diversidade ---------- */
@@ -840,6 +900,7 @@
                 }
                 s += palhada(T3, 220, rnd);
             }
+            s += '<rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" rx="14" fill="url(#gBevel)"/>';
             return s + '</g>';
         }
 

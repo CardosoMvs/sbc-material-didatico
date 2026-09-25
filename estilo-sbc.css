@@ -445,6 +445,12 @@ body::after {
     color: var(--tinta-suave);
 }
 
+.rodape .logo-rodape {
+    display: block;
+    margin: 0 auto 6px;
+    height: 36px;
+}
+
 /* ---------- Telas alternáveis ---------- */
 .oculto { display: none !important; }
 

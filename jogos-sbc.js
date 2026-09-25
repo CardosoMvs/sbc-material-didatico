@@ -1,7 +1,8 @@
 /* ============================================================
    Utilidades compartilhadas dos jogos SBC – Soja Baixo Carbono
    Ranking em localStorage (kiosk do estande), modal touch,
-   confete e sons simples via WebAudio. 100% offline.
+   confete, sons arcade via WebAudio e juice (+pts flutuante).
+   100% offline.
    ============================================================ */
 
 var SBCH = (function () {
@@ -92,47 +93,75 @@ var SBCH = (function () {
 
     function confete(cores) {
         cores = cores || ["#2e7d32", "#e5a812", "#43a047", "#123a5f"];
-        var dourado = ["🎉", "🌱", "⭐"];
-        for (var i = 0; i < 28; i++) {
+        var dourado = ["🎉", "🌱", "⭐", "🍃", "🌟"];
+        for (var i = 0; i < 40; i++) {
             var p = document.createElement("div");
             p.className = "confete";
             p.style.left = Math.random() * 100 + "vw";
             p.style.background = cores[i % cores.length];
-            p.style.animationDelay = (Math.random() * 0.4) + "s";
-            if (i % 7 === 0) {
+            p.style.animationDelay = (Math.random() * 0.5) + "s";
+            p.style.animationDuration = (1.5 + Math.random() * 0.9) + "s";
+            if (i % 6 === 0) {
                 p.style.background = "transparent";
-                p.textContent = dourado[i % 3];
+                p.textContent = dourado[i % dourado.length];
                 p.style.fontSize = "1.3em";
             }
             document.body.appendChild(p);
-            setTimeout(function (n) { return function () { n.remove(); }; }(p), 2400);
+            setTimeout(function (n) { return function () { n.remove(); }; }(p), 2600);
         }
     }
 
     var ctxAudio = null;
+
+    /* Sons arcade: acerto (arpejo sobe), erro (buzz desce),
+       clique (tique curto) e vitoria (fanfarra de 4 notas). */
     function som(tipo) {
         try {
             ctxAudio = ctxAudio || new (window.AudioContext || window.webkitAudioContext)();
-            var osc = ctxAudio.createOscillator();
-            var ganho = ctxAudio.createGain();
-            osc.connect(ganho);
-            ganho.connect(ctxAudio.destination);
+            if (ctxAudio.state === "suspended") ctxAudio.resume();
+            var notas;
+            var durNota = 0.22;
+            var volume = 0.07;
+            var pausa = 0.09;
+            if (tipo === "acerto") notas = [660, 880];
+            else if (tipo === "erro") notas = [220, 170];
+            else if (tipo === "clique") { notas = [480]; durNota = 0.06; volume = 0.03; pausa = 0; }
+            else notas = [523, 659, 784, 1047]; // vitoria
             var t = ctxAudio.currentTime;
-            if (tipo === "acerto") {
-                osc.frequency.setValueAtTime(660, t);
-                osc.frequency.setValueAtTime(880, t + 0.12);
-            } else if (tipo === "erro") {
-                osc.frequency.setValueAtTime(220, t);
-                osc.frequency.setValueAtTime(170, t + 0.14);
-            } else {
-                osc.frequency.setValueAtTime(520, t);
-                osc.frequency.setValueAtTime(780, t + 0.18);
-            }
-            ganho.gain.setValueAtTime(0.08, t);
-            ganho.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-            osc.start(t);
-            osc.stop(t + 0.32);
+            notas.forEach(function (freq, i) {
+                var osc = ctxAudio.createOscillator();
+                var ganho = ctxAudio.createGain();
+                osc.connect(ganho);
+                ganho.connect(ctxAudio.destination);
+                var t0 = t + i * pausa;
+                osc.frequency.setValueAtTime(freq, t0);
+                ganho.gain.setValueAtTime(volume, t0);
+                ganho.gain.exponentialRampToValueAtTime(0.001, t0 + durNota);
+                osc.start(t0);
+                osc.stop(t0 + durNota + 0.02);
+            });
         } catch (e) { /* audio indisponível: segue sem som */ }
+    }
+
+    /* Clique com som em qualquer controle de jogo — vale para
+       todos os jogos, sem editar a lógica de cada um. */
+    document.addEventListener("click", function (ev) {
+        var alvo = ev.target.closest(".botao, .opcao, .carta, .menu-item, .voltar, .btn-5050, .btn-dica");
+        if (alvo && !alvo.disabled) som("clique");
+    }, true);
+
+    /* "+X pts" flutuando a partir de um elemento do placar. */
+    function popupPontos(el, texto) {
+        try {
+            var r = el.getBoundingClientRect();
+            var s = document.createElement("div");
+            s.className = "pontos-flutuante";
+            s.textContent = texto;
+            s.style.left = (r.left + r.width / 2) + "px";
+            s.style.top = (r.top + r.height / 2) + "px";
+            document.body.appendChild(s);
+            setTimeout(function () { s.remove(); }, 1100);
+        } catch (e) { /* sem layout: ignora */ }
     }
 
     /* ---------- Extras ---------- */
@@ -169,6 +198,7 @@ var SBCH = (function () {
         pedirNomeESalvar: pedirNomeESalvar,
         confete: confete,
         som: som,
+        popupPontos: popupPontos,
         embaralhar: embaralhar,
         animarNumero: animarNumero
     };

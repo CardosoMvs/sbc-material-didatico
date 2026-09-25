@@ -6,70 +6,184 @@
     <title>SBC no Estande – Jogos</title>
     <link rel="stylesheet" href="estilo-sbc.css">
     <style>
+        /* ---------- Capa: tela de abertura ---------- */
         .capa {
+            position: relative;
+            overflow: hidden;
             max-width: 640px;
-            margin: 0 auto 18px;
-            background: linear-gradient(150deg, var(--azul-escuro) 0%, var(--azul) 55%, var(--verde-escuro) 100%);
+            margin: 0 auto 24px;
+            padding: 30px 24px 0;
+            text-align: center;
             color: #fff;
+            background: linear-gradient(165deg, var(--azul-escuro) 0%, #11426a 38%, #14522e 78%, var(--verde-escuro) 100%);
+            border: 3px solid #081e33;
             border-radius: var(--raio);
             box-shadow: var(--sombra);
-            padding: 28px 22px;
+            animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
 
-        .capa h1 { margin: 8px 0 6px; font-size: 1.6em; line-height: 1.2; }
-        .capa p { margin: 0; color: #d7e5d7; font-size: 0.98em; }
+        .capa-ceu {
+            position: absolute;
+            top: 8px;
+            left: 0;
+            right: 0;
+            height: 56px;
+            pointer-events: none;
+        }
+        .sol { position: absolute; top: 4px; right: 20px; font-size: 2em; animation: girar 16s linear infinite; display: inline-block; }
+        .nuvem { position: absolute; font-size: 1.5em; opacity: 0.85; animation: flutuar 5s ease-in-out infinite alternate; }
+        .n1 { left: 8%; top: 6px; }
+        .n2 { left: 34%; top: 26px; font-size: 1.1em; animation-delay: 1.4s; }
+
         .capa .tag {
             display: inline-block;
             background: var(--dourado);
             color: var(--tinta);
-            font-weight: 700;
+            font-weight: 900;
             font-size: 0.75em;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
-            padding: 3px 14px;
+            padding: 4px 16px;
             border-radius: 999px;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            transform: rotate(-2deg);
         }
 
+        .capa h1 {
+            margin: 14px 0 8px;
+            font-size: clamp(1.9em, 8vw, 2.5em);
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: 1.08;
+            letter-spacing: 0.01em;
+            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+        }
+        .capa h1 span { color: #ffd54d; }
+
+        .capa .capa-sub {
+            margin: 0 auto;
+            max-width: 46ch;
+            color: #d7e5d7;
+            font-size: 0.98em;
+        }
+
+        .capa .aperte {
+            margin-top: 14px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            color: #ffd54d;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            animation: piscar 1.2s step-end infinite;
+        }
+
+        /* Faixa de lavoura no pé da capa */
+        .plantacao {
+            height: 46px;
+            margin: 20px -24px 0;
+            border-top: 3px solid rgba(0, 0, 0, 0.28);
+            background:
+                repeating-linear-gradient(90deg, var(--verde) 0 22px, #256428 22px 44px),
+                var(--verde-escuro);
+            box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.18);
+        }
+
+        /* ---------- Cartões de fase (menu) ---------- */
         .menu-item {
             display: flex;
-            gap: 16px;
+            gap: 14px;
             align-items: center;
             max-width: 640px;
-            margin: 0 auto 14px;
+            margin: 0 auto 18px;
+            padding: 16px;
             background: var(--cartao);
+            border: 3px solid var(--borda-jogo, var(--verde-escuro));
             border-radius: var(--raio);
-            box-shadow: var(--sombra);
-            padding: 18px;
+            box-shadow: 6px 6px 0 rgba(27, 77, 42, 0.16);
             text-decoration: none;
             color: inherit;
-            border-left: 8px solid var(--verde);
-            transition: transform 0.15s;
+            animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            transition: transform 0.08s, box-shadow 0.08s;
         }
 
-        .menu-item:active { transform: scale(0.98); }
+        .menu-item:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 rgba(27, 77, 42, 0.16); }
+
         .menu-item .icone {
             flex: none;
-            width: 64px;
-            height: 64px;
+            width: 66px;
+            height: 66px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2em;
-            background: var(--verde-claro);
-            border-radius: 14px;
+            background: var(--fundo-jogo, var(--verde-claro));
+            border: 2.5px solid var(--borda-jogo, var(--verde-escuro));
+            border-radius: 16px;
+            transform: rotate(-4deg);
         }
-        .menu-item h2 { margin: 0 0 3px; font-size: 1.1em; color: var(--azul); }
-        .menu-item p { margin: 0; font-size: 0.92em; color: var(--tinta-suave); }
-        .menu-item.azul { border-left-color: var(--azul); }
-        .menu-item.azul .icone { background: #e3ecf5; }
-        .menu-item.dourado { border-left-color: var(--dourado); }
-        .menu-item.dourado .icone { background: var(--dourado-claro); }
+
+        .menu-item .mi-corpo { flex: 1; min-width: 0; }
+        .menu-item h2 {
+            margin: 0;
+            font-size: 1.12em;
+            font-weight: 900;
+            color: var(--borda-jogo, var(--verde-escuro));
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
+        }
+        .menu-item p { margin: 3px 0 8px; font-size: 0.9em; color: var(--tinta-suave); }
+
+        .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .chip {
+            font-size: 0.7em;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: #eef3ee;
+            border: 1.5px solid #cfdccf;
+            color: var(--tinta-suave);
+        }
+        .chip.destaque { background: var(--borda-jogo, var(--verde-escuro)); border-color: transparent; color: #fff; }
+        .chip.record { background: var(--dourado-claro); border-color: var(--dourado); color: #8a6d0b; }
+
+        .menu-item .jogar {
+            flex: none;
+            align-self: center;
+            font-weight: 900;
+            font-size: 0.85em;
+            letter-spacing: 0.05em;
+            color: #fff;
+            background: var(--borda-jogo, var(--verde-escuro));
+            padding: 10px 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.28);
+        }
+
+        .menu-item.azul { --borda-jogo: var(--azul); --fundo-jogo: #e3ecf5; }
+        .menu-item.dourado { --borda-jogo: #b3820a; --fundo-jogo: var(--dourado-claro); }
+        .menu-item.terracota { --borda-jogo: #a05a2c; --fundo-jogo: #f7e8dc; }
+
+        /* ---------- Campeões do estande ---------- */
+        .campeoes {
+            max-width: 640px;
+            margin: 20px auto 0;
+            padding: 14px 18px;
+            background: var(--dourado-claro);
+            border: 3px solid var(--dourado);
+            border-radius: var(--raio);
+            box-shadow: 6px 6px 0 rgba(181, 130, 10, 0.25);
+            animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s backwards;
+        }
+        .campeoes strong { font-weight: 900; color: #8a6d0b; }
+        .campeoes-linha { margin-top: 6px; font-size: 0.9em; color: var(--tinta); line-height: 1.7; }
 
         .sobre {
             max-width: 640px;
             margin: 18px auto 0;
             background: var(--verde-claro);
-            border: 1px solid #bcd9c2;
+            border: 2px solid #bcd9c2;
             border-radius: var(--raio);
             padding: 16px 18px;
             font-size: 0.92em;
@@ -79,42 +193,78 @@
 <body>
 
     <div class="capa">
-        <span class="tag">Feira agropecuária · Estande SBC</span>
-        <h1>🌱 Soja Baixo Carbono</h1>
-        <p>Desafios rápidos para conhecer o Programa SBC: produza mais, emita menos e valorize sua soja. Toque em um jogo para começar.</p>
+        <div class="capa-ceu">
+            <span class="sol">☀️</span>
+            <span class="nuvem n1">☁️</span>
+            <span class="nuvem n2">☁️</span>
+        </div>
+        <span class="tag">🎮 Estande SBC · 4 desafios</span>
+        <h1>Soja <span>Baixo Carbono</span></h1>
+        <p class="capa-sub">Produza mais, emita menos e suba no ranking! Quatro desafios rápidos para conhecer o Programa SBC — escolha o seu.</p>
+        <div class="aperte">▼ Toque para escolher ▼</div>
+        <div class="plantacao"></div>
     </div>
 
-    <a href="jogo1.html" class="menu-item">
+    <a href="jogo1.html" class="menu-item" style="animation-delay:0.08s">
         <div class="icone">🧮</div>
-        <div>
+        <div class="mi-corpo">
             <h2>Calculadora de Carbono</h2>
             <p>Simulador completo: área, produtividade e 6 práticas. Veja a escada da redução e o índice IEGEE cair no medidor.</p>
+            <div class="chips">
+                <span class="chip destaque">Simulador</span>
+                <span class="chip">⭐⭐</span>
+                <span class="chip record oculto" data-jogo="iegee" data-sufixo="%"></span>
+            </div>
         </div>
+        <span class="jogar">▶ JOGAR</span>
     </a>
 
-    <a href="jogo2.html" class="menu-item">
+    <a href="jogo2.html" class="menu-item azul" style="animation-delay:0.16s">
         <div class="icone">⚖️</div>
-        <div>
+        <div class="mi-corpo">
             <h2>Decisão Rápida</h2>
             <p>16 situações em 4 fases da safra — do pré-plantio à colheita — com tempo e bônus por sequência.</p>
+            <div class="chips">
+                <span class="chip destaque">Tempo real</span>
+                <span class="chip">⭐⭐</span>
+                <span class="chip record oculto" data-jogo="decisao" data-sufixo=" pts"></span>
+            </div>
         </div>
+        <span class="jogar">▶ JOGAR</span>
     </a>
 
-    <a href="jogo3.html" class="menu-item azul">
+    <a href="jogo3.html" class="menu-item dourado" style="animation-delay:0.24s">
         <div class="icone">⚡</div>
-        <div>
+        <div class="mi-corpo">
             <h2>Quiz Alta Pressão</h2>
             <p>3 níveis de dificuldade, power-up 50/50 e multiplicador de sequência. 8 de 20 perguntas por partida.</p>
+            <div class="chips">
+                <span class="chip destaque">Quiz</span>
+                <span class="chip">⭐⭐⭐</span>
+                <span class="chip record oculto" data-jogo="quiz" data-sufixo=" pts"></span>
+            </div>
         </div>
+        <span class="jogar">▶ JOGAR</span>
     </a>
 
-    <a href="jogo4.html" class="menu-item dourado">
+    <a href="jogo4.html" class="menu-item terracota" style="animation-delay:0.32s">
         <div class="icone">🧠</div>
-        <div>
+        <div class="mi-corpo">
             <h2>Jogo da Memória SBC</h2>
             <p>3 modos, da associação rápida aos números oficiais do SBC. Dica revela um par — mas custa jogadas.</p>
+            <div class="chips">
+                <span class="chip destaque">Memória</span>
+                <span class="chip">⭐⭐</span>
+                <span class="chip record oculto" data-jogo="memoria_pares" data-sufixo=" jogadas"></span>
+            </div>
         </div>
+        <span class="jogar">▶ JOGAR</span>
     </a>
+
+    <div class="campeoes" id="campeoes" hidden>
+        <strong>🏆 Campeões do estande</strong>
+        <div class="campeoes-linha" id="campeoes-linha"></div>
+    </div>
 
     <div class="sobre">
         <strong>Programa SBC – Soja Baixo Carbono</strong> · iniciativa da Embrapa Soja com 7 empresas apoiadoras.
@@ -125,6 +275,35 @@
     <footer class="rodape">
         Embrapa Soja · Londrina, PR
     </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+        (function () {
+            var jogos = [
+                { chave: "iegee", nome: "Calculadora" },
+                { chave: "decisao", nome: "Decisão" },
+                { chave: "quiz", nome: "Quiz" },
+                { chave: "memoria_pares", nome: "Memória" }
+            ];
+            var linhas = [];
+            jogos.forEach(function (j) {
+                var lista = SBCH.carregarRanking(j.chave);
+                if (!lista.length) return;
+                linhas.push("🥇 " + j.nome + ": " + lista[0].nome + " · " + lista[0].valor);
+
+                var chip = document.querySelector('.chip.record[data-jogo="' + j.chave + '"]');
+                if (chip) {
+                    chip.textContent = "Recorde: " + lista[0].nome + " " + lista[0].valor + (chip.dataset.sufixo || "");
+                    chip.classList.remove("oculto");
+                }
+            });
+            if (linhas.length) {
+                document.getElementById("campeoes").hidden = false;
+                document.getElementById("campeoes-linha").textContent = linhas.join("  ·  ");
+            }
+        })();
+    </script>
 
 </body>
 </html>

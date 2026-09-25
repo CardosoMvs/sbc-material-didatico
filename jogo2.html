@@ -203,6 +203,7 @@
                 acertosPorFase[carta.fase]++;
                 var ganho = 10 + (sequencia - 1) * 5;
                 pontos += ganho;
+                SBCH.popupPontos(document.getElementById("pts"), "+" + ganho);
                 fb.className = "feedback ok";
                 fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" + (sequencia > 1 ? " (sequência 🔥" + sequencia + ")" : "") + "</strong><br>" + carta.exp;
                 SBCH.som("acerto");

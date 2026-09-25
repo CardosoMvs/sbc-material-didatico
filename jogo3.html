@@ -281,6 +281,7 @@
                 acertosPorDif[p.dif]++;
                 var ganho = Math.round((base + tempoRestante * 10) * multiplicador());
                 pontos += ganho;
+                SBCH.popupPontos(document.getElementById("pontos"), "+" + ganho);
                 fb.className = "feedback ok";
                 fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" +
                     (multiplicador() > 1 ? " (🔥 ×" + multiplicador() + ")" : "") + "</strong><br>" + p.exp;

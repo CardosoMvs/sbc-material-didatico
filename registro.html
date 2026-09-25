@@ -45,23 +45,12 @@
             text-align: center;
         }
 
-        .registro-item {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 11px 14px;
-            margin-bottom: 8px;
-            border: 2px solid #dfe8df;
-            border-radius: 12px;
-            background: #f2f6f2;
-            font-size: 0.92em;
+        .link-equipe {
+            font-size: 0.75em;
+            color: #9db3a0;
+            text-decoration: none;
         }
-        .registro-item .quem { font-weight: 700; overflow-wrap: anywhere; }
-        .registro-item .onde { color: var(--tinta-suave); font-size: 0.9em; }
-        .registro-item .quando { color: var(--tinta-suave); white-space: nowrap; font-size: 0.85em; }
-
-        .acoes-export { display: flex; gap: 10px; margin-top: 12px; }
-        .acoes-export .botao { flex: 1; min-height: 54px; font-size: 0.95em; }
+        .link-equipe:hover { color: var(--verde-escuro); text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -104,13 +93,21 @@
                 <label for="r-contato">Contato <span class="opcional">(WhatsApp ou e-mail · opcional)</span></label>
                 <input id="r-contato" maxlength="60" placeholder="(43) 99999-0000 ou@email.com" inputmode="tel">
             </div>
+            <div class="campo">
+                <label for="r-genero">Você é <span class="opcional">(opcional)</span></label>
+                <select id="r-genero">
+                    <option value="" selected>Prefiro não informar</option>
+                    <option value="Homem">Homem</option>
+                    <option value="Mulher">Mulher</option>
+                </select>
+            </div>
             <button type="submit" class="botao">✅ Registrar visita</button>
             <p class="aviso-privacidade">🔒 Os dados ficam somente neste tablet e são exportados pela equipe do estande.</p>
         </form>
     </main>
 
     <main class="cartao">
-        <h2>Visitas registradas</h2>
+        <h2>Visitas ao estande</h2>
         <div class="placar">
             <div class="placar-item">
                 <div class="valor" id="total-geral">0</div>
@@ -121,11 +118,10 @@
                 <div class="nome">Hoje</div>
             </div>
         </div>
-        <div id="lista-registros"></div>
-        <div class="acoes-export">
-            <button class="botao secundario" id="btn-exportar">📥 Exportar planilha (CSV)</button>
-            <button class="botao neutro" id="btn-limpar">🗑️ Limpar</button>
-        </div>
+        <p class="sub" style="text-align:center;">Obrigado! Seu registro ajuda o programa a levar o selo até a sua região. 🌱</p>
+        <p style="text-align:center;margin:10px 0 0;">
+            <a href="painel.html" class="link-equipe" title="Acesso restrito à equipe">🔒 Área da equipe</a>
+        </p>
     </main>
 
     <footer class="rodape">
@@ -163,12 +159,6 @@
             } catch (e) { /* tablet sem storage: mantém só na sessão */ }
         }
 
-        function escapar(t) {
-            var d = document.createElement("div");
-            d.textContent = t;
-            return d.innerHTML;
-        }
-
         function desenhar() {
             var lista = carregar();
             var hoje = new Date().toDateString();
@@ -178,26 +168,6 @@
 
             document.getElementById("total-geral").textContent = lista.length;
             document.getElementById("total-hoje").textContent = hojeQtd;
-
-            var caixa = document.getElementById("lista-registros");
-            if (!lista.length) {
-                caixa.innerHTML = '<p class="sub" style="text-align:center;">Nenhuma visita registrada ainda.</p>';
-                return;
-            }
-            var recentes = lista.slice(-8).reverse();
-            var html = recentes.map(function (r) {
-                return '<div class="registro-item">' +
-                    '<span><span class="quem">' + escapar(r.nome) + '</span>' +
-                    (r.fazenda ? '<br><span class="onde">🏡 ' + escapar(r.fazenda) + '</span>' : "") + '</span>' +
-                    '<span style="text-align:right;"><span class="onde">' + escapar(r.cidade) + "/" + escapar(r.uf) + '</span>' +
-                    '<br><span class="quando">' + escapar(r.quando) + '</span></span>' +
-                    '</div>';
-            }).join("");
-            if (lista.length > 8) {
-                html += '<p class="sub" style="text-align:center;">…e mais ' + (lista.length - 8) +
-                    ' registro(s). Exporte a planilha para ver todos.</p>';
-            }
-            caixa.innerHTML = html;
         }
 
         document.getElementById("form-registro").addEventListener("submit", function (ev) {
@@ -208,6 +178,7 @@
                 fazenda: document.getElementById("r-fazenda").value.trim(),
                 cidade: document.getElementById("r-cidade").value.trim(),
                 uf: document.getElementById("r-uf").value,
+                genero: document.getElementById("r-genero").value,
                 contato: document.getElementById("r-contato").value.trim(),
                 quando: agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
                 ts: agora.getTime()
@@ -220,41 +191,6 @@
             SBCH.popupPontos(document.getElementById("total-geral"), "✅ Registrado!");
             SBCH.confete();
             SBCH.som("vitoria");
-        });
-
-        document.getElementById("btn-exportar").addEventListener("click", function () {
-            var lista = carregar();
-            if (!lista.length) return;
-            function campo(v) {
-                v = String(v || "");
-                return '"' + v.replace(/"/g, '""') + '"';
-            }
-            var linhas = [["Data", "Nome", "Fazenda", "Cidade", "UF", "Contato"].join(";")];
-            lista.forEach(function (r) {
-                linhas.push([campo(r.quando), campo(r.nome), campo(r.fazenda), campo(r.cidade), campo(r.uf), campo(r.contato)].join(";"));
-            });
-            // BOM + ";" para abrir direto no Excel em português
-            var csv = "﻿" + linhas.join("\r\n");
-            var d = new Date();
-            var nomeArq = "registro-sbc-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".csv";
-            var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-            var a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = nomeArq;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            SBCH.som("acerto");
-        });
-
-        document.getElementById("btn-limpar").addEventListener("click", function () {
-            var lista = carregar();
-            if (!lista.length) return;
-            if (!confirm("Apagar TODOS os " + lista.length + " registros deste tablet? Exporte a planilha antes se precisar.")) return;
-            if (!confirm("Tem certeza? Esta ação não pode ser desfeita.")) return;
-            gravar([]);
-            desenhar();
-            SBCH.som("erro");
         });
 
         desenhar();

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel da Equipe · SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        /* ---------- Porta com senha ---------- */
+        .porta {
+            max-width: 380px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        .porta .cadeado { font-size: 3em; display: block; margin-bottom: 6px; animation: quicar 0.6s ease; }
+        .porta input {
+            width: 100%;
+            padding: 13px 14px;
+            font-size: 1.2em;
+            text-align: center;
+            letter-spacing: 0.25em;
+            font-family: inherit;
+            font-weight: 700;
+            color: var(--tinta);
+            background: #fff;
+            border: 2px solid #cfdccf;
+            border-radius: 12px;
+            box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.10);
+            margin-bottom: 12px;
+        }
+        .porta input:focus { outline: none; border-color: var(--verde); }
+        .porta .erro-senha { color: var(--carmim); font-weight: 800; min-height: 1.4em; font-size: 0.9em; }
+        .porta .nota { font-size: 0.75em; color: var(--tinta-suave); margin-top: 14px; }
+        .porta.tremer { animation: tremer 0.4s ease; }
+
+        /* ---------- Gráficos (dataviz: rótulos diretos, uma cor por função) ---------- */
+        .linha-barra {
+            display: grid;
+            grid-template-columns: 118px 1fr 58px;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .linha-barra .rotulo {
+            font-size: 0.82em;
+            font-weight: 700;
+            color: var(--tinta);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .linha-barra .trilho { height: 18px; background: #eef3ee; border-radius: 0 4px 4px 4px; overflow: hidden; }
+        .linha-barra .preenchimento {
+            height: 100%;
+            display: block;
+            width: var(--l, 0%);
+            border-radius: 0 4px 4px 0;
+            background: var(--verde);
+            animation: crescer 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) backwards;
+        }
+        @keyframes crescer { from { width: 0%; } }
+        .linha-barra .valor-num {
+            font-size: 0.85em;
+            font-weight: 800;
+            color: var(--tinta);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .linha-barra.genero-h .preenchimento { background: #123a5f; }
+        .linha-barra.genero-m .preenchimento { background: #b3820a; }
+        .linha-barra.genero-n .preenchimento { background: #9aa5a0; }
+        .linha-barra:hover .trilho { background: #e2ece2; }
+        .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.78em; color: var(--tinta-suave); margin: 4px 0 10px; }
+        .legenda span { display: inline-flex; align-items: center; gap: 5px; }
+        .legenda i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+        .vazio { font-size: 0.88em; color: var(--tinta-suave); text-align: center; padding: 8px 0; }
+
+        /* ---------- Tabela de registros ---------- */
+        .busca {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 0.95em;
+            font-family: inherit;
+            color: var(--tinta);
+            background: #fff;
+            border: 2px solid #cfdccf;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+        .busca:focus { outline: none; border-color: var(--verde); }
+
+        .tabela-wrap { overflow-x: auto; border: 2px solid #dfe8df; border-radius: 12px; }
+        table.tabela {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82em;
+            min-width: 640px;
+        }
+        .tabela th {
+            background: var(--azul-escuro);
+            color: #fff;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 9px 10px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .tabela td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e5ece5;
+            overflow-wrap: anywhere;
+        }
+        .tabela tr:nth-child(even) td { background: #f5f8f5; }
+        .tabela .sem-genero { color: var(--tinta-suave); font-style: italic; }
+
+        .acoes-painel { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .acoes-painel .botao { flex: 1; min-width: 150px; min-height: 54px; font-size: 0.95em; }
+        .sair { text-align: center; margin-top: 10px; }
+        .sair a { font-size: 0.8em; color: var(--tinta-suave); }
+    </style>
+</head>
+<body>
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Painel da Equipe</h1>
+        </div>
+    </header>
+
+    <!-- Porta com senha -->
+    <main class="cartao porta" id="tela-senha">
+        <span class="cadeado">🔒</span>
+        <h2>Área da equipe</h2>
+        <p class="sub">Digite a senha do estande para ver os registros dos produtores.</p>
+        <form id="form-senha" autocomplete="off">
+            <input type="password" id="campo-senha" placeholder="••••••" aria-label="Senha do estande">
+            <button type="submit" class="botao" style="width:100%;">Entrar</button>
+        </form>
+        <div class="erro-senha" id="erro-senha"></div>
+        <p class="nota">A senha protege a tela durante a feira. Os dados ficam somente neste tablet.</p>
+    </main>
+
+    <!-- Painel -->
+    <div id="painel" hidden>
+
+        <div class="placar">
+            <div class="placar-item">
+                <div class="valor" id="p-total">0</div>
+                <div class="nome">Total</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="p-hoje">0</div>
+                <div class="nome">Hoje</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="p-contato">0</div>
+                <div class="nome">Com contato</div>
+            </div>
+        </div>
+
+        <main class="cartao">
+            <h2>🧑‍🌾 Quem visitou</h2>
+            <div class="legenda">
+                <span><i style="background:#123a5f;"></i>Homem</span>
+                <span><i style="background:#b3820a;"></i>Mulher</span>
+                <span><i style="background:#9aa5a0;"></i>Não informou</span>
+            </div>
+            <div id="graf-genero"></div>
+        </main>
+
+        <main class="cartao">
+            <h2>🗺️ Estados</h2>
+            <div id="graf-estados"></div>
+        </main>
+
+        <main class="cartao">
+            <h2>🏙️ Cidades</h2>
+            <div id="graf-cidades"></div>
+        </main>
+
+        <main class="cartao">
+            <h2>📋 Registros</h2>
+            <input type="search" class="busca" id="busca" placeholder="🔎 Buscar por nome, fazenda, cidade, UF ou contato…">
+            <div class="tabela-wrap">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Data</th><th>Nome</th><th>Fazenda</th><th>Cidade</th><th>UF</th><th>Gênero</th><th>Contato</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela"></tbody>
+                </table>
+            </div>
+            <div class="acoes-painel">
+                <button class="botao secundario" id="btn-exportar">📥 Exportar planilha (CSV)</button>
+                <button class="botao neutro" id="btn-limpar">🗑️ Limpar registros</button>
+            </div>
+            <p class="sair"><a href="#" id="sair">🔒 Sair do painel</a></p>
+        </main>
+
+    </div>
+
+    <footer class="rodape">
+        <img class="logo-rodape" src="logo-embrapa-alfa.png" alt="Embrapa">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+
+        // Senha de bloqueio de tela do estande — troque aqui se precisar.
+        var SENHA_DA_EQUIPE = "sbc2026";
+        var CHAVE = "sbc_registros";
+        var memoria = [];
+        var buscaTermo = "";
+
+        var portaEl = document.getElementById("tela-senha");
+
+        function carregar() {
+            try {
+                return JSON.parse(localStorage.getItem(CHAVE)) || [];
+            } catch (e) {
+                return memoria;
+            }
+        }
+
+        function gravar(lista) {
+            memoria = lista;
+            try {
+                localStorage.setItem(CHAVE, JSON.stringify(lista));
+            } catch (e) { /* tablet sem storage */ }
+        }
+
+        function escapar(t) {
+            var d = document.createElement("div");
+            d.textContent = t;
+            return d.innerHTML;
+        }
+
+        /* ---------- Porta ---------- */
+        document.getElementById("form-senha").addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            var campo = document.getElementById("campo-senha");
+            if (campo.value === SENHA_DA_EQUIPE) {
+                try { sessionStorage.setItem("sbc_painel_ok", "1"); } catch (e) { }
+                abrirPainel();
+            } else {
+                document.getElementById("erro-senha").textContent = "Senha incorreta. Peça à coordenação do estande.";
+                portaEl.classList.remove("tremer");
+                void portaEl.offsetWidth;
+                portaEl.classList.add("tremer");
+                SBCH.som("erro");
+                campo.value = "";
+                campo.focus();
+            }
+        });
+
+        function abrirPainel() {
+            portaEl.hidden = true;
+            document.getElementById("painel").hidden = false;
+            desenhar();
+        }
+
+        document.getElementById("sair").addEventListener("click", function (ev) {
+            ev.preventDefault();
+            try { sessionStorage.removeItem("sbc_painel_ok"); } catch (e) { }
+            document.getElementById("painel").hidden = true;
+            portaEl.hidden = false;
+            document.getElementById("campo-senha").value = "";
+            document.getElementById("erro-senha").textContent = "";
+            document.getElementById("campo-senha").focus();
+        });
+
+        /* ---------- Contagens ---------- */
+        function contarPor(lista, campoChave) {
+            var cont = {};
+            lista.forEach(function (r) {
+                var k = String(r[campoChave] || "").trim();
+                if (campoChave === "genero" && k !== "Homem" && k !== "Mulher") k = "Não informou";
+                if (campoChave === "uf" && !k) k = "—";
+                cont[k] = (cont[k] || 0) + 1;
+            });
+            return Object.keys(cont).map(function (k) { return { chave: k, n: cont[k] }; })
+                .sort(function (a, b) { return b.n - a.n || a.chave.localeCompare(b.chave, "pt-BR"); });
+        }
+
+        function barraHtml(rotulo, n, total, classe) {
+            var pct = total ? Math.round(n / total * 100) : 0;
+            var largura = total ? (n / total * 100) : 0;
+            return '<div class="linha-barra' + (classe ? " " + classe : "") + '" title="' + escapar(rotulo) + ': ' + n + ' de ' + total + ' (' + pct + '%)">' +
+                '<span class="rotulo">' + escapar(rotulo) + '</span>' +
+                '<span class="trilho"><span class="preenchimento" style="--l:' + largura + '%"></span></span>' +
+                '<span class="valor-num">' + n + " · " + pct + '%</span>' +
+                '</div>';
+        }
+
+        function desenharGrafico(id, pares, total, classePorChave) {
+            var caixa = document.getElementById(id);
+            if (!pares.length) {
+                caixa.innerHTML = '<p class="vazio">Nenhum registro ainda — aparecem aqui assim que alguém se registrar.</p>';
+                return;
+            }
+            caixa.innerHTML = pares.map(function (p) {
+                return barraHtml(p.chave, p.n, total, classePorChave ? classePorChave(p.chave) : "");
+            }).join("");
+        }
+
+        /* ---------- Tabela ---------- */
+        function desenharTabela(lista) {
+            var corpo = document.getElementById("corpo-tabela");
+            if (!lista.length) {
+                corpo.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--tinta-suave);">Nenhum registro.</td></tr>';
+                return;
+            }
+            corpo.innerHTML = lista.slice().reverse().map(function (r) {
+                var g = r.genero ? escapar(r.genero) : '<span class="sem-genero">—</span>';
+                return "<tr>" +
+                    "<td>" + escapar(r.quando) + "</td>" +
+                    "<td><strong>" + escapar(r.nome) + "</strong></td>" +
+                    "<td>" + escapar(r.fazenda || "—") + "</td>" +
+                    "<td>" + escapar(r.cidade) + "</td>" +
+                    "<td>" + escapar(r.uf) + "</td>" +
+                    "<td>" + g + "</td>" +
+                    "<td>" + escapar(r.contato || "—") + "</td>" +
+                    "</tr>";
+            }).join("");
+        }
+
+        /* ---------- Desenho geral ---------- */
+        function desenhar() {
+            var lista = carregar();
+            var hoje = new Date().toDateString();
+            var hojeQtd = lista.filter(function (r) { return new Date(r.ts).toDateString() === hoje; }).length;
+            var comContato = lista.filter(function (r) { return String(r.contato || "").trim(); }).length;
+
+            document.getElementById("p-total").textContent = lista.length;
+            document.getElementById("p-hoje").textContent = hojeQtd;
+            document.getElementById("p-contato").textContent = comContato;
+
+            desenharGrafico("graf-genero", contarPor(lista, "genero"), lista.length, function (k) {
+                return k === "Homem" ? "genero-h" : k === "Mulher" ? "genero-m" : "genero-n";
+            });
+            desenharGrafico("graf-estados", contarPor(lista, "uf").slice(0, 10), lista.length);
+            desenharGrafico("graf-cidades", contarPor(lista, "cidade").slice(0, 10), lista.length);
+
+            filtrar();
+        }
+
+        function filtrar() {
+            var lista = carregar();
+            var t = buscaTermo.toLowerCase();
+            var visiveis = t ? lista.filter(function (r) {
+                return ["nome", "fazenda", "cidade", "uf", "contato", "genero", "quando"].some(function (c) {
+                    return String(r[c] || "").toLowerCase().indexOf(t) >= 0;
+                });
+            }) : lista;
+            desenharTabela(visiveis);
+        }
+
+        document.getElementById("busca").addEventListener("input", function () {
+            buscaTermo = this.value.trim();
+            filtrar();
+        });
+
+        /* ---------- Exportar CSV ---------- */
+        document.getElementById("btn-exportar").addEventListener("click", function () {
+            var lista = carregar();
+            if (!lista.length) return;
+            function campo(v) {
+                v = String(v || "");
+                return '"' + v.replace(/"/g, '""') + '"';
+            }
+            var linhas = [["Data", "Nome", "Fazenda", "Cidade", "UF", "Gênero", "Contato"].join(";")];
+            lista.forEach(function (r) {
+                linhas.push([campo(r.quando), campo(r.nome), campo(r.fazenda), campo(r.cidade), campo(r.uf), campo(r.genero), campo(r.contato)].join(";"));
+            });
+            // BOM + ";" para abrir direto no Excel em português
+            var csv = "﻿" + linhas.join("\r\n");
+            var d = new Date();
+            var nomeArq = "registro-sbc-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".csv";
+            var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = nomeArq;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            SBCH.som("acerto");
+        });
+
+        /* ---------- Limpar ---------- */
+        document.getElementById("btn-limpar").addEventListener("click", function () {
+            var lista = carregar();
+            if (!lista.length) return;
+            if (!confirm("Apagar TODOS os " + lista.length + " registros deste tablet? Exporte a planilha antes se precisar.")) return;
+            if (!confirm("Tem certeza? Esta ação não pode ser desfeita.")) return;
+            gravar([]);
+            desenhar();
+            SBCH.som("erro");
+        });
+
+        /* ---------- Início: já destravado nesta sessão? ---------- */
+        (function () {
+            var ok = false;
+            try { ok = sessionStorage.getItem("sbc_painel_ok") === "1"; } catch (e) { }
+            if (ok) abrirPainel();
+            else document.getElementById("campo-senha").focus();
+        })();
+    </script>
+</body>
+</html>

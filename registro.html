@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro do Produtor SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        .campo { margin-bottom: 14px; }
+        .campo label {
+            display: block;
+            font-size: 0.8em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--azul);
+            margin-bottom: 4px;
+        }
+        .campo label .opcional { color: var(--tinta-suave); font-weight: 600; text-transform: none; letter-spacing: 0; }
+        .campo input, .campo select {
+            width: 100%;
+            padding: 13px 14px;
+            font-size: 1.05em;
+            font-family: inherit;
+            font-weight: 600;
+            color: var(--tinta);
+            background: #fff;
+            border: 2px solid #cfdccf;
+            border-radius: 12px;
+            box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.10);
+            transition: border-color 0.15s;
+        }
+        .campo input:focus, .campo select:focus {
+            outline: none;
+            border-color: var(--verde);
+        }
+        .linha-duo { display: flex; gap: 10px; }
+        .linha-duo .campo { flex: 1; }
+        .linha-duo .campo.uf { flex: none; width: 110px; }
+
+        .aviso-privacidade {
+            margin-top: 12px;
+            font-size: 0.8em;
+            color: var(--tinta-suave);
+            text-align: center;
+        }
+
+        .registro-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 14px;
+            margin-bottom: 8px;
+            border: 2px solid #dfe8df;
+            border-radius: 12px;
+            background: #f2f6f2;
+            font-size: 0.92em;
+        }
+        .registro-item .quem { font-weight: 700; overflow-wrap: anywhere; }
+        .registro-item .onde { color: var(--tinta-suave); font-size: 0.9em; }
+        .registro-item .quando { color: var(--tinta-suave); white-space: nowrap; font-size: 0.85em; }
+
+        .acoes-export { display: flex; gap: 10px; margin-top: 12px; }
+        .acoes-export .botao { flex: 1; min-height: 54px; font-size: 0.95em; }
+    </style>
+</head>
+<body>
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Registro do Produtor</h1>
+        </div>
+    </header>
+
+    <main class="cartao">
+        <h2>📋 Passou pelo estande? Deixe seu registro</h2>
+        <p class="sub">A equipe do Programa SBC usa esta lista para acompanhar quem visitou o estande
+        e poder retornar o contato com informações do selo.</p>
+
+        <form id="form-registro" style="margin-top:14px;" autocomplete="off">
+            <div class="campo">
+                <label for="r-nome">Seu nome</label>
+                <input id="r-nome" maxlength="60" placeholder="Nome completo" required>
+            </div>
+            <div class="campo">
+                <label for="r-fazenda">Nome da fazenda <span class="opcional">(opcional)</span></label>
+                <input id="r-fazenda" maxlength="60" placeholder="Ex.: Fazenda Boa Safra">
+            </div>
+            <div class="linha-duo">
+                <div class="campo">
+                    <label for="r-cidade">Cidade</label>
+                    <input id="r-cidade" maxlength="40" placeholder="Cidade" required>
+                </div>
+                <div class="campo uf">
+                    <label for="r-uf">Estado</label>
+                    <select id="r-uf" required>
+                        <option value="" selected>UF</option>
+                    </select>
+                </div>
+            </div>
+            <div class="campo">
+                <label for="r-contato">Contato <span class="opcional">(WhatsApp ou e-mail · opcional)</span></label>
+                <input id="r-contato" maxlength="60" placeholder="(43) 99999-0000 ou@email.com" inputmode="tel">
+            </div>
+            <button type="submit" class="botao">✅ Registrar visita</button>
+            <p class="aviso-privacidade">🔒 Os dados ficam somente neste tablet e são exportados pela equipe do estande.</p>
+        </form>
+    </main>
+
+    <main class="cartao">
+        <h2>Visitas registradas</h2>
+        <div class="placar">
+            <div class="placar-item">
+                <div class="valor" id="total-geral">0</div>
+                <div class="nome">Total</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="total-hoje">0</div>
+                <div class="nome">Hoje</div>
+            </div>
+        </div>
+        <div id="lista-registros"></div>
+        <div class="acoes-export">
+            <button class="botao secundario" id="btn-exportar">📥 Exportar planilha (CSV)</button>
+            <button class="botao neutro" id="btn-limpar">🗑️ Limpar</button>
+        </div>
+    </main>
+
+    <footer class="rodape">
+        <img class="logo-rodape" src="logo-embrapa-alfa.png" alt="Embrapa">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+
+        var UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+        var CHAVE = "sbc_registros";
+        var memoria = []; // fallback se o tablet bloquear o storage
+
+        var selUf = document.getElementById("r-uf");
+        UFS.forEach(function (uf) {
+            var op = document.createElement("option");
+            op.value = uf; op.textContent = uf;
+            selUf.appendChild(op);
+        });
+
+        function carregar() {
+            try {
+                return JSON.parse(localStorage.getItem(CHAVE)) || [];
+            } catch (e) {
+                return memoria;
+            }
+        }
+
+        function gravar(lista) {
+            memoria = lista;
+            try {
+                localStorage.setItem(CHAVE, JSON.stringify(lista));
+            } catch (e) { /* tablet sem storage: mantém só na sessão */ }
+        }
+
+        function escapar(t) {
+            var d = document.createElement("div");
+            d.textContent = t;
+            return d.innerHTML;
+        }
+
+        function desenhar() {
+            var lista = carregar();
+            var hoje = new Date().toDateString();
+            var hojeQtd = lista.filter(function (r) {
+                return new Date(r.ts).toDateString() === hoje;
+            }).length;
+
+            document.getElementById("total-geral").textContent = lista.length;
+            document.getElementById("total-hoje").textContent = hojeQtd;
+
+            var caixa = document.getElementById("lista-registros");
+            if (!lista.length) {
+                caixa.innerHTML = '<p class="sub" style="text-align:center;">Nenhuma visita registrada ainda.</p>';
+                return;
+            }
+            var recentes = lista.slice(-8).reverse();
+            var html = recentes.map(function (r) {
+                return '<div class="registro-item">' +
+                    '<span><span class="quem">' + escapar(r.nome) + '</span>' +
+                    (r.fazenda ? '<br><span class="onde">🏡 ' + escapar(r.fazenda) + '</span>' : "") + '</span>' +
+                    '<span style="text-align:right;"><span class="onde">' + escapar(r.cidade) + "/" + escapar(r.uf) + '</span>' +
+                    '<br><span class="quando">' + escapar(r.quando) + '</span></span>' +
+                    '</div>';
+            }).join("");
+            if (lista.length > 8) {
+                html += '<p class="sub" style="text-align:center;">…e mais ' + (lista.length - 8) +
+                    ' registro(s). Exporte a planilha para ver todos.</p>';
+            }
+            caixa.innerHTML = html;
+        }
+
+        document.getElementById("form-registro").addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            var agora = new Date();
+            var registro = {
+                nome: document.getElementById("r-nome").value.trim(),
+                fazenda: document.getElementById("r-fazenda").value.trim(),
+                cidade: document.getElementById("r-cidade").value.trim(),
+                uf: document.getElementById("r-uf").value,
+                contato: document.getElementById("r-contato").value.trim(),
+                quando: agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+                ts: agora.getTime()
+            };
+            var lista = carregar();
+            lista.push(registro);
+            gravar(lista);
+            desenhar();
+            this.reset();
+            SBCH.popupPontos(document.getElementById("total-geral"), "✅ Registrado!");
+            SBCH.confete();
+            SBCH.som("vitoria");
+        });
+
+        document.getElementById("btn-exportar").addEventListener("click", function () {
+            var lista = carregar();
+            if (!lista.length) return;
+            function campo(v) {
+                v = String(v || "");
+                return '"' + v.replace(/"/g, '""') + '"';
+            }
+            var linhas = [["Data", "Nome", "Fazenda", "Cidade", "UF", "Contato"].join(";")];
+            lista.forEach(function (r) {
+                linhas.push([campo(r.quando), campo(r.nome), campo(r.fazenda), campo(r.cidade), campo(r.uf), campo(r.contato)].join(";"));
+            });
+            // BOM + ";" para abrir direto no Excel em português
+            var csv = "﻿" + linhas.join("\r\n");
+            var d = new Date();
+            var nomeArq = "registro-sbc-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".csv";
+            var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = nomeArq;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            SBCH.som("acerto");
+        });
+
+        document.getElementById("btn-limpar").addEventListener("click", function () {
+            var lista = carregar();
+            if (!lista.length) return;
+            if (!confirm("Apagar TODOS os " + lista.length + " registros deste tablet? Exporte a planilha antes se precisar.")) return;
+            if (!confirm("Tem certeza? Esta ação não pode ser desfeita.")) return;
+            gravar([]);
+            desenhar();
+            SBCH.som("erro");
+        });
+
+        desenhar();
+    </script>
+</body>
+</html>

@@ -6,9 +6,8 @@
     <title>Maquete da Fazenda – SBC</title>
     <link rel="stylesheet" href="estilo-sbc.css">
     <style>
-        /* Jogo 5 foge do padrão: em vez de quiz, uma super maquete
-           digital explorable — diorama em SVG dentro de moldura de
-           madeira, com evolução do manejo do Ano 1 ao Ano 3. */
+        /* Jogo 5: diorama 3D explorável (Three.js) dentro da moldura
+           de madeira — a maquete digital do estande, girável e viva. */
 
         .topo, .hud-maquete { max-width: 1080px; }
 
@@ -49,7 +48,7 @@
 
         .barra-maquete { margin-top: 14px; }
 
-        /* ---------- Caixa da maquete (moldura de madeira, diorama) ---------- */
+        /* ---------- Caixa da maquete (moldura de madeira + cena 3D) ---------- */
         .maquete-box {
             max-width: 1080px;
             margin: 0 auto 16px;
@@ -63,7 +62,78 @@
             box-shadow: var(--sombra), inset 0 0 26px rgba(0, 0, 0, 0.4), inset 0 3px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.3);
             animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards;
         }
-        #cena { display: block; width: 100%; height: auto; border-radius: 14px; }
+        #cena3d {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 31 / 20;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #a5d4f2;
+            cursor: grab;
+            touch-action: none;
+        }
+        #cena3d:active { cursor: grabbing; }
+        #cena3d canvas { display: block; }
+        #marcadores { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+
+        .marcador {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            pointer-events: auto;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 3px solid #1b4d2a;
+            background: rgba(255, 255, 255, 0.96);
+            font-size: 18px;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+            animation: pulso3d 1.9s ease-out infinite;
+            transition: background 0.15s, color 0.15s;
+        }
+        .marcador:hover { background: var(--dourado-claro); }
+        @keyframes pulso3d {
+            0% { box-shadow: 0 0 0 0 rgba(255, 213, 77, 0.85), 0 3px 8px rgba(0, 0, 0, 0.35); }
+            100% { box-shadow: 0 0 0 15px rgba(255, 213, 77, 0), 0 3px 8px rgba(0, 0, 0, 0.35); }
+        }
+        .marcador.feito {
+            background: #1b4d2a;
+            color: #fff;
+            border-color: #fff;
+            animation: none;
+        }
+
+        .dica-3d {
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            z-index: 3;
+            pointer-events: none;
+            background: rgba(15, 35, 22, 0.62);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.82em;
+            font-weight: 700;
+        }
+        .aviso-webgl {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            color: #fff;
+            background: #35614a;
+            font-weight: 700;
+        }
 
         /* ---------- Ficha de exploração ---------- */
         .ficha-cabeca { display: flex; align-items: center; gap: 12px; }
@@ -121,72 +191,6 @@
         }
         .ficha-sbc strong { color: #8a6d0b; }
         .ficha-nova { display: inline-block; margin-left: 8px; font-size: 0.7em; vertical-align: middle; padding: 3px 10px; border-radius: 999px; background: var(--verde); color: #fff; font-weight: 900; letter-spacing: 0.04em; }
-
-        /* ---------- SVG: classes de cena e animação ---------- */
-        #cena text { user-select: none; }
-        .hotspot { cursor: pointer; }
-        .hs-icone { font-size: 15px; text-anchor: middle; }
-        .ok-tx { font-size: 13px; fill: #fff; font-weight: 900; text-anchor: middle; }
-        .placa-t1 { text-anchor: middle; fill: #fff; font-size: 12px; font-weight: 900; letter-spacing: 0.03em; text-transform: uppercase; }
-        .placa-t2 { text-anchor: middle; fill: #ffe3b3; font-size: 11px; font-weight: 700; }
-
-        .an-pulso { transform-box: fill-box; transform-origin: center; animation: pulso 1.9s ease-out infinite; }
-        @keyframes pulso {
-            0% { transform: scale(1); opacity: 0.9; }
-            70% { transform: scale(2); opacity: 0; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        .an-entrar { animation: surgir 0.5s ease-out backwards; }
-        @keyframes surgir { from { opacity: 0; } }
-
-        .an-girar { transform-box: fill-box; transform-origin: center; animation: girarSol 18s linear infinite; }
-        @keyframes girarSol { to { transform: rotate(360deg); } }
-
-        .an-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: balancar 4.5s ease-in-out infinite alternate; }
-        @keyframes balancar { from { transform: rotate(-1.8deg); } to { transform: rotate(1.8deg); } }
-
-        .an-helice { transform-box: fill-box; transform-origin: center; animation: helice 0.3s linear infinite; }
-        @keyframes helice { to { transform: rotate(360deg); } }
-        .an-drone { animation: droneVoa 16s ease-in-out infinite; }
-        @keyframes droneVoa {
-            0% { transform: translate(-120px, -18px); }
-            25% { transform: translate(70px, 34px); }
-            50% { transform: translate(130px, -26px); }
-            75% { transform: translate(-10px, 30px); }
-            100% { transform: translate(-120px, -18px); }
-        }
-
-        .an-ave { animation: aveVoa 34s linear infinite; }
-        @keyframes aveVoa {
-            from { transform: translate(-160px, 0); }
-            to { transform: translate(1360px, -34px); }
-        }
-        .an-nuvem-cena { animation: nuvemCeu 52s linear infinite; }
-        @keyframes nuvemCeu {
-            from { transform: translateX(-280px); }
-            to { transform: translateX(1360px); }
-        }
-        .an-sombra-nuvem { animation: nuvemSombra 28s linear infinite; }
-        @keyframes nuvemSombra {
-            from { transform: translateX(-360px); }
-            to { transform: translateX(1500px); }
-        }
-
-        .an-agua { stroke-dasharray: 6 20; animation: aguaAnda 2.8s linear infinite; }
-        @keyframes aguaAnda { to { stroke-dashoffset: -52; } }
-
-        .an-asas { transform-box: fill-box; transform-origin: center; animation: baterAsas 0.55s ease-in-out infinite alternate; }
-        @keyframes baterAsas { from { transform: scaleX(1); } to { transform: scaleX(0.3); } }
-        .an-flutuar { animation: flutuarB 7s ease-in-out infinite alternate; }
-        @keyframes flutuarB {
-            from { transform: translate(0, 0); }
-            to { transform: translate(22px, -16px); }
-        }
-        .an-zumbir { animation: zumbir 0.5s ease-in-out infinite alternate; }
-        @keyframes zumbir { from { transform: translate(0, 0); } to { transform: translate(7px, -5px); } }
-
-        .an-vaca { transform-box: fill-box; transform-origin: 50% 100%; animation: vacaPastar 4s ease-in-out infinite alternate; }
-        @keyframes vacaPastar { from { transform: rotate(0deg); } to { transform: rotate(4deg); } }
     </style>
 </head>
 <body>
@@ -195,7 +199,7 @@
         <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
         <div class="titulo-bloco">
             <span class="selo">SBC · Soja Baixo Carbono</span>
-            <h1 class="titulo">Maquete da Fazenda</h1>
+            <h1 class="titulo">Maquete da Fazenda 3D</h1>
         </div>
     </header>
 
@@ -228,17 +232,15 @@
             <button class="ano-btn" id="ano-2" onclick="trocarAno(2)">🌿 Ano 2<small>Contorno · mais cobertura</small></button>
             <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">🌳 Ano 3<small>Sistema consolidado</small></button>
         </div>
-        <p class="dica-hud">💡 Toque nos pontos da paisagem para abrir a ficha de cada elemento. Depois mude o ano e veja o manejo evoluir.</p>
+        <p class="dica-hud">💡 Gire a fazenda com o dedo ou o mouse, toque nos pontos e veja o manejo evoluir do Ano 1 ao Ano 3.</p>
     </div>
 
-    <!-- A super maquete -->
+    <!-- A super maquete 3D -->
     <div class="maquete-box">
-        <svg id="cena" viewBox="0 0 1240 820" role="img" aria-label="Maquete da fazenda com três talhões, rios, APP e reserva legal">
-            <g id="g-estatico"></g>
-            <g id="g-ano"></g>
-            <g id="g-efeitos"></g>
-            <g id="g-hotspots"></g>
-        </svg>
+        <div id="cena3d">
+            <div id="marcadores"></div>
+            <div class="dica-3d">🖱️ Arraste para girar · roda/pinça para zoom</div>
+        </div>
     </div>
 
     <!-- Ficha do elemento explorado -->
@@ -286,7 +288,10 @@
         Programa SBC – Soja Baixo Carbono · Embrapa Soja
     </footer>
 
+    <script src="three.min.js"></script>
+    <script src="OrbitControls.js"></script>
     <script src="jogos-sbc.js"></script>
+    <script src="maquete3d.js"></script>
     <script>
         "use strict";
         /* ============================================================
@@ -294,7 +299,7 @@
            ============================================================ */
         var HOTSPOTS = {
             t1: {
-                icone: "🌾", nome: "Talhão 1 · Evolução da palhada", pos: [250, 420],
+                icone: "🌾", nome: "Talhão 1 · Evolução da palhada",
                 sbc: "palhada abundante é o carro-chefe do Sistema Plantio Direto — o degrau de entrada do SBC.",
                 anos: {
                     1: ["Ano 1 · Solo quase nu", "Soja na safra e milho na safrinha, em sucessão. Quase sem palhada: só 0–10% do solo coberto. Sem cobertura, a chuva bate direto na terra: compacta, leva nutrientes e seca a lavoura."],
@@ -303,16 +308,16 @@
                 }
             },
             t2: {
-                icone: "⛰️", nome: "Talhão 2 · Plantio em contorno", pos: [560, 330],
+                icone: "⛰️", nome: "Talhão 2 · Plantio em contorno",
                 sbc: "plantar acompanhando as curvas do relevo freia a água da chuva e evita a perda do solo — economia e menos emissões.",
                 anos: {
-                    1: ["Ano 1 · Morro abaixo", "Área com relevo forte e linhas retas no sentido da vertente. A chuva ganha velocidade, abre ravinas e carrega embora o solo mais fértil. Olhe as ravinas e a água barrenta chegando ao rio da esquerda."],
+                    1: ["Ano 1 · Morro abaixo", "Área com relevo forte e linhas retas no sentido da vertente. A chuva ganha velocidade, abre ravinas e carrega embora o solo mais fértil. Veja as ravinas e a água barrenta no rio da esquerda."],
                     2: ["Ano 2 · Curvas de nível", "Soja + trigo + aveia, agora plantadas acompanhando o relevo. As linhas em contorno frenam a água e a palhada segura o solo: as ravinas do Ano 1 estabilizam."],
                     3: ["Ano 3 · Relevo domado", "Sistema consolidado: soja + milho + braquiária, tudo em contorno e coberto de palhada. O relevo continua o mesmo — mas agora trabalha a favor da lavoura, não contra."]
                 }
             },
             t3: {
-                icone: "🌱", nome: "Talhão 3 · Manejo avançado", pos: [940, 420],
+                icone: "🌱", nome: "Talhão 3 · Manejo avançado",
                 sbc: "diversificar espécies é diversificar raízes: mais vida no solo, menos pragas e um sistema de baixo carbono.",
                 anos: {
                     1: ["Ano 1 · Já nasce avançado", "O talhão mais evoluído da maquete: plantio todo em contorno, solo coberto com braquiária e crotalária em flor — que fixa nitrogênio e alimenta os polinizadores."],
@@ -321,7 +326,7 @@
                 }
             },
             appd: {
-                icone: "💧", nome: "APP degradada", pos: [115, 640],
+                icone: "💧", nome: "APP degradada",
                 sbc: "APP recuperada é exigência legal e o primeiro filtro que protege a água dos insumos do campo.",
                 anos: {
                     1: ["APP degradada · lado esquerdo", "Aqui a mata ciliar é frágil: poucas árvores, margem exposta e a lavoura chegando perto demais do rio. Sem a faixa de mata, sedimento e insumos entram direto na água."],
@@ -330,16 +335,16 @@
                 }
             },
             appp: {
-                icone: "🌳", nome: "APP preservada", pos: [1105, 420],
+                icone: "🌳", nome: "APP preservada",
                 sbc: "mata ciliar limpa a água de graça: é um serviço ambiental que o SBC valoriza.",
                 anos: {
                     1: ["APP preservada · faixa viva", "Faixa larga, contínua e densa de mata ciliar entre o talhão e o rio. As raízes seguram a margem, a copa sombreia a água e a floresta filtra o que escorre do campo."],
-                    2: ["APP preservada · corredor de fauna", "Mata ciliar madura: além de proteger a água, funciona como corredor — as aves que cruzam a maquete usam essa conexão entre fragmentos."],
+                    2: ["APP preservada · corredor de fauna", "Mata ciliar madura: além de proteger a água, funciona como corredor — as aves da fazenda usam essa conexão entre fragmentos."],
                     3: ["APP preservada · água limpa", "Paisagem completa: palhada no campo e mata na margem. A água chega clara ao rio — o resultado de proteger o caminho todo."]
                 }
             },
             rl: {
-                icone: "🏞️", nome: "Reserva Legal", pos: [940, 232],
+                icone: "🏞️", nome: "Reserva Legal",
                 sbc: "floresta em pé é carbono estocado: a RL entra na conta de emissões da fazenda.",
                 anos: {
                     1: ["RL preservada e excedente", "O fragmento florestal maior, ao fundo da maquete. Enquanto a APP protege o rio, a Reserva Legal sustenta a biodiversidade em escala: habitat, conexão entre remanescentes e carbono estocado nas árvores."],
@@ -348,7 +353,7 @@
                 }
             },
             drone: {
-                icone: "🛸", nome: "Drone de monitoramento", pos: [700, 295],
+                icone: "🛸", nome: "Drone de monitoramento",
                 sbc: "monitoramento preciso é a base para decidir melhor e provar resultados na MRV.",
                 anos: {
                     1: ["Drone sobrevoando os talhões", "Do alto, o drone enxerga o que o olho perde: falhas de plantio, erosão começando e quanto do solo está de fato coberto por palhada."],
@@ -357,7 +362,7 @@
                 }
             },
             vacas: {
-                icone: "🐄", nome: "Vacas na pastagem", pos: [790, 178],
+                icone: "🐄", nome: "Vacas na pastagem",
                 sbc: "integração lavoura-pecuária diversifica a renda e mantém o solo coberto o ano todo.",
                 anos: {
                     1: ["Pecuária ao lado da lavoura", "As vacas pastam um capim braquiária recuperado, ao lado dos talhões. O pasto bem manejado recicla nutrientes e mantém raízes vivas no solo."],
@@ -366,7 +371,7 @@
                 }
             },
             bio: {
-                icone: "🦋", nome: "Biodiversidade", pos: [960, 620],
+                icone: "🦋", nome: "Biodiversidade",
                 sbc: "biodiversidade é resiliência: um sistema diversificado sofre menos com pragas, secas e chuvas fortes.",
                 anos: {
                     1: ["Os primeiros polinizadores", "Com crotalária em flor e solo vivo, aparecem os primeiros polinizadores. A biodiversidade de uma fazenda começa na cobertura do solo."],
@@ -375,7 +380,7 @@
                 }
             },
             sede: {
-                icone: "🏠", nome: "Sede da fazenda", pos: [632, 205],
+                icone: "🏠", nome: "Sede da fazenda",
                 sbc: "sem dado não há selo: a MRV transforma o manejo em certificação.",
                 anos: {
                     1: ["Sede · onde o dado nasce", "Da sede sai o registro da safra: produção, insumos e práticas anotados com rigor. É o começo do MRV — mensurável, reportável e verificável."],
@@ -398,588 +403,35 @@
         var fichaAberta = null;
         var fichaAno = 1;
 
-        /* ---------- utilidades ---------- */
-        function rng(seed) {
-            return function () {
-                seed = (seed * 1664525 + 1013904223) % 4294967296;
-                return seed / 4294967296;
-            };
-        }
-        function num(v) { return Math.round(v * 10) / 10; }
-
-        /* Geometria dos talhões */
-        var T1 = { x: 170, y: 250, w: 280, h: 510 };
-        var T2 = { x: 490, y: 250, w: 320, h: 510 };
-        var T3 = { x: 850, y: 250, w: 215, h: 510 };
-        var M1 = { cx: 610, cy: 470, rx: 128, ry: 98 };
-        var M2 = { cx: 730, cy: 640, rx: 95, ry: 72 };
-        /* ============================================================
-           CENA — construção procedural da maquete em SVG
-           ============================================================ */
-
-        function defsSvg() {
-            return (
-                '<defs>' +
-                '<linearGradient id="gCeu" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#67b0e4"/><stop offset="50%" stop-color="#a5d7f2"/><stop offset="82%" stop-color="#d9edf7"/><stop offset="100%" stop-color="#f7eecb"/>' +
-                '</linearGradient>' +
-                '<linearGradient id="gTerra" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#c6e0a0"/><stop offset="55%" stop-color="#a5cd80"/><stop offset="100%" stop-color="#82b16b"/>' +
-                '</linearGradient>' +
-                '<linearGradient id="gAguaLimpa" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#7fd0ee"/><stop offset="100%" stop-color="#2b8ac2"/>' +
-                '</linearGradient>' +
-                '<linearGradient id="gAguaSuja" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#a8a26b"/><stop offset="100%" stop-color="#7d7448"/>' +
-                '</linearGradient>' +
-                '<radialGradient id="gMorroVerde" cx="0.38" cy="0.3" r="0.85">' +
-                '<stop offset="0%" stop-color="#b1dc9a"/><stop offset="55%" stop-color="#79b069"/><stop offset="100%" stop-color="#4e8a4e"/>' +
-                '</radialGradient>' +
-                '<radialGradient id="gMorroSeco" cx="0.38" cy="0.3" r="0.85">' +
-                '<stop offset="0%" stop-color="#d3b47e"/><stop offset="55%" stop-color="#b28c52"/><stop offset="100%" stop-color="#8a6a3a"/>' +
-                '</radialGradient>' +
-                '<linearGradient id="gT3" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#57a05c"/><stop offset="100%" stop-color="#3d8b4a"/>' +
-                '</linearGradient>' +
-                '<radialGradient id="gVinheta" cx="0.5" cy="0.5" r="0.72">' +
-                '<stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.16)"/>' +
-                '</radialGradient>' +
-                '<radialGradient id="gSolGlow" cx="0.5" cy="0.5" r="0.5">' +
-                '<stop offset="0%" stop-color="rgba(255,244,196,0.85)"/><stop offset="45%" stop-color="rgba(255,244,196,0.28)"/><stop offset="100%" stop-color="rgba(255,244,196,0)"/>' +
-                '</radialGradient>' +
-                '<linearGradient id="gEstrada" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#e3d4b0"/><stop offset="100%" stop-color="#cdbb92"/>' +
-                '</linearGradient>' +
-                '<linearGradient id="gBevel" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="rgba(255,255,240,0.30)"/><stop offset="18%" stop-color="rgba(255,255,240,0.06)"/><stop offset="100%" stop-color="rgba(20,45,20,0.16)"/>' +
-                '</linearGradient>' +
-                '<linearGradient id="gLuz" x1="0" y1="0" x2="1" y2="1">' +
-                '<stop offset="0%" stop-color="rgba(255,243,205,0.10)"/><stop offset="55%" stop-color="rgba(255,255,255,0)"/><stop offset="100%" stop-color="rgba(25,55,90,0.12)"/>' +
-                '</linearGradient>' +
-                '<linearGradient id="gMadeira" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#a3733f"/><stop offset="100%" stop-color="#7a4f28"/>' +
-                '</linearGradient>' +
-                '<clipPath id="clip-t2"><rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" rx="14"/></clipPath>' +
-                '<clipPath id="clip-t1"><rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" rx="14"/></clipPath>' +
-                '<clipPath id="clip-t3"><rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" rx="14"/></clipPath>' +
-                '</defs>'
-            );
-        }
-
-        /* Árvore: tronco + copa em 3 círculos, com sombra e balanço do vento */
-        function arvore(x, y, s, pal, atraso) {
-            pal = pal || ['#2f7a3a', '#3c9448', '#56ad57'];
-            return (
-                '<g transform="translate(' + num(x) + ',' + num(y) + ') scale(' + s + ')">' +
-                '<g class="an-sway" style="animation-delay:' + (atraso || 0) + 's">' +
-                '<ellipse cx="-4" cy="3" rx="14" ry="4.5" fill="rgba(20,45,20,0.25)"/>' +
-                '<rect x="-2.4" y="-13" width="4.8" height="16" rx="1.8" fill="#7a5533"/>' +
-                '<rect x="-1.5" y="-13" width="1.6" height="14" rx="0.8" fill="#96694a"/>' +
-                '<circle cx="0" cy="-19.5" r="10.8" fill="' + pal[0] + '"/>' +
-                '<circle cx="-7.5" cy="-13.5" r="8" fill="' + pal[1] + '"/>' +
-                '<circle cx="7.5" cy="-14.5" r="7.6" fill="' + pal[2] + '"/>' +
-                '<circle cx="-6" cy="-16" r="4.4" fill="rgba(0,0,0,0.10)"/>' +
-                '<circle cx="3.5" cy="-23" r="5" fill="rgba(255,255,235,0.22)"/>' +
-                '</g></g>'
-            );
-        }
-
-        function floresta(r, qtd, palettes, seed) {
-            var rnd = rng(seed), s = '';
-            for (var i = 0; i < qtd; i++) {
-                var x = r.x + 10 + rnd() * (r.w - 20);
-                var y = r.y + 12 + rnd() * (r.h - 24);
-                var sc = 0.7 + rnd() * 0.55;
-                var pal = palettes[(rnd() * palettes.length) | 0];
-                s += arvore(x, y, sc, pal, num(rnd() * 3));
-            }
-            return s;
-        }
-
-        function vaca(x, y, s, flip, atraso) {
-            var dir = flip ? ' scale(-1,1)' : '';
-            return (
-                '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')' + dir + '">' +
-                '<ellipse cx="0" cy="13" rx="18" ry="4.5" fill="rgba(20,45,20,0.2)"/>' +
-                '<g class="an-vaca" style="animation-delay:' + (atraso || 0) + 's">' +
-                '<rect x="-12" y="4" width="3.4" height="9" rx="1.6" fill="#e8e2d8"/>' +
-                '<rect x="-4" y="5" width="3.4" height="8" rx="1.6" fill="#e8e2d8"/>' +
-                '<rect x="4" y="5" width="3.4" height="8" rx="1.6" fill="#e8e2d8"/>' +
-                '<rect x="10" y="4" width="3.4" height="9" rx="1.6" fill="#e8e2d8"/>' +
-                '<ellipse cx="0" cy="-2" rx="17" ry="10" fill="#fafafa" stroke="#c9c2b8" stroke-width="1"/>' +
-                '<ellipse cx="-5" cy="-4" rx="6" ry="4.6" fill="#3a3a3a"/>' +
-                '<ellipse cx="6" cy="1" rx="5" ry="3.8" fill="#3a3a3a"/>' +
-                '<path d="M-16,-6 q-5,6 -3,13" stroke="#c9c2b8" stroke-width="1.7" fill="none"/>' +
-                '<circle cx="17" cy="-7" r="6.5" fill="#fafafa" stroke="#c9c2b8" stroke-width="1"/>' +
-                '<ellipse cx="12" cy="-11" rx="3" ry="1.8" fill="#dcd5cb"/>' +
-                '<ellipse cx="22" cy="-11" rx="3" ry="1.8" fill="#dcd5cb"/>' +
-                '<ellipse cx="20" cy="-4" rx="4.2" ry="3" fill="#f2cfc9"/>' +
-                '</g></g>'
-            );
-        }
-
-        /* Placa de madeira da maquete (como na física) */
-        /* Trator vermelho parado na estrada — detalhe de vida na fazenda */
-        function trator(x, y, s, flip) {
-            var dir = flip ? ' scale(-1,1)' : '';
-            return (
-                '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')' + dir + '">' +
-                '<ellipse cx="0" cy="13" rx="26" ry="5" fill="rgba(20,45,20,0.25)"/>' +
-                '<rect x="-22" y="-9" width="34" height="16" rx="6" fill="#c23b22"/>' +
-                '<rect x="4" y="-4" width="14" height="12" rx="3" fill="#a92f1a"/>' +
-                '<rect x="-17" y="-26" width="19" height="18" rx="4" fill="#c23b22"/>' +
-                '<rect x="-15" y="-24" width="9" height="8" rx="1.5" fill="#bfe3f2"/>' +
-                '<rect x="-22" y="-11" width="32" height="4" rx="2" fill="#8f2413" opacity="0.6"/>' +
-                '<circle cx="-13" cy="5" r="9" fill="#2f2f2f"/><circle cx="-13" cy="5" r="4" fill="#555"/>' +
-                '<circle cx="12" cy="7" r="6.5" fill="#2f2f2f"/><circle cx="12" cy="7" r="2.8" fill="#555"/>' +
-                '</g>'
-            );
-        }
-
-        function placa(x, y, linha1, linha2, larg) {
-            larg = larg || 150;
-            var h = linha2 ? 40 : 26;
-            var s = '<g transform="translate(' + x + ',' + y + ')">';
-            s += '<rect x="-2.5" y="0" width="5" height="24" fill="#6b4a2b"/>';
-            s += '<rect x="' + (-larg / 2) + '" y="' + (-h - 24) + '" width="' + larg + '" height="' + h + '" rx="4" fill="url(#gMadeira)" stroke="#5d3a1e" stroke-width="2"/>';
-            s += '<circle cx="' + (-larg / 2 + 9) + '" cy="' + (-h - 15) + '" r="1.7" fill="#d9c9a3"/>';
-            s += '<circle cx="' + (larg / 2 - 9) + '" cy="' + (-h - 15) + '" r="1.7" fill="#d9c9a3"/>';
-            s += '<text y="' + (-h - 24 + 16) + '" class="placa-t1">' + linha1 + '</text>';
-            if (linha2) s += '<text y="' + (-h - 24 + 31) + '" class="placa-t2">' + linha2 + '</text>';
-            return s + '</g>';
-        }
-
-        function nuvemCena(x, y, s, atraso) {
-            return (
-                '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')" opacity="0.92">' +
-                '<g class="an-nuvem-cena" style="animation-delay:' + atraso + 's">' +
-                '<ellipse cx="0" cy="3" rx="37" ry="12" fill="#dbe7f0" opacity="0.9"/>' +
-                '<ellipse cx="0" cy="0" rx="34" ry="13" fill="#fff"/>' +
-                '<ellipse cx="22" cy="-6" rx="21" ry="11" fill="#fff"/>' +
-                '<ellipse cx="-20" cy="-4" rx="17" ry="9" fill="#fff"/>' +
-                '<ellipse cx="12" cy="-13" rx="13" ry="7" fill="#fff"/>' +
-                '</g></g>'
-            );
-        }
-
-        /* ---------- paisagem fixa (não muda com o ano) ---------- */
-        function cenaEstatica() {
-            var rnd = rng(20210901); // data do início do SBC :)
-            var s = '';
-
-            /* céu, sol e nuvens */
-            s += '<rect x="0" y="0" width="1240" height="160" fill="url(#gCeu)"/>';
-            s += '<circle cx="1140" cy="58" r="88" fill="url(#gSolGlow)"/>';
-            s += '<g transform="translate(1140,58)">';
-            s += '<g class="an-girar" opacity="0.85">';
-            for (var r = 0; r < 8; r++) {
-                var a = r * Math.PI / 4;
-                s += '<line x1="' + num(Math.cos(a) * 27) + '" y1="' + num(Math.sin(a) * 27) + '" x2="' + num(Math.cos(a) * 36) + '" y2="' + num(Math.sin(a) * 36) + '" stroke="#f5b800" stroke-width="3.4" stroke-linecap="round"/>';
-            }
-            s += '</g><circle r="20" fill="#ffe27a"/><circle r="26" fill="#ffd54d" opacity="0.35"/><circle r="14" fill="#fff2b8"/></g>';
-            s += nuvemCena(180, 42, 1, 0) + nuvemCena(620, 66, 0.75, 17) + nuvemCena(940, 30, 0.9, 34);
-
-            /* colinas distantes — profundidade atmosférica */
-            s += '<path d="M0,152 C 140,116 280,134 430,120 C 620,104 770,128 950,114 C 1090,104 1190,124 1240,112 L1240,162 L0,162 Z" fill="#b9d4c0"/>';
-            s += '<rect x="0" y="112" width="1240" height="42" fill="#f7eecb" opacity="0.30"/>';
-            s += '<path d="M0,160 C 200,138 420,150 640,140 C 860,130 1060,148 1240,136 L1240,170 L0,170 Z" fill="#8db887"/>';
-
-            /* terra base */
-            s += '<rect x="0" y="150" width="1240" height="670" fill="url(#gTerra)"/>';
-
-            /* Reserva Legal (topo direito, atrás da APP) */
-            s += '<rect x="878" y="128" width="362" height="146" rx="20" fill="#2e6b35" stroke="#1e4a24" stroke-width="3"/>';
-            s += floresta({ x: 878, y: 128, w: 362, h: 146 }, 34, [['#1f5c2a', '#2e7a3a', '#3f9448'], ['#266b30', '#357f3c', '#4a9c50']], 777);
-
-            /* sede da fazenda */
-            s += '<g>';
-            s += '<ellipse cx="633" cy="212" rx="62" ry="10" fill="rgba(20,45,20,0.14)"/>';
-            s += '<rect x="605" y="172" width="52" height="34" fill="#f3e3c3" stroke="#8a5a33" stroke-width="2"/>';
-            s += '<polygon points="601,172 631,152 661,172" fill="#b3402e" stroke="#8a2b1e" stroke-width="2"/>';
-            s += '<rect x="625" y="190" width="11" height="16" rx="2" fill="#8a5a33"/>';
-            s += '<rect x="610" y="180" width="10" height="10" fill="#ffe9a8" stroke="#8a5a33" stroke-width="1.5"/>';
-            s += '<rect x="672" y="164" width="22" height="42" rx="8" fill="#d7dee2" stroke="#9aa7ad" stroke-width="2"/>';
-            s += '<ellipse cx="683" cy="164" rx="11" ry="5" fill="#c3ccd1"/>';
-            s += '<line x1="683" y1="152" x2="683" y2="164" stroke="#9aa7ad" stroke-width="2.4"/>';
-            s += '<circle cx="683" cy="150" r="2.6" fill="#e53935"/>';
-            s += arvore(588, 208, 1.15, ['#2f7a3a', '#3c9448', '#56ad57'], 1.2);
-            s += arvore(704, 210, 0.95, ['#35703a', '#43884a', '#58a75c'], 0.4);
-            s += '</g>';
-
-            /* pasto das vacas (integração lavoura-pecuária) */
-            s += '<g>';
-            s += '<rect x="720" y="148" width="130" height="72" rx="14" fill="#8fc46b" stroke="#6da04e" stroke-width="2.5"/>';
-            s += '<rect x="726" y="154" width="118" height="60" rx="10" fill="none" stroke="#8a5a33" stroke-width="1.8" stroke-dasharray="7 5"/>';
-            s += vaca(755, 196, 0.95, false, 0);
-            s += vaca(798, 183, 0.8, true, 1.1);
-            s += vaca(830, 197, 0.88, false, 2.2);
-            s += '</g>';
-
-            /* estradas — terra batida com borda definida */
-            s += '<rect x="450" y="240" width="40" height="540" fill="url(#gEstrada)" stroke="#b8a67c" stroke-width="1.5"/>';
-            s += '<rect x="810" y="240" width="40" height="540" fill="url(#gEstrada)" stroke="#b8a67c" stroke-width="1.5"/>';
-            s += '<line x1="460" y1="250" x2="460" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
-            s += '<line x1="480" y1="250" x2="480" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
-            s += '<line x1="820" y1="250" x2="820" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
-            s += '<line x1="840" y1="250" x2="840" y2="770" stroke="#c2b28a" stroke-width="3.4"/>';
-            s += '<rect x="0" y="772" width="1240" height="48" fill="url(#gEstrada)" stroke="#b8a67c" stroke-width="1.5"/>';
-            s += '<line x1="0" y1="782" x2="1240" y2="782" stroke="#c2b28a" stroke-width="3.2"/>';
-            s += '<line x1="0" y1="812" x2="1240" y2="812" stroke="#c2b28a" stroke-width="3.2"/>';
-            s += trator(300, 782, 0.95, false);
-            s += trator(470, 560, 0.7, true);
-
-            /* APP degradada (esquerda): solo exposto, poucas árvores, tocos */
-            s += '<rect x="0" y="240" width="170" height="532" fill="#c9ab7c"/>';
-            for (var t = 0; t < 46; t++) {
-                s += '<ellipse cx="' + num(6 + rnd() * 158) + '" cy="' + num(250 + rnd() * 510) + '" rx="' + num(1.6 + rnd() * 3) + '" ry="1.4" fill="#b2924f" opacity="0.6"/>';
-            }
-            s += '<ellipse cx="138" cy="308" rx="9" ry="3.6" fill="#7c4a28"/><circle cx="138" cy="305" r="4" fill="#9a6a3f"/>';
-            s += '<ellipse cx="146" cy="668" rx="8" ry="3.4" fill="#7c4a28"/><circle cx="146" cy="665" r="3.6" fill="#9a6a3f"/>';
-            s += arvore(128, 470, 0.62, ['#5d7a44', '#6e8f52', '#7fa05f'], 0.8);
-            s += arvore(104, 560, 0.5, ['#5d7a44', '#6e8f52', '#7fa05f'], 2.1);
-            s += arvore(142, 370, 0.55, ['#63784a', '#748b55', '#859c62'], 1.5);
-            /* pedras e capim ralo na margem exposta */
-            s += '<ellipse cx="38" cy="336" rx="5" ry="3.2" fill="#9a8a72" stroke="#6e6250" stroke-width="1"/>';
-            s += '<ellipse cx="30" cy="520" rx="4" ry="2.6" fill="#8a7a62" stroke="#6e6250" stroke-width="1"/>';
-            s += '<ellipse cx="58" cy="614" rx="5.4" ry="3" fill="#9a8a72" stroke="#6e6250" stroke-width="1"/>';
-            s += '<ellipse cx="36" cy="706" rx="4.2" ry="2.8" fill="#8a7a62" stroke="#6e6250" stroke-width="1"/>';
-            s += grama({ x: 22, y: 300, w: 130, h: 440 }, 20, '#7f9455', rng(88), 8);
-
-            /* rio esquerdo (APP degradada) */
-            var dEsq = 'M 62,0 C 95,140 45,260 78,380 C 108,500 52,600 84,700 C 100,760 72,790 80,820';
-            s += '<path d="' + dEsq + '" fill="none" stroke="#b99a6a" stroke-width="54" stroke-linecap="round"/>';
-            s += '<path d="' + dEsq + '" fill="none" stroke="url(#gAguaSuja)" stroke-width="38" stroke-linecap="round"/>';
-            s += '<path d="' + dEsq + '" fill="none" class="an-agua" stroke="rgba(255,255,255,0.22)" stroke-width="7"/>';
-            s += placa(112, 306, 'APP degradada', null, 128);
-
-            /* APP preservada (direita): faixa densa entre o talhão 3 e o rio */
-            s += '<rect x="1065" y="240" width="100" height="532" rx="10" fill="#3e7d46"/>';
-            s += floresta({ x: 1065, y: 240, w: 100, h: 532 }, 26, [['#2a6e34', '#38853f', '#4c9a4e'], ['#1f5c2a', '#2e7a3a', '#3f9448']], 4242);
-
-            /* rio direito (APP preservada) */
-            var dDir = 'M 1198,0 C 1172,150 1218,300 1188,430 C 1162,550 1206,650 1180,760 C 1172,790 1185,805 1182,820';
-            s += '<path d="' + dDir + '" fill="none" stroke="#6f8f5c" stroke-width="50" stroke-linecap="round"/>';
-            s += '<path d="' + dDir + '" fill="none" stroke="url(#gAguaLimpa)" stroke-width="36" stroke-linecap="round"/>';
-            s += '<path d="' + dDir + '" fill="none" class="an-agua" stroke="rgba(255,255,255,0.4)" stroke-width="7"/>';
-            s += placa(1112, 690, 'APP preservada', null, 132);
-            /* juncos nas margens e brilho na água limpa */
-            for (var jx = 0; jx < 7; jx++) {
-                var jxx = 1158 + (jx % 2) * 26, jyy = 320 + jx * 58;
-                s += '<path d="M' + jxx + ',' + jyy + ' q3,-9 -1,-15" stroke="#4c8a3a" stroke-width="2" fill="none" stroke-linecap="round"/>';
-            }
-            s += '<ellipse cx="1190" cy="360" rx="7" ry="2.4" fill="rgba(255,255,255,0.8)"/>';
-            s += '<ellipse cx="1152" cy="560" rx="6" ry="2.2" fill="rgba(255,255,255,0.75)"/>';
-
-            /* placa da RL */
-            s += placa(1010, 200, 'RL preservada e excedente', null, 204);
-
-            /* placas dos talhões */
-            s += placa(310, 760, 'Talhão 1', 'Evolução da palhada', 150);
-            s += placa(650, 760, 'Talhão 2', 'Plantio em contorno', 158);
-            s += placa(957, 760, 'Talhão 3', 'Manejo avançado', 138);
-
-            /* capim na frente da maquete */
-            for (var c = 0; c < 60; c++) {
-                var gx = num(rnd() * 1240), gy = num(776 + rnd() * 10);
-                s += '<path d="M' + gx + ',' + gy + ' q2,-5 4,-6" stroke="#5e8f4a" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
-            }
-            return s;
-        }
-
-        /* ---------- efeitos permanentes (sobre os talhões) ---------- */
-        function cenaEfeitos() {
-            var s = '';
-
-            /* sombras de nuvens atravessando o campo */
-            s += '<g transform="translate(0,430)"><g class="an-sombra-nuvem">' +
-                 '<ellipse cx="0" cy="0" rx="150" ry="52" fill="rgba(15,50,25,0.09)"/></g></g>';
-            s += '<g transform="translate(0,620)"><g class="an-sombra-nuvem" style="animation-delay:-13s">' +
-                 '<ellipse cx="0" cy="0" rx="110" ry="40" fill="rgba(15,50,25,0.07)"/></g></g>';
-
-            /* aves cruzando o céu */
-            var aves = [[30, 0], [64, 14], [52, 26]];
-            for (var i = 0; i < aves.length; i++) {
-                s += '<g transform="translate(0,' + aves[i][0] + ')"><g class="an-ave" style="animation-delay:' + aves[i][1] + 's">' +
-                     '<path d="M -9,0 Q -4.5,-6 0,-1 Q 4.5,-6 9,0" fill="none" stroke="#4a6a7a" stroke-width="2.2" stroke-linecap="round"/>' +
-                     '</g></g>';
-            }
-
-            /* drone de monitoramento sobrevoando o talhão 2 */
-            s += '<g transform="translate(650,330)"><g class="an-drone">' +
-                 '<ellipse cx="20" cy="128" rx="24" ry="7" fill="rgba(20,45,20,0.2)"/>' +
-                 '<g>' +
-                 '<line x1="-9" y1="-5" x2="-19" y2="-11" stroke="#37474f" stroke-width="2.6"/>' +
-                 '<line x1="9" y1="-5" x2="19" y2="-11" stroke="#37474f" stroke-width="2.6"/>' +
-                 '<line x1="-9" y1="5" x2="-19" y2="11" stroke="#37474f" stroke-width="2.6"/>' +
-                 '<line x1="9" y1="5" x2="19" y2="11" stroke="#37474f" stroke-width="2.6"/>';
-            var helices = [[-19, -11], [19, -11], [-19, 11], [19, 11]];
-            for (var h = 0; h < helices.length; h++) {
-                var hx = helices[h][0], hy = helices[h][1];
-                s += '<g transform="translate(' + hx + ',' + hy + ')"><g class="an-helice">' +
-                     '<line x1="-8" y1="0" x2="8" y2="0" stroke="#546e7a" stroke-width="2.4"/>' +
-                     '<line x1="0" y1="-8" x2="0" y2="8" stroke="#546e7a" stroke-width="2.4"/>' +
-                     '</g></g>';
-            }
-            s += '<rect x="-11" y="-7" width="22" height="13" rx="5" fill="#37474f"/>' +
-                 '<rect x="-4" y="-3" width="8" height="5" rx="2" fill="#8fd6ff"/>' +
-                 '<circle cx="0" cy="7" r="2.4" fill="#263238"/>' +
-                 '</g></g></g>';
-
-            /* luz direcional do sol + vinheta de profundidade (não capturam cliques) */
-            s += '<rect x="0" y="0" width="1240" height="820" fill="url(#gLuz)" style="pointer-events:none"/>';
-            s += '<rect x="0" y="0" width="1240" height="820" fill="url(#gVinheta)" style="pointer-events:none"/>';
-            return s;
-        }
-        /* ============================================================
-           TALHÕES — camada que muda com o ano selecionado
-           ============================================================ */
-
-        var COR_PALHADA = ['#d9c27e', '#cbb26a', '#e2cf90', '#bfa15a', '#c9a961'];
-
-        function palhada(r, qtd, rnd) {
-            var s = '';
-            for (var i = 0; i < qtd; i++) {
-                var x = r.x + 8 + rnd() * (r.w - 16);
-                var y = r.y + 8 + rnd() * (r.h - 16);
-                var w = 5 + rnd() * 8;
-                s += '<rect x="' + num(x) + '" y="' + num(y) + '" width="' + num(w) + '" height="2.3" rx="1.1" fill="' + COR_PALHADA[(rnd() * 5) | 0] + '" opacity="0.92" transform="rotate(' + ((rnd() * 180) | 0) + ' ' + num(x) + ' ' + num(y) + ')"/>';
-            }
-            return s;
-        }
-
-        function grama(r, qtd, cor, rnd, alt) {
-            var s = '';
-            for (var i = 0; i < qtd; i++) {
-                var x = r.x + 6 + rnd() * (r.w - 12);
-                var y = r.y + 10 + rnd() * (r.h - 20);
-                var a = alt * (0.6 + rnd() * 0.7);
-                s += '<path d="M' + num(x) + ',' + num(y) + ' q' + num(-2 + rnd() * 4) + ',' + num(-a * 0.6) + ' ' + num(-2 + rnd() * 4) + ',' + num(-a) + '" stroke="' + cor + '" stroke-width="1.7" fill="none" stroke-linecap="round"/>';
-            }
-            return s;
-        }
-
-        /* linha ondulada (curva de nível) atravessando o talhão */
-        function faixa(r, yy, cor, w, dash) {
-            return '<path d="M ' + (r.x + 8) + ' ' + yy +
-                ' C ' + (r.x + r.w * 0.3) + ' ' + (yy - 13) + ', ' + (r.x + r.w * 0.7) + ' ' + (yy + 13) + ', ' + (r.x + r.w - 8) + ' ' + yy +
-                '" fill="none" stroke="' + cor + '" stroke-width="' + w + '" stroke-linecap="round"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
-        }
-
-        function contornosMorro(m, n, cor, w, dash) {
-            var s = '';
-            for (var k = 1; k <= n; k++) {
-                var f = k / n;
-                s += '<ellipse cx="' + m.cx + '" cy="' + m.cy + '" rx="' + num(m.rx * f) + '" ry="' + num(m.ry * f) + '" fill="none" stroke="' + cor + '" stroke-width="' + w + '" stroke-linecap="round"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
-            }
-            return s;
-        }
-
-        /* ---------- Talhão 1: evolução da palhada (soja + milho) ---------- */
-        function talhao1(ano) {
-            var rnd = rng(11 + ano);
-            var p = [0.08, 0.4, 0.93][ano - 1];
-            var solo = ['#b08d5f', '#a3854f', '#6f6038'][ano - 1];
-            var corSoja = ['#79b25c', '#4ea24f', '#2f9e44'][ano - 1];
-            var s = '<g clip-path="url(#clip-t1)">';
-
-            s += '<rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" fill="' + solo + '"/>';
-            /* cobertura de palhada */
-            s += '<rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" fill="#cdb37e" opacity="' + num(p * 0.92) + '"/>';
-            s += palhada(T1, Math.round(p * 520), rnd);
-
-            /* linhas de soja na safra + milho na safrinha (sucessão) */
-            var linha = 0;
-            for (var x = T1.x + 16; x <= T1.x + T1.w - 14; x += 24, linha++) {
-                s += '<line x1="' + (x + 2.5) + '" y1="' + (T1.y + 16) + '" x2="' + (x + 2.5) + '" y2="' + (T1.y + T1.h - 12) + '" stroke="rgba(30,40,15,0.15)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 4"/>';
-                if (linha % 5 === 4) {
-                    s += '<line x1="' + x + '" y1="' + (T1.y + 14) + '" x2="' + x + '" y2="' + (T1.y + T1.h - 14) + '" stroke="#9ccc65" stroke-width="8" stroke-linecap="round" stroke-dasharray="11 4" opacity="0.95"/>';
-                } else {
-                    s += '<line x1="' + x + '" y1="' + (T1.y + 14) + '" x2="' + x + '" y2="' + (T1.y + T1.h - 14) + '" stroke="' + corSoja + '" stroke-width="' + (5 + ano) + '" stroke-linecap="round" stroke-dasharray="5 4"/>';
-                }
-            }
-            s += '<rect x="' + T1.x + '" y="' + T1.y + '" width="' + T1.w + '" height="' + T1.h + '" rx="14" fill="url(#gBevel)"/>';
-            s += '</g>';
-            /* fora do talhão: lavoura avançando perto demais do rio (APP degradada) */
-            for (var e = 0; e < 5; e++) {
-                var ex = 98 + e * 14;
-                s += '<line x1="' + ex + '" y1="330" x2="' + ex + '" y2="700" stroke="' + corSoja + '" stroke-width="4.5" stroke-dasharray="5 4" opacity="0.85"/>';
-            }
-            return s;
-        }
-
-        /* ---------- Talhão 2: relevo e plantio em contorno ---------- */
-        function talhao2(ano) {
-            var rnd = rng(22 + ano);
-            var s = '<g clip-path="url(#clip-t2)">';
-
-            var base = ['#c3a26b', '#94b56d', '#6fa254'][ano - 1];
-            s += '<rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" fill="' + base + '"/>';
-
-            /* dois morros com sombra projetada (3D) */
-            var gMorro = ano === 1 ? 'url(#gMorroSeco)' : 'url(#gMorroVerde)';
-            [M1, M2].forEach(function (m) {
-                s += '<ellipse cx="' + (m.cx + 7) + '" cy="' + (m.cy + 9) + '" rx="' + m.rx + '" ry="' + m.ry + '" fill="rgba(40,60,35,0.35)"/>';
-                s += '<ellipse cx="' + m.cx + '" cy="' + m.cy + '" rx="' + m.rx + '" ry="' + m.ry + '" fill="' + gMorro + '"/>';
-            });
-
-            if (ano === 1) {
-                /* linhas retas morro abaixo + ravinas de erosão */
-                for (var x = T2.x + 16; x <= T2.x + T2.w - 14; x += 20) {
-                    s += '<line x1="' + x + '" y1="' + (T2.y + 12) + '" x2="' + x + '" y2="' + (T2.y + T2.h - 12) + '" stroke="#8a9a55" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 4"/>';
-                }
-                s += '<path d="M618,395 q-12,45 6,80 q16,34 -4,75" fill="none" stroke="#7c4a28" stroke-width="7" stroke-linecap="round" opacity="0.9"/>';
-                s += '<path d="M655,400 q10,50 -6,85 q-12,30 6,70" fill="none" stroke="#7c4a28" stroke-width="6" stroke-linecap="round" opacity="0.9"/>';
-                s += '<path d="M735,585 q-8,35 5,60 q10,25 -2,50" fill="none" stroke="#7c4a28" stroke-width="5.5" stroke-linecap="round" opacity="0.9"/>';
-                s += '<path d="M614,398 q-9,44 7,78" fill="none" stroke="#9a6a3f" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>';
-                s += '<path d="M733,588 q-6,33 4,58" fill="none" stroke="#9a6a3f" stroke-width="2" stroke-linecap="round" opacity="0.9"/>';
-                /* leques de sedimento no pé das ravinas */
-                s += '<ellipse cx="622" cy="556" rx="26" ry="8" fill="#8a5a33" opacity="0.5"/>';
-                s += '<ellipse cx="662" cy="560" rx="20" ry="7" fill="#8a5a33" opacity="0.45"/>';
-                s += '<ellipse cx="740" cy="700" rx="18" ry="6" fill="#8a5a33" opacity="0.5"/>';
-                s += palhada(T2, 46, rnd);
-            } else {
-                /* plantio acompanhando as curvas do relevo */
-                var corLinha = ano === 2 ? '#d9b64e' : '#2f7d3c';
-                var corAlt = ano === 2 ? '#b8cf9a' : '#67b26a';
-                var dash = ano === 2 ? null : '3 3';
-                for (var yy = T2.y + 16; yy <= T2.y + T2.h - 16; yy += 30) {
-                    s += faixa(T2, yy, corLinha, 4.6, dash);
-                }
-                s += contornosMorro(M1, 7, corAlt, 4, dash);
-                s += contornosMorro(M2, 6, corAlt, 4, dash);
-                if (ano === 3) {
-                    /* braquiária fina sobre os morros */
-                    s += grama({ x: T2.x, y: T2.y, w: T2.w, h: T2.h }, 130, '#2f7d3c', rnd, 7);
-                }
-                s += palhada(T2, ano === 2 ? 250 : 420, rnd);
-            }
-            s += '<rect x="' + T2.x + '" y="' + T2.y + '" width="' + T2.w + '" height="' + T2.h + '" rx="14" fill="url(#gBevel)"/>';
-            return s + '</g>';
-        }
-        /* ---------- Talhão 3: manejo avançado e diversidade ---------- */
-        function talhao3(ano) {
-            var rnd = rng(33 + ano);
-            var s = '<g clip-path="url(#clip-t3)">';
-
-            s += '<rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" fill="url(#gT3)"/>';
-
-            /* braquiária: base densa de capim */
-            s += grama(T3, 190, '#2f7d3c', rnd, 8);
-
-            /* plantio em contorno no talhão inteiro */
-            for (var yy = T3.y + 18; yy <= T3.y + T3.h - 18; yy += 34) {
-                s += faixa(T3, yy, '#57b05c', 4, '3 4');
-            }
-
-            if (ano === 1) {
-                /* crotalária ochroleuca em flor */
-                for (var i = 0; i < 64; i++) {
-                    var x = T3.x + 10 + rnd() * (T3.w - 20);
-                    var y = T3.y + 14 + rnd() * (T3.h - 28);
-                    s += '<line x1="' + num(x) + '" y1="' + num(y) + '" x2="' + num(x) + '" y2="' + num(y - 4) + '" stroke="#4c8a3a" stroke-width="1.6"/>' +
-                         '<circle cx="' + num(x) + '" cy="' + num(y - 5) + '" r="2.6" fill="#e9c937"/>';
-                }
-            } else if (ano === 2) {
-                /* faixas de trigo + milheto */
-                for (var yy2 = T3.y + 34; yy2 <= T3.y + T3.h - 30; yy2 += 68) {
-                    s += faixa(T3, yy2, '#d9b64e', 5.5);
-                }
-                for (var m = 0; m < 70; m++) {
-                    var mx = T3.x + 8 + rnd() * (T3.w - 16);
-                    var my = T3.y + 12 + rnd() * (T3.h - 24);
-                    s += '<line x1="' + num(mx) + '" y1="' + num(my) + '" x2="' + num(mx) + '" y2="' + num(my - 6) + '" stroke="#c7d17e" stroke-width="1.8" stroke-linecap="round"/>';
-                }
-                s += palhada(T3, 160, rnd);
-            } else {
-                /* consórcio braquiária + milho e muita palhada */
-                for (var mz = 0; mz < 46; mz++) {
-                    var cx = T3.x + 10 + rnd() * (T3.w - 20);
-                    var cy = T3.y + 16 + rnd() * (T3.h - 32);
-                    s += '<line x1="' + num(cx) + '" y1="' + num(cy) + '" x2="' + num(cx) + '" y2="' + num(cy - 13) + '" stroke="#6a9a3a" stroke-width="2.6" stroke-linecap="round"/>' +
-                         '<circle cx="' + num(cx) + '" cy="' + num(cy - 15) + '" r="2.6" fill="#e6c84a"/>';
-                }
-                s += palhada(T3, 220, rnd);
-            }
-            s += '<rect x="' + T3.x + '" y="' + T3.y + '" width="' + T3.w + '" height="' + T3.h + '" rx="14" fill="url(#gBevel)"/>';
-            return s + '</g>';
-        }
-
-        /* ---------- vida e água: criaturas e sedimento ---------- */
-        function vidaCena(ano) {
-            var s = '';
-
-            /* pluma de barro no rio esquerdo enquanto houver erosão */
-            if (ano === 1) {
-                s += '<path d="M 78,380 C 108,500 52,600 84,700" fill="none" stroke="#8a6a3a" stroke-width="24" stroke-linecap="round" opacity="0.45"/>';
-                s += '<ellipse cx="82" cy="565" rx="44" ry="13" fill="#8a6a3a" opacity="0.4"/>';
-            } else if (ano === 2) {
-                s += '<path d="M 78,380 C 108,500 52,600 84,700" fill="none" stroke="#8a6a3a" stroke-width="16" stroke-linecap="round" opacity="0.2"/>';
-            }
-
-            /* borboletas aparecem com a diversidade (Ano 2+) */
-            if (ano >= 2) {
-                var cores = ['#f2b134', '#e8788a', '#7ec6e8'];
-                var posis = [[890, 600], [952, 655], [992, 580], [870, 520]];
-                for (var b = 0; b < posis.length; b++) {
-                    var px = posis[b][0] + (ano === 3 ? (b - 1) * 6 : 0);
-                    var py = posis[b][1] - (ano === 3 ? b * 8 : 0);
-                    s += '<g transform="translate(' + px + ',' + py + ')"><g class="an-flutuar" style="animation-delay:' + (b * 0.9) + 's"><g class="an-asas">' +
-                         '<path d="M0,0 C -7,-7 -14,-2 -8,3 C -12,7 -6,10 -2,5 Z" fill="' + cores[b % 3] + '"/>' +
-                         '<path d="M0,0 C 7,-7 14,-2 8,3 C 12,7 6,10 2,5 Z" fill="' + cores[b % 3] + '" opacity="0.85"/>' +
-                         '<rect x="-1" y="-1" width="2" height="7" rx="1" fill="#3a2a1a"/>' +
-                         '</g></g></g>';
-                }
-            }
-
-            /* abelhas no sistema consolidado (Ano 3) */
-            if (ano === 3) {
-                for (var a = 0; a < 4; a++) {
-                    s += '<g transform="translate(' + (880 + a * 34) + ',' + (430 + a * 22) + ')"><g class="an-zumbir" style="animation-delay:' + (a * 0.3) + 's">' +
-                         '<ellipse cx="0" cy="0" rx="3.2" ry="2.2" fill="#f4c430"/>' +
-                         '<rect x="-1" y="-2.3" width="1.4" height="4.6" fill="#3a2a1a"/>' +
-                         '<ellipse cx="-3" cy="-2.5" rx="2.4" ry="1.5" fill="rgba(255,255,255,0.8)"/>' +
-                         '</g></g>';
-                }
-            }
-            return s;
-        }
-
-        /* ---------- montagem da camada do ano ---------- */
-        function montarAno(ano) {
-            var g = document.getElementById("g-ano");
-            g.innerHTML =
-                '<g class="an-entrar">' +
-                talhao1(ano) + talhao2(ano) + talhao3(ano) + vidaCena(ano) +
-                '</g>';
-        }
-        /* ============================================================
-           EXPLORAÇÃO — marcadores, fichas, pontos e final
-           ============================================================ */
-
+        /* ---------- marcadores (DOM sobre a cena 3D) ---------- */
         function montarHotspots() {
-            var g = document.getElementById("g-hotspots");
-            var s = '';
+            var cam = document.getElementById("marcadores");
+            cam.innerHTML = "";
             Object.keys(HOTSPOTS).forEach(function (id) {
                 var h = HOTSPOTS[id];
-                s += '<g class="hotspot" data-id="' + id + '" transform="translate(' + h.pos[0] + ',' + h.pos[1] + ')">';
-                if (descobertas[id]) {
-                    s += '<circle r="14" fill="#1b4d2a" stroke="#fff" stroke-width="2.5"/>' +
-                         '<text y="5" class="ok-tx">✔</text>';
-                } else {
-                    s += '<circle class="an-pulso" r="15" fill="none" stroke="#ffd54d" stroke-width="3"/>' +
-                         '<circle r="15" fill="rgba(255,255,255,0.95)" stroke="#1b4d2a" stroke-width="3"/>' +
-                         '<text y="5.5" class="hs-icone">' + h.icone + '</text>';
-                }
-                s += '<circle r="32" fill="rgba(0,0,0,0)" class="hit"/>';
-                s += '</g>';
-            });
-            g.innerHTML = s;
-
-            Array.prototype.forEach.call(g.querySelectorAll(".hotspot"), function (el) {
-                el.addEventListener("click", function () { abrirFicha(el.getAttribute("data-id")); });
+                var b = document.createElement("button");
+                b.type = "button";
+                b.className = "marcador" + (descobertas[id] ? " feito" : "");
+                b.id = "marc-" + id;
+                b.setAttribute("aria-label", h.nome);
+                b.textContent = descobertas[id] ? "✔" : h.icone;
+                b.addEventListener("click", function () { abrirFicha(id); });
+                cam.appendChild(b);
             });
         }
 
+        function aoMarcar(dados) {
+            Object.keys(dados).forEach(function (id) {
+                var el = document.getElementById("marc-" + id);
+                if (!el) return;
+                var d = dados[id];
+                el.style.display = d.visivel ? "flex" : "none";
+                el.style.left = d.x + "px";
+                el.style.top = d.y + "px";
+            });
+        }
+
+        /* ---------- HUD ---------- */
         function atualizarHud() {
             document.getElementById("hud-pontos").textContent = pontos;
             document.getElementById("hud-descobertas").textContent = descCount + "/10";
@@ -990,8 +442,7 @@
             document.getElementById("barra-rotulo").textContent =
                 descCount === 10 ? "🏆 Fazenda 100% explorada!" : "Descobertas: " + descCount + " de 10";
             [1, 2, 3].forEach(function (n) {
-                var btn = document.getElementById("ano-" + n);
-                btn.classList.toggle("ativo", n === anoAtual);
+                document.getElementById("ano-" + n).classList.toggle("ativo", n === anoAtual);
             });
         }
 
@@ -1000,7 +451,7 @@
             anoAtual = n;
             anosVistos[n] = true;
             SBCH.som("clique");
-            montarAno(anoAtual);
+            Maquete3D.trocarAno(n);
             atualizarHud();
             if (fichaAberta) renderFicha(n);
             if (!bonusEvolucao && anosVistos[1] && anosVistos[2] && anosVistos[3]) {
@@ -1012,6 +463,7 @@
             }
         }
 
+        /* ---------- ficha ---------- */
         function renderFicha(ano) {
             fichaAno = ano;
             var h = HOTSPOTS[fichaAberta];
@@ -1040,10 +492,9 @@
             } else {
                 SBCH.som("clique");
             }
-            var ficha = document.getElementById("ficha");
-            ficha.classList.remove("oculto");
+            document.getElementById("ficha").classList.remove("oculto");
             renderFicha(anoAtual);
-            if (nova) ficha.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            if (nova) document.getElementById("ficha").scrollIntoView({ behavior: "smooth", block: "nearest" });
             if (descCount === 10 && !finalizado) setTimeout(finalizar, 700);
         }
 
@@ -1058,6 +509,7 @@
             });
         });
 
+        /* ---------- final ---------- */
         function finalizar() {
             finalizado = true;
             pontos += 30;
@@ -1086,9 +538,15 @@
         }
 
         /* ---------- inicialização ---------- */
-        document.getElementById("g-estatico").innerHTML = defsSvg() + cenaEstatica();
-        document.getElementById("g-efeitos").innerHTML = cenaEfeitos();
-        montarAno(1);
+        var ok3d = Maquete3D.init({
+            container: document.getElementById("cena3d"),
+            ano: 1,
+            aoMarcar: aoMarcar
+        });
+        if (!ok3d) {
+            document.getElementById("cena3d").innerHTML =
+                '<div class="aviso-webgl">⚠️ Este jogo precisa de WebGL (3D) ativado no navegador.<br>Tente abrir no Chrome ou Edge atualizado.</div>';
+        }
         montarHotspots();
         atualizarHud();
         SBCH.desenharRanking(document.getElementById("ranking-inicial"), "maquete", " pts");

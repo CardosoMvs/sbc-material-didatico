@@ -82,13 +82,19 @@ body::after {
     100% { transform: translate(-16vw, 114vh) rotate(780deg); opacity: 0.45; }
 }
 
-/* ---------- Cabeçalho padrão dos jogos ---------- */
+/* ---------- Cabeçalho padrão dos jogos (banner de tela) ---------- */
 .topo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     max-width: 640px;
     margin: 0 auto 18px;
+    padding: 12px 16px;
+    background: linear-gradient(160deg, var(--azul-escuro) 0%, #11426a 45%, #14522e 100%);
+    border: 3px solid #081e33;
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    animation: entrar 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
 }
 
 .voltar {
@@ -134,6 +140,17 @@ body::after {
     text-transform: uppercase;
     letter-spacing: 0.01em;
     line-height: 1.2;
+}
+
+.topo .selo {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffd54d;
+    border-color: rgba(255, 213, 77, 0.45);
+}
+
+.topo .titulo {
+    color: #fff;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ---------- Cartão ---------- */

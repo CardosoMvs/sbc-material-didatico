@@ -70,6 +70,7 @@ var Maquete3D = (function () {
     var rioAmoEsq = [], rioAmoDir = [], caminhoAmo = [];
     var drone, rotores = [], vacas = [], aves = [], borboletas = [], abelhas = [], nuvens = [];
     var espuma = [];                 // espuma dos rios: { mesh, t, curva, vel }
+    var aguaMatEsq = null, espumaMatEsq = null;
     var tGlobal = 0, relogio;
     var posFixas = {};
     var MAT = {};                     // cache de materiais por cor
@@ -108,7 +109,9 @@ var Maquete3D = (function () {
     /* ====================== relevo ====================== */
     function altura(x, z) {
         var y = 0.28 * Math.sin(x * 0.32 + 1.7) * Math.cos(z * 0.38 + 0.4)
-              + 0.2 * Math.sin(z * 0.5 + 2.1) * Math.sin(x * 0.21 + 0.6);
+              + 0.2 * Math.sin(z * 0.5 + 2.1) * Math.sin(x * 0.21 + 0.6)
+              + 0.06 * Math.sin(x * 1.9 + 3.0) * Math.sin(z * 2.2 + 1.0)     /* micro-relevo */
+              + 0.04 * Math.sin(x * 3.7 + 0.5) * Math.cos(z * 4.1 + 2.0);
         for (var i = 0; i < MORROS.length; i++) {
             var m = MORROS[i];
             var dx = x - m.cx, dz = z - m.cz;
@@ -124,21 +127,25 @@ var Maquete3D = (function () {
     }
 
     /* ====================== cores do solo por ano ====================== */
-    var COR_T1 = [0xa3814f, 0xb3a05e, 0xc2ad66];
-    var COR_T2 = [0xb28c52, 0x7ba75d, 0x5f9a52];
+    var COR_T1 = [0x8a7052, 0x9c8a5e, 0xb3a06a];
+    var COR_T2 = [0x9d8055, 0x6f9e58, 0x559050];
     var COR_T3 = 0x4f9455;
+    var COR_LEITO_ESQ = [0x57462f, 0x534e39, 0x4a5640];
+    /* água barrenta do rio esquerdo clareando com o manejo (contorno
+       segura o sedimento: Ano 3 quase limpa, como no rio preservado) */
+    var COR_RIO_ESQ = [0x7d6a3e, 0x6e7a4e, 0x4e8a63];
 
     function corSolo(x, z, ano) {
         var dE = distAte(rioAmoEsq, x, z), dD = distAte(rioAmoDir, x, z);
-        var c = 0x7cae62;                                   // campo geral
+        var c = 0x79ab5e;                                   // campo geral
         var k, dC;
-        if (dE < 1.35) c = 0x6d5a3c;                        // leito do rio esquerdo
-        else if (dE < 3.4) c = 0xb9a06b;                    // margem da APP degradada
-        if (dD < 1.35) c = 0x57683f;                        // leito do rio direito
-        else if (dD < 3.4 && c === 0x7cae62) c = 0x3e7d46;   // faixa da APP preservada
-        for (k = 0; k < CAMINHOS.length; k++) {             // caminhos de terra
+        if (dE < 1.35) c = COR_LEITO_ESQ[ano - 1];           // leito do rio esquerdo
+        else if (dE < 3.4) c = 0xa89268;                      // margem da APP degradada
+        if (dD < 1.35) c = 0x46583f;                         // leito do rio direito
+        else if (dD < 3.4 && c === 0x79ab5e) c = 0x3e7d46;    // faixa da APP preservada
+        for (k = 0; k < CAMINHOS.length; k++) {              // caminhos de terra
             dC = distAte(caminhoAmo[k], x, z);
-            if (dC < 0.9) c = 0xcbb98e;
+            if (dC < 0.9) c = 0xbfab85;
         }
         if (noRect(T1, x, z)) c = COR_T1[ano - 1];
         else if (noRect(T2, x, z)) c = COR_T2[ano - 1];
@@ -152,17 +159,16 @@ var Maquete3D = (function () {
     function pintarTerreno(ano) {
         var pos = terreno.geometry.attributes.position;
         var cores = terreno.geometry.attributes.color;
-        var c = new THREE.Color(), v = new THREE.Color();
+        var c = new THREE.Color();
         for (var i = 0; i < pos.count; i++) {
             var x = pos.getX(i), z = pos.getZ(i);
             c.setHex(corSolo(x, z, ano));
-            var n = (ruido(x * 3.1, z * 2.7) - 0.5) * 0.09;
-            v.setRGB(
-                Math.max(0, c.r + n),
-                Math.max(0, c.g + n),
-                Math.max(0, c.b + n * 0.8)
-            );
-            cores.setXYZ(i, v.r, v.g, v.b);
+            /* manchas grandes + granulado: solo real nunca é cor chapada */
+            var n1 = ruido(x * 0.9 + 11, z * 0.8 + 7);
+            var n2 = ruido(x * 3.1, z * 2.7);
+            c.offsetHSL((n1 - 0.5) * 0.03, (n1 - 0.5) * 0.06,
+                (n1 - 0.5) * 0.07 + (n2 - 0.5) * 0.05);
+            cores.setXYZ(i, c.r, c.g, c.b);
         }
         cores.needsUpdate = true;
     }
@@ -437,6 +443,9 @@ var Maquete3D = (function () {
         gAno.add(lavouraApp(ano));
         pintarTerreno(ano);
         montarVida(ano);
+        /* o rio esquerdo clareia conforme o contorno segura o sedimento */
+        if (aguaMatEsq) aguaMatEsq.color.setHex(COR_RIO_ESQ[ano - 1]);
+        if (espumaMatEsq) espumaMatEsq.color.setHex(ano === 1 ? 0xa89868 : 0xcfd8c2);
     }
 
     /* ====================== cenário fixo ====================== */
@@ -524,24 +533,28 @@ var Maquete3D = (function () {
             m.receiveShadow = true;
             return m;
         }
-        gCena.add(fita(rioCurvaEsq, 0x8a7448, 0.92, 1.35));
-        gCena.add(fita(rioCurvaDir, 0x3f96c9, 0.88, 1.2));
+        var fitaEsq = fita(rioCurvaEsq, COR_RIO_ESQ[0], 0.95, 1.35);
+        aguaMatEsq = fitaEsq.material;
+        gCena.add(fitaEsq);
+        gCena.add(fita(rioCurvaDir, 0x46a1dc, 0.9, 1.2));
         /* espuma correndo rio abaixo */
         var geoEsp = new THREE.BoxGeometry(0.3, 0.03, 0.09);
         function espumas(curva, cor, n, vel) {
+            var m = mat(cor);
             for (var i = 0; i < n; i++) {
-                var e = new THREE.Mesh(geoEsp, mat(cor));
+                var e = new THREE.Mesh(geoEsp, m);
                 espuma.push({ mesh: e, t: i / n, curva: curva, vel: vel });
                 gCena.add(e);
             }
+            return m;
         }
-        espumas(rioCurvaEsq, 0x9a8660, 9, 0.028);
+        espumaMatEsq = espumas(rioCurvaEsq, 0xa89868, 9, 0.028);
         espumas(rioCurvaDir, 0xbfe8f2, 11, 0.034);
     }
 
     function montarIlha() {
         /* terreno esculpido com cores por vértice */
-        var geo = new THREE.PlaneGeometry(ILHA_W, ILHA_D, 104, 68);
+        var geo = new THREE.PlaneGeometry(ILHA_W, ILHA_D, 120, 80);
         geo.rotateX(-Math.PI / 2);
         var pos = geo.attributes.position;
         for (var i = 0; i < pos.count; i++) {

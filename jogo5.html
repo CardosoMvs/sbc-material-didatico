@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maquete SBC — Evolução do Manejo</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        /* ---------- Paisagem (a maquete) ---------- */
+        .paisagem {
+            position: relative;
+            width: 500px;
+            height: 345px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 14px;
+            background:
+                radial-gradient(circle at 70% 20%, #cfe3c2 0 90px, transparent 90px),
+                linear-gradient(180deg, #dcead0 0%, #cfe0c0 55%, #c2d6b2 100%);
+            border: 3px solid #7a5b36;
+            box-shadow: inset 0 0 40px rgba(122, 91, 54, 0.25);
+        }
+
+        .rio {
+            position: absolute;
+            top: -10px;
+            bottom: -10px;
+            width: 42px;
+            background:
+                repeating-linear-gradient(180deg, rgba(255,255,255,0.35) 0 6px, rgba(255,255,255,0) 6px 16px),
+                linear-gradient(90deg, #7db8d8, #4a90c4 60%, #3d7fb4);
+            border-radius: 40% 45% 40% 45% / 4%;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+        .rio.esquerdo { left: -4px; transform: rotate(2deg); }
+        .rio.direito { right: -4px; width: 32px; transform: rotate(-2deg); }
+
+        .solo-nu { /* erosão na APP degradada */
+            position: absolute;
+            left: 12px;
+            width: 52px;
+            height: 120px;
+            background:
+                radial-gradient(ellipse 22px 14px at 40% 30%, #a5835b 0 60%, transparent 61%),
+                radial-gradient(ellipse 26px 16px at 60% 75%, #97805c 0 60%, transparent 61%);
+        }
+
+        .bosque {
+            position: absolute;
+            right: 6px;
+            top: 16px;
+            width: 96px;
+            height: 86px;
+            background: radial-gradient(ellipse at 55% 50%, #2e6b34 0 60%, rgba(46, 107, 52, 0.45) 61% 100%);
+            border-radius: 50%;
+            opacity: 0.95;
+        }
+
+        .arvore {
+            position: absolute;
+            transform: translate(-50%, -90%);
+            line-height: 1;
+            filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.3));
+            pointer-events: none;
+            z-index: 350;
+        }
+        .arvore.murcha { filter: sepia(0.6) opacity(0.75); }
+
+        /* ---------- Talhões ---------- */
+        .pedestal {
+            position: absolute;
+            width: 92px;
+            height: 92px;
+            transform: translate(-50%, -44%) rotateX(60deg) rotateZ(45deg);
+            background: linear-gradient(135deg, #6d5231, #4f3a20);
+            border-radius: 8px;
+            z-index: 1;
+        }
+        .talhao {
+            position: absolute;
+            width: 92px;
+            height: 92px;
+            border: none;
+            border-radius: 8px;
+            padding: 0;
+            cursor: pointer;
+            font-family: inherit;
+            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg);
+            box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.16);
+            z-index: 2;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .talhao:active { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg) scale(0.96); }
+        .talhao.ativo { box-shadow: inset 0 0 0 3px var(--dourado), 0 0 0 3px rgba(229, 168, 18, 0.35); }
+
+        /* linhas de plantio: retas (vertente) ou curvas (contorno) */
+        .linhas-retas { background-image: repeating-linear-gradient(115deg, #4f9a52 0 5px, #3f8244 5px 10px); }
+        .linhas-curvas { background-image: repeating-radial-gradient(circle at 50% 170%, #4f9a52 0 6px, #3f8244 6px 12px); }
+        /* cobertura do solo: quanto mais palhada, menos solo à mostra */
+        .cob1 { background-color: #8c6942; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.16), inset 0 0 0 60px rgba(140, 105, 66, 0.88); }
+        .cob2 { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.16), inset 0 0 0 60px rgba(140, 105, 66, 0.42); }
+        .cob3 { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.16), inset 0 0 0 60px rgba(214, 190, 120, 0.30); }
+
+        .sprite {
+            position: absolute;
+            transform: translate(-50%, -80%);
+            pointer-events: none;
+            line-height: 1;
+            filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.25));
+            z-index: 150;
+        }
+        .sprite.palhada { font-size: 12px; opacity: 0.95; }
+        .sprite.cultura { font-size: 16px; }
+
+        .placa-talhao {
+            position: absolute;
+            transform: translateX(-50%);
+            background: var(--azul-escuro);
+            color: #ffd54d;
+            font-size: 0.62em;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 999px;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+            z-index: 300;
+            pointer-events: none;
+        }
+
+        .placa {
+            position: absolute;
+            background: #fff;
+            border: 2px solid #7a5b36;
+            color: #4f3a20;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 2px 7px;
+            border-radius: 6px;
+            box-shadow: 2px 2px 0 rgba(79, 58, 32, 0.35);
+            transform: rotate(-2deg);
+            white-space: nowrap;
+            z-index: 300;
+            pointer-events: none;
+        }
+        .placa.direita { transform: rotate(2deg); }
+
+        /* ---------- Vidas da maquete: drone, aves, vacas ---------- */
+        .drone {
+            position: absolute;
+            top: 26px;
+            left: -60px;
+            font-size: 20px;
+            z-index: 400;
+            animation: cruzar 13s linear infinite;
+            filter: drop-shadow(1px 3px 1px rgba(0, 0, 0, 0.25));
+        }
+        @keyframes cruzar {
+            from { left: -60px; }
+            to { left: 520px; }
+        }
+        .ave {
+            position: absolute;
+            font-size: 14px;
+            z-index: 400;
+            animation: voar 3.2s ease-in-out infinite alternate;
+            filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.2));
+        }
+        @keyframes voar {
+            from { transform: translate(0, 0); }
+            to { transform: translate(-14px, -8px); }
+        }
+
+        .vaca {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            transition: left 1.2s ease-in-out, top 1.2s ease-in-out;
+            pointer-events: none;
+            z-index: 500;
+        }
+        .vaca .vaca-corpo { display: inline-block; font-size: 22px; line-height: 1; filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.3)); }
+        .vaca.virada .vaca-corpo { transform: scaleX(-1); }
+        .vaca.comendo .vaca-corpo { animation: mastigar 0.35s ease-in-out infinite; }
+        @keyframes mastigar {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(2px) rotate(-9deg); }
+        }
+
+        /* ---------- Desafios ---------- */
+        .rodada-chip {
+            display: inline-block;
+            background: var(--dourado);
+            color: var(--tinta);
+            font-weight: 900;
+            font-size: 0.78em;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border-radius: 999px;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            transform: rotate(-2deg);
+            margin-bottom: 8px;
+        }
+        .pergunta { font-size: 1.08em; font-weight: 800; margin: 6px 0 10px; }
+
+        .dica-talhao {
+            margin-top: 10px;
+            font-size: 0.82em;
+            color: var(--tinta-suave);
+            background: var(--verde-claro);
+            border: 2px solid #bcd9c2;
+            border-radius: 12px;
+            padding: 8px 12px;
+            min-height: 2.4em;
+        }
+
+        @media (max-width: 520px) {
+            .paisagem { transform: scale(0.78); transform-origin: top center; margin-bottom: -74px; }
+        }
+        @media (max-width: 400px) {
+            .paisagem { transform: scale(0.66); transform-origin: top center; margin-bottom: -114px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Maquete da Fazenda</h1>
+        </div>
+    </header>
+
+    <div class="placar">
+        <div class="placar-item">
+            <div class="valor" id="h-pontos">0</div>
+            <div class="nome">Pontos</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="h-rodada">1/6</div>
+            <div class="nome">Desafio</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="h-anos">Ano 1</div>
+            <div class="nome">Evolução</div>
+        </div>
+    </div>
+
+    <!-- Maquete -->
+    <main class="cartao" id="tela-maquete" style="padding:16px;">
+        <p class="sub" style="text-align:center;">Uma fazenda em miniatura: <strong>3 talhões</strong> evoluindo ao longo de
+        <strong>3 anos</strong>, um rio com <strong>APP degradada</strong> à esquerda e, à direita, <strong>APP e Reserva
+        Legal preservadas</strong>. Complete os desafios para evoluir o manejo — as vacas já estão pastando!</p>
+
+        <div class="paisagem" id="paisagem">
+            <div class="rio esquerdo"></div>
+            <div class="solo-nu" style="top:40px;"></div>
+            <div class="solo-nu" style="top:200px;"></div>
+            <div class="bosque"></div>
+            <div class="rio direito"></div>
+
+            <div class="drone">🛸</div>
+            <span class="ave" style="left:395px;top:66px;">🐦</span>
+            <span class="ave" style="left:432px;top:96px;animation-delay:0.9s;">🐦</span>
+
+            <!-- placas -->
+            <span class="placa" style="left:6px;top:318px;">APP degradada</span>
+            <span class="placa direita" style="right:2px;top:286px;">APP preservada</span>
+            <span class="placa direita" style="right:10px;top:6px;">RL preservada e excedente</span>
+        </div>
+
+        <div class="dica-talhao" id="dica-talhao">👆 Toque num talhão para conhecer o sistema dele.</div>
+    </main>
+
+    <!-- Desafio -->
+    <main class="cartao" id="tela-desafio">
+        <span class="rodada-chip" id="rodada-chip">Desafio 1/6</span>
+        <p class="pergunta" id="pergunta">…</p>
+        <div id="opcoes"></div>
+        <div class="feedback" id="feedback" style="display:none;"></div>
+        <button class="botao oculto" id="btn-proxima" style="width:100%;">Próximo ➜</button>
+    </main>
+
+    <!-- Fim -->
+    <main class="cartao tela-final oculto" id="tela-final">
+        <div class="trofeu" id="trofeu">🏞️</div>
+        <h2 id="final-titulo">Fazenda evoluída!</h2>
+        <span class="classe-sbc bronze" id="final-classe">Bronze SBC</span>
+        <p id="final-msg" style="font-size:1.05em;"></p>
+        <p class="sub" id="final-detalhe"></p>
+        <section style="margin-top:14px;text-align:left;">
+            <h2 style="font-size:1em;">🏅 Melhores fazendas do estande</h2>
+            <ul class="lista-ranking" id="ranking"></ul>
+        </section>
+        <button class="botao" onclick="location.reload()">Reconstruir a maquete</button>
+        <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+    </main>
+
+    <footer class="rodape">
+        <img class="logo-rodape" src="logo-embrapa-alfa.png" alt="Embrapa">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+
+        /* ================= Talhões ================= */
+        var CENTROS = [{ x: 108, y: 200 }, { x: 250, y: 185 }, { x: 378, y: 200 }];
+        var NOMES = ["Talhão 1", "Talhão 2", "Talhão 3"];
+        var DICAS = [
+            "🌱 Talhão 1 — sucessão soja → milho safrinha. A história dele é o crescimento da palhada: de quase nada até mais de 90% de cobertura.",
+            "⛰️ Talhão 2 — relevo forte. Do Ano 2 em diante as linhas seguem as curvas do terreno (plantio em contorno), que seguram a erosão.",
+            "🐄 Talhão 3 — o mais avançado: contorno desde o Ano 1, braquiária, crotalária, milheto… é aqui que as vacas pastam!"
+        ];
+        var estadoAno = [1, 1, 1];
+
+        var paisagem = document.getElementById("paisagem");
+        var plataformas = [];
+        var chipsAno = [];
+
+        // desenhos por talhão e ano: linhas, cobertura e culturas
+        var VISUAL = [
+            null,
+            [ // Ano 1
+                { linhas: "retas", cob: 1, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 1 },
+                { linhas: "retas", cob: 2, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 5 },
+                { linhas: "retas", cob: 3, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 11 }
+            ],
+            [ // Talhão 2
+                { linhas: "retas", cob: 1, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 2 },
+                { linhas: "curvas", cob: 2, culturas: [["🌱", -20, -6], ["🌾", 22, 6]], palhada: 8 },
+                { linhas: "curvas", cob: 3, culturas: [["🌽", 18, 4], ["🌿", -22, 10]], palhada: 12 }
+            ],
+            [ // Talhão 3
+                { linhas: "curvas", cob: 2, culturas: [["🌿", -20, 8], ["🌼", 18, -6]], palhada: 6 },
+                { linhas: "curvas", cob: 2, culturas: [["🌾", -22, -6], ["🌱", 20, 8]], palhada: 9 },
+                { linhas: "curvas", cob: 3, culturas: [["🌽", -18, 6], ["🌿", 20, -2]], palhada: 12 }
+            ]
+        ];
+        var OFFS_PALHADA = [[-42, -8], [-26, -20], [-6, -26], [16, -22], [34, -12], [44, 2], [-38, 10], [-18, 0], [2, 10], [22, 0], [36, 16], [-4, -6]];
+
+        for (var t = 0; t < 3; t++) {
+            (function (t) {
+                var centro = CENTROS[t];
+
+                var pedestal = document.createElement("div");
+                pedestal.className = "pedestal";
+                pedestal.style.left = centro.x + "px";
+                pedestal.style.top = (centro.y + (t === 1 ? 22 : 12)) + "px"; // Talhão 2: relevo mais alto
+                paisagem.appendChild(pedestal);
+
+                var b = document.createElement("button");
+                b.className = "talhao cob1 linhas-retas";
+                b.style.left = centro.x + "px";
+                b.style.top = (centro.y - (t === 1 ? 12 : 0)) + "px";
+                b.setAttribute("aria-label", NOMES[t]);
+                b.addEventListener("click", function () { mostrarDica(t); });
+                paisagem.appendChild(b);
+                plataformas.push(b);
+
+                var chip = document.createElement("span");
+                chip.className = "placa-talhao";
+                chip.style.left = centro.x + "px";
+                chip.style.top = (centro.y - (t === 1 ? 12 : 0) - 62) + "px";
+                paisagem.appendChild(chip);
+                b._chip = chip;
+
+                var camada = document.createElement("div"); // sprites deste talhão
+                paisagem.appendChild(camada);
+                b._camada = camada;
+            })(t);
+        }
+
+        // APP preservada (faixa densa entre o Talhão 3 e o rio) + RL ao fundo
+        [[446, 150, 22], [452, 182, 24], [444, 214, 23], [452, 246, 21], [444, 274, 19]].forEach(function (a) {
+            addArvore(a[0], a[1], a[2], false);
+        });
+        [[442, 40, 26], [468, 54, 28], [452, 80, 24], [480, 90, 22], [434, 94, 20], [464, 110, 18]].forEach(function (a) {
+            addArvore(a[0], a[1], a[2], false);
+        });
+        // APP degradada: poucas árvores, murchas
+        [[30, 96, 15], [22, 176, 13]].forEach(function (a) {
+            addArvore(a[0], a[1], a[2], true);
+        });
+
+        function addArvore(x, y, tam, murcha) {
+            var s = document.createElement("span");
+            s.className = "arvore" + (murcha ? " murcha" : "");
+            s.style.left = x + "px";
+            s.style.top = y + "px";
+            s.style.fontSize = tam + "px";
+            s.textContent = "🌳";
+            paisagem.appendChild(s);
+        }
+
+        function aplicarVisual(t) {
+            var ano = estadoAno[t];
+            var cfg = VISUAL[t + 1][ano - 1]; // VISUAL: posição 0 = Talhão 1, índice interno = ano - 1
+            var b = plataformas[t];
+            b.className = "talhao cob" + cfg.cob + (cfg.linhas === "curvas" ? " linhas-curvas" : " linhas-retas");
+            b._chip.textContent = NOMES[t] + " · Ano " + ano;
+
+            b._camada.innerHTML = "";
+            cfg.culturas.forEach(function (c) {
+                addSprite(b._camada, CENTROS[t].x + c[1], CENTROS[t].y - (t === 1 ? 12 : 0) + c[2], "cultura", c[0]);
+            });
+            var offs = OFFS_PALHADA.slice(0, cfg.palhada);
+            offs.forEach(function (o) {
+                addSprite(b._camada, CENTROS[t].x + o[0], CENTROS[t].y - (t === 1 ? 12 : 0) + o[1] * 0.55 + 6, "palhada", "🌾");
+            });
+        }
+
+        function addSprite(camada, x, y, classe, icone) {
+            var s = document.createElement("span");
+            s.className = "sprite " + classe;
+            s.style.left = x + "px";
+            s.style.top = y + "px";
+            s.textContent = icone;
+            camada.appendChild(s);
+        }
+
+        function mostrarDica(t) {
+            document.getElementById("dica-talhao").textContent = DICAS[t];
+            plataformas.forEach(function (b, i) { b.classList.toggle("ativo", i === t); });
+            SBCH.som("clique");
+        }
+
+        /* ================= Vacas (pastam na braquiária) ================= */
+        var vacas = [];
+        function soltarVaca(centro, pontos) {
+            var el = document.createElement("span");
+            el.className = "vaca";
+            el.innerHTML = '<span class="vaca-corpo">🐄</span>';
+            el.style.left = pontos[0][0] + "px";
+            el.style.top = pontos[0][1] + "px";
+            paisagem.appendChild(el);
+            vacas.push({ el: el, pontos: pontos, idx: 0 });
+        }
+        var PONTOS_T3 = [[362, 216], [392, 226], [374, 240], [396, 208]];
+        soltarVaca(CENTROS[2], PONTOS_T3);
+        soltarVaca(CENTROS[2], PONTOS_T3.slice().reverse());
+        var PONTOS_T2 = [[240, 200], [262, 212], [246, 226]];
+        var vacaT2Soltou = false;
+
+        setInterval(function () {
+            vacas.forEach(function (v) {
+                var prox = (v.idx + 1) % v.pontos.length;
+                v.idx = prox;
+                var alvo = v.pontos[prox];
+                v.el.classList.toggle("virada", alvo[0] < parseFloat(v.el.style.left));
+                v.el.style.left = alvo[0] + "px";
+                v.el.style.top = alvo[1] + "px";
+                setTimeout(function () {
+                    v.el.classList.add("comendo");
+                    if (Math.random() < 0.5) SBCH.popupPontos(v.el, "🌿");
+                    setTimeout(function () { v.el.classList.remove("comendo"); }, 1300);
+                }, 1200);
+            });
+        }, 3400);
+
+        /* ================= Desafios (briefing da maquete) ================= */
+        var RODADAS = [
+            {
+                talhao: 0,
+                pergunta: "Talhão 1 · Ano 1 → Ano 2: o solo está quase descoberto (0–10% de palhada). Como começar a protegê-lo mantendo a soja e o milho?",
+                opcoes: [
+                    { t: "Sucessão soja → milho safrinha, deixando a palha da colheita sobre o solo", ok: true, por: "É a própria sucessão que vai acumulando palhada ano após ano." },
+                    { t: "Arar e gradear o solo antes do milho para 'arejar a terra'", ok: false, por: "O preparo convencional expõe o solo e devolve o carbono ao ar — o caminho é palha, não arado." },
+                    { t: "Queimar os restos da colheita para plantar limpo", ok: false, por: "A queima destrói justamente a palha que protege o solo e imobiliza carbono." }
+                ]
+            },
+            {
+                talhao: 0,
+                pergunta: "Talhão 1 · Ano 2 → Ano 3: já dá para ver 40% de cobertura. Como chegar ao solo praticamente todo protegido?",
+                opcoes: [
+                    { t: "Manter a sucessão soja–milho todos os anos até superar 90% de palhada", ok: true, por: "A constância da sucessão acumula palhada: no Ano 3, mais de 90% do solo coberto." },
+                    { t: "Deixar a área em pousio descoberto entre as safras", ok: false, por: "Solo nu perde água, matéria orgânica e carbono — o contrário da proteção." },
+                    { t: "Retirar a palha da área para vender como cama de aviário", ok: false, por: "Sem palha não há SPD pleno: a cobertura é o segredo do balanço de carbono." }
+                ]
+            },
+            {
+                talhao: 1,
+                pergunta: "Talhão 2 · Ano 1 → Ano 2: relevo forte e linhas retas morro abaixo — a água leva solo adentro. O que fazer?",
+                opcoes: [
+                    { t: "Plantar em contorno, acompanhando as curvas do relevo", ok: true, por: "As curvas de nível quebram a velocidade da enxurrada e seguram o solo." },
+                    { t: "Manter as linhas retas no sentido da vertente e aumentar a velocidade da operação", ok: false, por: "Linha reta morro abaixo é canal de erosão: quanto mais água corre, mais solo vai embora." },
+                    { t: "Reduzir a palhada para o solo 'secar mais rápido'", ok: false, por: "No relevo forte, é a palha + contorno que protegem; solo nu é erosão garantida." }
+                ]
+            },
+            {
+                talhao: 1,
+                pergunta: "Talhão 2 · Ano 2 → Ano 3: o contorno já está funcionando. Como consolidar o sistema?",
+                opcoes: [
+                    { t: "Soja → milho safrinha → braquiária como cobertura de solo", ok: true, por: "A braquiária forma palhada abundante e raízes profundas: solo protegido o ano todo." },
+                    { t: "Voltar ao plantio reto morro abaixo para economizar diesel", ok: false, por: "Sem contorno, a enxurrada volta — e o diesel economizado não paga a erosão." },
+                    { t: "Abrir terra novo nas encostas para plantar mais", ok: false, por: "Expansão sobre área frágil degrada o solo e a água — o SBC valoriza intensificar a área já aberta." }
+                ]
+            },
+            {
+                talhao: 2,
+                pergunta: "Talhão 3 · Ano 1 → Ano 2: já é contorno desde o início, com braquiária e crotalária. Qual cobertura diversifica mais?",
+                opcoes: [
+                    { t: "Soja + milheto + trigo no mesmo sistema, em contorno", ok: true, por: "Mais espécies = mais raízes diferentes explorando o solo e mais palhada variada." },
+                    { t: "Soja solteira, sem nenhuma cobertura entre as safras", ok: false, por: "Monocultivo sem cobertura empobrece o sistema — a diversidade é o que move o carbono." },
+                    { t: "Trocar a braquiária por solo nu 'para descansar'", ok: false, por: "Descanso para o solo é com planta de cobertura, não com terra exposta." }
+                ]
+            },
+            {
+                talhao: 2,
+                pergunta: "Talhão 3 · Ano 2 → Ano 3: último passo para o manejo mais avançado da maquete!",
+                opcoes: [
+                    { t: "Consórcio braquiária–milho: topo de diversidade e palhada", ok: true, por: "É o nível máximo da maquete: alta diversidade, contorno e muito solo coberto." },
+                    { t: "Queimar a palhada acumulada para facilitar a semeadura", ok: false, por: "Queimar é jogar fora anos de carbono imobilizado no solo." },
+                    { t: "Avançar a lavoura até a beira do rio preservado", ok: false, por: "A faixa de APP preservada fica entre o Talhão 3 e o rio — ela protege a água e não se toca." }
+                ]
+            }
+        ];
+
+        var rodadaAtual = 0;
+        var tentativas = 0;
+        var pontos = 0;
+        var finalizada = false;
+
+        function atualizarHud() {
+            document.getElementById("h-pontos").textContent = pontos;
+            document.getElementById("h-rodada").textContent = Math.min(rodadaAtual + 1, 6) + "/6";
+            document.getElementById("h-anos").textContent = "Ano " + Math.min.apply(null, estadoAno);
+        }
+
+        function montarRodada() {
+            var rd = RODADAS[rodadaAtual];
+            tentativas = 0;
+            document.getElementById("rodada-chip").textContent =
+                "Desafio " + (rodadaAtual + 1) + "/6 · " + NOMES[rd.talhao] + " · Ano " + estadoAno[rd.talhao] + " → Ano " + (estadoAno[rd.talhao] + 1);
+            document.getElementById("pergunta").textContent = rd.pergunta;
+            mostrarDica(rd.talhao);
+            plataformas[rd.talhao].classList.add("ativo");
+
+            var caixa = document.getElementById("opcoes");
+            caixa.innerHTML = "";
+            SBCH.embaralhar(rd.opcoes.slice()).forEach(function (op) {
+                var b = document.createElement("button");
+                b.className = "opcao";
+                b.textContent = op.t;
+                b.addEventListener("click", function () { responder(op, b); });
+                caixa.appendChild(b);
+            });
+
+            var fb = document.getElementById("feedback");
+            fb.className = "feedback";
+            fb.style.display = "none";
+            document.getElementById("btn-proxima").classList.add("oculto");
+            atualizarHud();
+        }
+
+        function responder(op, botao) {
+            var rd = RODADAS[rodadaAtual];
+            var fb = document.getElementById("feedback");
+
+            if (op.ok) {
+                var ganho = tentativas === 0 ? 20 : tentativas === 1 ? 10 : 5;
+                pontos += ganho;
+                estadoAno[rd.talhao]++;
+                plataformas[rd.talhao].classList.remove("ativo");
+                aplicarVisual(rd.talhao);
+
+                // vaca nova quando o Talhão 2 chega à braquiária (Ano 3)
+                if (rd.talhao === 1 && estadoAno[1] === 3 && !vacaT2Soltou) {
+                    vacaT2Soltou = true;
+                    soltarVaca(CENTROS[1], PONTOS_T2);
+                }
+
+                botao.classList.add("certa");
+                fb.className = "feedback ok";
+                fb.innerHTML = "<strong>✔ Talhão evoluído! +" + ganho + " pts</strong><br>" + op.por;
+                SBCH.som("acerto");
+                SBCH.popupPontos(document.getElementById("h-pontos"), "+" + ganho);
+                document.getElementById("opcoes").querySelectorAll(".opcao").forEach(function (b) { b.disabled = true; });
+                var prox = document.getElementById("btn-proxima");
+                prox.classList.remove("oculto");
+                prox.textContent = rodadaAtual < RODADAS.length - 1 ? "Próximo desafio ➜" : "Ver a fazenda pronta 🏁";
+                atualizarHud();
+            } else {
+                tentativas++;
+                botao.classList.add("errada");
+                botao.disabled = true;
+                fb.className = "feedback erro";
+                fb.innerHTML = "<strong>✖ Não é por aí…</strong><br>" + op.por;
+                SBCH.som("erro");
+            }
+            fb.style.display = "block";
+        }
+
+        document.getElementById("btn-proxima").addEventListener("click", function () {
+            rodadaAtual++;
+            if (rodadaAtual < RODADAS.length) montarRodada();
+            else finalizar();
+        });
+
+        function finalizar() {
+            finalizada = true;
+            var classe, titulo, icone;
+            if (pontos >= 100) { classe = "ouro"; titulo = "Fazenda de elite SBC!"; icone = "🏆"; }
+            else if (pontos >= 70) { classe = "prata"; titulo = "Grande evolução na paisagem!"; icone = "🥈"; }
+            else if (pontos >= 40) { classe = "bronze"; titulo = "A fazenda já evoluiu!"; icone = "🥉"; }
+            else { classe = ""; titulo = "A paisagem está em transição"; icone = "🌱"; }
+
+            var cEl = document.getElementById("final-classe");
+            cEl.className = "classe-sbc " + classe;
+            cEl.textContent = classe === "ouro" ? "Ouro SBC" : classe === "prata" ? "Prata SBC" : classe === "bronze" ? "Bronze SBC" : "Em transição";
+            document.getElementById("trofeu").textContent = icone;
+            document.getElementById("final-titulo").textContent = titulo;
+            document.getElementById("final-msg").textContent = "Você evoluiu os três talhões somando " + pontos + " pontos.";
+            document.getElementById("final-detalhe").textContent =
+                "Do Ano 1 ao Ano 3 a paisagem conta a história: mais palhada, plantio em contorno, mais diversidade de coberturas, " +
+                "solo e água protegidos — e o gado integrado na braquiária. É esse conjunto que reduz a intensidade de emissões do SBC.";
+
+            SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
+            document.getElementById("tela-maquete").classList.add("oculto");
+            document.getElementById("tela-desafio").classList.add("oculto");
+            document.querySelector(".placar").classList.add("oculto");
+            document.getElementById("tela-final").classList.remove("oculto");
+
+            SBCH.pedirNomeESalvar("maquete", pontos, true, function () {
+                SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
+            });
+            SBCH.confete();
+            SBCH.som("vitoria");
+        }
+
+        /* ================= Início ================= */
+        for (var i = 0; i < 3; i++) aplicarVisual(i);
+        montarRodada();
+    </script>
+</body>
+</html>

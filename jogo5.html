@@ -6,223 +6,66 @@
     <title>Maquete SBC — Evolução do Manejo</title>
     <link rel="stylesheet" href="estilo-sbc.css">
     <style>
-        /* ---------- Paisagem (a maquete) ---------- */
-        .paisagem {
-            position: relative;
-            width: 500px;
-            height: 345px;
-            margin: 0 auto;
+        /* ---------- Moldura da maquete ---------- */
+        .moldura {
+            border: 10px solid #6d5231;
+            border-radius: 20px;
+            box-shadow: inset 0 0 0 3px #4f3a20, var(--sombra);
             overflow: hidden;
-            border-radius: 14px;
-            background:
-                radial-gradient(circle at 70% 20%, #cfe3c2 0 90px, transparent 90px),
-                linear-gradient(180deg, #dcead0 0%, #cfe0c0 55%, #c2d6b2 100%);
-            border: 3px solid #7a5b36;
-            box-shadow: inset 0 0 40px rgba(122, 91, 54, 0.25);
+            background: #9ec27c;
         }
+        #paisagem { display: block; width: 100%; height: auto; }
+        #paisagem text { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
 
-        .rio {
-            position: absolute;
-            top: -10px;
-            bottom: -10px;
-            width: 42px;
-            background:
-                repeating-linear-gradient(180deg, rgba(255,255,255,0.35) 0 6px, rgba(255,255,255,0) 6px 16px),
-                linear-gradient(90deg, #7db8d8, #4a90c4 60%, #3d7fb4);
-            border-radius: 40% 45% 40% 45% / 4%;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
-        }
-        .rio.esquerdo { left: -4px; transform: rotate(2deg); }
-        .rio.direito { right: -4px; width: 32px; transform: rotate(-2deg); }
-
-        .solo-nu { /* erosão na APP degradada */
-            position: absolute;
-            left: 12px;
-            width: 52px;
-            height: 120px;
-            background:
-                radial-gradient(ellipse 22px 14px at 40% 30%, #a5835b 0 60%, transparent 61%),
-                radial-gradient(ellipse 26px 16px at 60% 75%, #97805c 0 60%, transparent 61%);
-        }
-
-        .bosque {
-            position: absolute;
-            right: 6px;
-            top: 16px;
-            width: 96px;
-            height: 86px;
-            background: radial-gradient(ellipse at 55% 50%, #2e6b34 0 60%, rgba(46, 107, 52, 0.45) 61% 100%);
-            border-radius: 50%;
-            opacity: 0.95;
-        }
-
-        .arvore {
-            position: absolute;
-            transform: translate(-50%, -90%);
-            line-height: 1;
-            filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.3));
-            pointer-events: none;
-            z-index: 350;
-        }
-        .arvore.murcha { filter: sepia(0.6) opacity(0.75); }
-
-        /* ---------- Talhões ---------- */
-        .pedestal {
-            position: absolute;
-            width: 92px;
-            height: 92px;
-            transform: translate(-50%, -44%) rotateX(60deg) rotateZ(45deg);
-            background: linear-gradient(135deg, #6d5231, #4f3a20);
-            border-radius: 8px;
-            z-index: 1;
-        }
-        .talhao {
-            position: absolute;
-            width: 92px;
-            height: 92px;
-            border: none;
-            border-radius: 8px;
-            padding: 0;
-            cursor: pointer;
-            font-family: inherit;
-            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg);
-            box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.16);
-            z-index: 2;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .talhao:active { transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg) scale(0.96); }
-        .talhao.ativo { box-shadow: inset 0 0 0 3px var(--dourado), 0 0 0 3px rgba(229, 168, 18, 0.35); }
-
-        /* linhas de plantio: retas (vertente) ou curvas (contorno) */
-        .linhas-retas { background-image: repeating-linear-gradient(115deg, #4f9a52 0 5px, #3f8244 5px 10px); }
-        .linhas-curvas { background-image: repeating-radial-gradient(circle at 50% 170%, #4f9a52 0 6px, #3f8244 6px 12px); }
-        /* cobertura do solo: quanto mais palhada, menos solo à mostra */
-        .cob1 { background-color: #8c6942; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.16), inset 0 0 0 60px rgba(140, 105, 66, 0.88); }
-        .cob2 { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.16), inset 0 0 0 60px rgba(140, 105, 66, 0.42); }
-        .cob3 { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.16), inset 0 0 0 60px rgba(214, 190, 120, 0.30); }
-
-        .sprite {
-            position: absolute;
-            transform: translate(-50%, -80%);
-            pointer-events: none;
-            line-height: 1;
-            filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.25));
-            z-index: 150;
-        }
-        .sprite.palhada { font-size: 12px; opacity: 0.95; }
-        .sprite.cultura { font-size: 16px; }
-
-        .placa-talhao {
-            position: absolute;
-            transform: translateX(-50%);
-            background: var(--azul-escuro);
-            color: #ffd54d;
-            font-size: 0.62em;
-            font-weight: 900;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            padding: 3px 10px;
-            border-radius: 999px;
-            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
-            white-space: nowrap;
-            z-index: 300;
-            pointer-events: none;
-        }
-
-        .placa {
-            position: absolute;
-            background: #fff;
-            border: 2px solid #7a5b36;
-            color: #4f3a20;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            padding: 2px 7px;
-            border-radius: 6px;
-            box-shadow: 2px 2px 0 rgba(79, 58, 32, 0.35);
-            transform: rotate(-2deg);
-            white-space: nowrap;
-            z-index: 300;
-            pointer-events: none;
-        }
-        .placa.direita { transform: rotate(2deg); }
-
-        /* ---------- Vidas da maquete: drone, aves, vacas ---------- */
-        .drone {
-            position: absolute;
-            top: 26px;
-            left: -60px;
-            font-size: 20px;
-            z-index: 400;
-            animation: cruzar 13s linear infinite;
-            filter: drop-shadow(1px 3px 1px rgba(0, 0, 0, 0.25));
-        }
-        @keyframes cruzar {
-            from { left: -60px; }
-            to { left: 520px; }
-        }
-        .ave {
-            position: absolute;
-            font-size: 14px;
-            z-index: 400;
-            animation: voar 3.2s ease-in-out infinite alternate;
-            filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.2));
-        }
-        @keyframes voar {
-            from { transform: translate(0, 0); }
-            to { transform: translate(-14px, -8px); }
-        }
-
-        .vaca {
-            position: absolute;
-            transform: translate(-50%, -100%);
-            transition: left 1.2s ease-in-out, top 1.2s ease-in-out;
-            pointer-events: none;
-            z-index: 500;
-        }
-        .vaca .vaca-corpo { display: inline-block; font-size: 22px; line-height: 1; filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.3)); }
-        .vaca.virada .vaca-corpo { transform: scaleX(-1); }
-        .vaca.comendo .vaca-corpo { animation: mastigar 0.35s ease-in-out infinite; }
-        @keyframes mastigar {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(2px) rotate(-9deg); }
-        }
-
-        /* ---------- Desafios ---------- */
-        .rodada-chip {
-            display: inline-block;
-            background: var(--dourado);
-            color: var(--tinta);
-            font-weight: 900;
-            font-size: 0.78em;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            padding: 3px 12px;
-            border-radius: 999px;
-            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
-            transform: rotate(-2deg);
-            margin-bottom: 8px;
-        }
-        .pergunta { font-size: 1.08em; font-weight: 800; margin: 6px 0 10px; }
+        .g-talhao { cursor: pointer; }
+        .borda-talhao { fill: none; stroke: var(--dourado); stroke-width: 4; opacity: 0; transition: opacity .25s; }
+        .g-talhao.ativo .borda-talhao { opacity: 1; }
+        .g-talhao.evoluiu { animation: pular .5s ease; }
+        .g-talhao:hover .solo-talhao { filter: brightness(1.05); }
 
         .dica-talhao {
-            margin-top: 10px;
-            font-size: 0.82em;
+            margin-top: 12px;
+            font-size: 0.88em;
             color: var(--tinta-suave);
             background: var(--verde-claro);
             border: 2px solid #bcd9c2;
             border-radius: 12px;
-            padding: 8px 12px;
-            min-height: 2.4em;
+            padding: 10px 14px;
+            min-height: 2.6em;
         }
 
-        @media (max-width: 520px) {
-            .paisagem { transform: scale(0.78); transform-origin: top center; margin-bottom: -74px; }
+        /* ---------- Vidas da maquete ---------- */
+        .drone-g { animation: droneVoar 24s linear infinite; }
+        @keyframes droneVoar { from { transform: translateX(-90px); } to { transform: translateX(1050px); } }
+        .drone-bob { animation: bobDrone 3.2s ease-in-out infinite alternate; }
+        @keyframes bobDrone { to { transform: translateY(7px); } }
+        .rotor { animation: girar .4s linear infinite; transform-box: fill-box; transform-origin: center; }
+
+        .ave { animation: voarAve 3.4s ease-in-out infinite alternate; }
+        @keyframes voarAve { to { transform: translate(-16px, -9px); } }
+
+        .nuvem { animation: deriva 26s ease-in-out infinite alternate; }
+        @keyframes deriva { to { transform: translateX(24px); } }
+
+        .correnteza { stroke-dasharray: 5 45; animation: fluir 2.6s linear infinite; }
+        @keyframes fluir { to { stroke-dashoffset: -50; } }
+
+        .vaca-g { transition: transform 1.4s ease-in-out; }
+        .vaca-comendo .vaca-cabeca { animation: mastigar .4s ease-in-out infinite; transform-box: fill-box; transform-origin: 20% 80%; }
+        @keyframes mastigar {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-9deg); }
         }
-        @media (max-width: 400px) {
-            .paisagem { transform: scale(0.66); transform-origin: top center; margin-bottom: -114px; }
-        }
+
+        .borboleta { animation: flutuar 5s ease-in-out infinite alternate; }
+        @keyframes flutuar { to { transform: translate(-14px, -10px); } }
+        .asaA { animation: asaA .38s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: right center; }
+        .asaB { animation: asaB .38s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: left center; }
+        @keyframes asaA { to { transform: scaleX(.3); } }
+        @keyframes asaB { to { transform: scaleX(.3); } }
+
+        .raios { animation: girar 40s linear infinite; transform-box: fill-box; transform-origin: center; }
+        @keyframes girar { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -245,8 +88,12 @@
             <div class="nome">Desafio</div>
         </div>
         <div class="placar-item">
-            <div class="valor" id="h-anos">Ano 1</div>
+            <div class="valor" id="h-ano">Ano 1</div>
             <div class="nome">Evolução</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="h-cob">27%</div>
+            <div class="nome">Cobertura do solo</div>
         </div>
     </div>
 
@@ -256,26 +103,140 @@
         <strong>3 anos</strong>, um rio com <strong>APP degradada</strong> à esquerda e, à direita, <strong>APP e Reserva
         Legal preservadas</strong>. Complete os desafios para evoluir o manejo — as vacas já estão pastando!</p>
 
-        <div class="paisagem" id="paisagem">
-            <div class="rio esquerdo"></div>
-            <div class="solo-nu" style="top:40px;"></div>
-            <div class="solo-nu" style="top:200px;"></div>
-            <div class="bosque"></div>
-            <div class="rio direito"></div>
+        <div class="moldura">
+        <svg id="paisagem" viewBox="0 0 960 656" role="img" aria-label="Maquete da fazenda SBC">
+            <defs>
+                <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#bfe3f7"/>
+                    <stop offset="1" stop-color="#eef7e0"/>
+                </linearGradient>
+                <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#86b068"/>
+                    <stop offset="1" stop-color="#5d8b47"/>
+                </linearGradient>
+                <linearGradient id="gSolo" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#96754c"/>
+                    <stop offset="1" stop-color="#7a5a38"/>
+                </linearGradient>
+                <radialGradient id="gMound" cx="0.48" cy="0.22" r="0.95">
+                    <stop offset="0" stop-color="#a3c881"/>
+                    <stop offset="0.55" stop-color="#7fa65f"/>
+                    <stop offset="1" stop-color="#5d8b47"/>
+                </radialGradient>
+                <filter id="fBlur" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="4"/>
+                </filter>
+            </defs>
 
-            <div class="drone">🛸</div>
-            <span class="ave" style="left:395px;top:66px;">🐦</span>
-            <span class="ave" style="left:432px;top:96px;animation-delay:0.9s;">🐦</span>
+            <!-- céu -->
+            <rect width="960" height="210" fill="url(#gSky)"/>
 
-            <!-- placas -->
-            <span class="placa" style="left:6px;top:318px;">APP degradada</span>
-            <span class="placa direita" style="right:2px;top:286px;">APP preservada</span>
-            <span class="placa direita" style="right:10px;top:6px;">RL preservada e excedente</span>
+            <!-- sol -->
+            <g transform="translate(150,74)">
+                <circle r="46" fill="rgba(255,213,77,.35)"/>
+                <g class="raios" stroke="#ffd54d" stroke-width="3" stroke-linecap="round" opacity=".75">
+                    <line x1="0" y1="-52" x2="0" y2="-60"/><line x1="0" y1="52" x2="0" y2="60"/>
+                    <line x1="-52" y1="0" x2="-60" y2="0"/><line x1="52" y1="0" x2="60" y2="0"/>
+                    <line x1="-38" y1="-38" x2="-44" y2="-44"/><line x1="38" y1="38" x2="44" y2="44"/>
+                    <line x1="38" y1="-38" x2="44" y2="-44"/><line x1="-38" y1="38" x2="-44" y2="44"/>
+                </g>
+                <circle r="24" fill="#ffd54d"/>
+                <circle r="16" fill="#ffe38a"/>
+            </g>
+
+            <!-- nuvens -->
+            <g transform="translate(300,54)"><g class="nuvem">
+                <ellipse rx="34" ry="14" fill="#fff" opacity=".92"/>
+                <ellipse cx="26" cy="6" rx="24" ry="11" fill="#fff" opacity=".92"/>
+                <ellipse cx="-26" cy="7" rx="22" ry="10" fill="#fff" opacity=".9"/>
+            </g></g>
+            <g transform="translate(560,88)"><g class="nuvem" style="animation-delay:1.2s">
+                <ellipse rx="28" ry="11" fill="#fff" opacity=".9"/>
+                <ellipse cx="22" cy="5" rx="18" ry="8" fill="#fff" opacity=".88"/>
+            </g></g>
+            <g transform="translate(872,34)"><g class="nuvem" style="animation-delay:2.4s">
+                <ellipse rx="24" ry="9" fill="#fff" opacity=".85"/>
+                <ellipse cx="18" cy="4" rx="15" ry="7" fill="#fff" opacity=".85"/>
+            </g></g>
+
+            <!-- colinas ao fundo -->
+            <path d="M0,208 C90,150 200,132 320,156 C380,166 440,188 500,208 Z" fill="#9dbb80"/>
+            <path d="M420,208 C520,150 620,146 700,176 C724,186 742,198 752,208 Z" fill="#8fae72"/>
+
+            <!-- Reserva Legal preservada (fragmento denso, ao fundo à direita) -->
+            <path d="M700,208 C706,140 730,96 790,90 C850,84 912,102 944,148 C958,168 958,196 948,210 L700,210 Z" fill="#2e6b34"/>
+            <path d="M742,208 C748,156 772,120 818,114 C862,110 900,126 922,160 C932,176 930,196 922,210 L742,210 Z" fill="#29602f"/>
+            <g id="g-arvores-rl"></g>
+
+            <!-- campo -->
+            <rect y="200" width="960" height="456" fill="url(#gGround)"/>
+            <rect y="196" width="960" height="10" fill="#8fae72" opacity=".7"/>
+
+            <!-- morro do Talhão 2 (relevo 3D) com curvas de nível -->
+            <path d="M340,580 C374,420 424,300 484,288 C546,298 594,430 622,580 Z" fill="url(#gMound)"/>
+            <path d="M410,340 Q484,376 556,340" stroke="rgba(30,60,25,.18)" stroke-width="2.5" fill="none"/>
+            <path d="M382,400 Q484,442 584,400" stroke="rgba(30,60,25,.16)" stroke-width="2.5" fill="none"/>
+            <path d="M366,470 Q484,516 600,470" stroke="rgba(30,60,25,.14)" stroke-width="2.5" fill="none"/>
+            <path d="M376,542 Q484,586 588,542" stroke="rgba(30,60,25,.12)" stroke-width="2.5" fill="none"/>
+
+            <!-- rios: APP degradada (esq.) e APP preservada (dir.) -->
+            <path d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="#cfc39d" stroke-width="54" fill="none" stroke-linecap="round"/>
+            <path d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="#57a3d1" stroke-width="40" fill="none"/>
+            <path d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="#7cc0e8" stroke-width="26" fill="none"/>
+            <path class="correnteza" d="M52,-20 C70,150 40,300 66,440 C90,540 60,600 74,660" stroke="rgba(255,255,255,.4)" stroke-width="20" fill="none"/>
+            <path d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="#cfc39d" stroke-width="44" fill="none" stroke-linecap="round"/>
+            <path d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="#57a3d1" stroke-width="32" fill="none"/>
+            <path d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="#7cc0e8" stroke-width="20" fill="none"/>
+            <path class="correnteza" style="animation-delay:.9s" d="M930,-20 C918,140 944,300 922,440 C906,540 934,590 922,660" stroke="rgba(255,255,255,.4)" stroke-width="15" fill="none"/>
+
+            <!-- faixa de APP degradada: solo exposto, voçorocas até o rio -->
+            <path d="M96,306 L150,306 L146,470 L128,558 L88,558 L92,470 Z" fill="#b0906a"/>
+            <ellipse cx="120" cy="380" rx="16" ry="8" fill="#a5835b"/>
+            <ellipse cx="118" cy="500" rx="13" ry="7" fill="#a5835b"/>
+            <path d="M150,352 Q128,362 100,368" stroke="#8a6a43" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85"/>
+            <path d="M148,420 Q126,430 96,438" stroke="#8a6a43" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/>
+            <path d="M142,486 Q122,494 98,502" stroke="#8a6a43" stroke-width="8" fill="none" stroke-linecap="round" opacity=".85"/>
+            <g id="g-arvores-app-d"></g>
+
+            <!-- talhões -->
+            <g id="g-t0" class="g-talhao"></g>
+            <g id="g-t1" class="g-talhao"></g>
+            <g id="g-t2" class="g-talhao"></g>
+
+            <!-- APP preservada: faixa densa entre o Talhão 3 e o rio -->
+            <g id="g-arvores-app-p"></g>
+
+            <!-- placas dos talhões e placas ambientais -->
+            <g id="g-placas"></g>
+            <g id="g-anos"></g>
+
+            <!-- vidas da maquete -->
+            <g id="g-vacas"></g>
+            <g transform="translate(0,84)"><g class="drone-bob"><g class="drone-g"><g class="drone-des">
+                <line x1="-14" y1="-6" x2="14" y2="-6" stroke="#33475a" stroke-width="3" stroke-linecap="round"/>
+                <circle class="rotor" cx="-14" cy="-9" r="7" fill="none" stroke="#5b7386" stroke-width="2" stroke-dasharray="4 4"/>
+                <circle class="rotor" cx="14" cy="-9" r="7" fill="none" stroke="#5b7386" stroke-width="2" stroke-dasharray="4 4"/>
+                <ellipse cx="0" cy="-2" rx="9" ry="5.5" fill="#33475a"/>
+                <ellipse cx="0" cy="-3" rx="6" ry="2.6" fill="#4e687e"/>
+                <circle cx="0" cy="2" r="2.2" fill="#69e0f0"/>
+            </g></g></g></g>
+            <g transform="translate(600,110)"><g class="ave"><path d="M0,0 Q5,-5 10,0 Q15,-5 20,0" stroke="#3a4a42" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>
+            <g transform="translate(660,140)"><g class="ave" style="animation-delay:.8s"><path d="M0,0 Q5,-5 10,0 Q15,-5 20,0" stroke="#3a4a42" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>
+            <g transform="translate(856,332)"><g class="borboleta">
+                <ellipse class="asaA" cx="-4" cy="-2" rx="4.2" ry="5.4" fill="#e8a33f"/>
+                <ellipse class="asaB" cx="4" cy="-2" rx="4.2" ry="5.4" fill="#f2c94c"/>
+                <rect x="-1" y="-5" width="2" height="9" rx="1" fill="#5a4632"/>
+            </g></g>
+            <g transform="translate(700,368)"><g class="borboleta" style="animation-delay:1.6s">
+                <ellipse class="asaA" cx="-4" cy="-2" rx="4.2" ry="5.4" fill="#b07fd8"/>
+                <ellipse class="asaB" cx="4" cy="-2" rx="4.2" ry="5.4" fill="#c99ae6"/>
+                <rect x="-1" y="-5" width="2" height="9" rx="1" fill="#5a4632"/>
+            </g></g>
+        </svg>
         </div>
 
         <div class="dica-talhao" id="dica-talhao">👆 Toque num talhão para conhecer o sistema dele.</div>
     </main>
-
     <!-- Desafio -->
     <main class="cartao" id="tela-desafio">
         <span class="rodada-chip" id="rodada-chip">Desafio 1/6</span>
@@ -309,160 +270,49 @@
     <script>
         "use strict";
 
-        /* ================= Talhões ================= */
-        var CENTROS = [{ x: 108, y: 200 }, { x: 250, y: 185 }, { x: 378, y: 200 }];
-        var NOMES = ["Talhão 1", "Talhão 2", "Talhão 3"];
-        var DICAS = [
-            "🌱 Talhão 1 — sucessão soja → milho safrinha. A história dele é o crescimento da palhada: de quase nada até mais de 90% de cobertura.",
-            "⛰️ Talhão 2 — relevo forte. Do Ano 2 em diante as linhas seguem as curvas do terreno (plantio em contorno), que seguram a erosão.",
-            "🐄 Talhão 3 — o mais avançado: contorno desde o Ano 1, braquiária, crotalária, milheto… é aqui que as vacas pastam!"
+        /* ================= Configuração dos talhões (briefing) ================= */
+        var TALHOES = [
+            {
+                nome: "Talhão 1", placaX: 239, esp: 12,
+                poly: [[146, 336], [330, 324], [346, 540], [132, 556]],
+                anos: [
+                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.06, verde: 0, cobertura: 8 },
+                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.40, verde: 0, cobertura: 40 },
+                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.85, verde: 0, cobertura: 92 }
+                ]
+            },
+            {
+                nome: "Talhão 2", placaX: 483, esp: 22,
+                poly: [[398, 346], [568, 332], [588, 530], [382, 546]],
+                anos: [
+                    { linhas: "retas", culturas: ["soja", "milho"], palha: 0.10, verde: 0, cobertura: 12 },
+                    { linhas: "curvas", culturas: ["soja", "trigo", "aveia"], palha: 0.55, verde: 0.15, cobertura: 55 },
+                    { linhas: "curvas", culturas: ["soja", "milho", "braquiaria"], palha: 0.72, verde: 0.28, cobertura: 88 }
+                ]
+            },
+            {
+                nome: "Talhão 3", placaX: 719, esp: 12,
+                poly: [[636, 336], [810, 324], [824, 540], [614, 556]],
+                anos: [
+                    { linhas: "curvas", culturas: ["soja", "braquiaria", "crotalaria"], palha: 0.35, verde: 0.45, cobertura: 60 },
+                    { linhas: "curvas", culturas: ["soja", "milheto", "trigo"], palha: 0.45, verde: 0.45, cobertura: 80 },
+                    { linhas: "curvas", culturas: ["soja", "milho", "braquiaria"], palha: 0.68, verde: 0.32, cobertura: 93 }
+                ]
+            }
         ];
         var estadoAno = [1, 1, 1];
 
-        var paisagem = document.getElementById("paisagem");
-        var plataformas = [];
-        var chipsAno = [];
-
-        // desenhos por talhão e ano: linhas, cobertura e culturas
-        var VISUAL = [
-            null,
-            [ // Ano 1
-                { linhas: "retas", cob: 1, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 1 },
-                { linhas: "retas", cob: 2, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 5 },
-                { linhas: "retas", cob: 3, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 11 }
-            ],
-            [ // Talhão 2
-                { linhas: "retas", cob: 1, culturas: [["🌱", -20, -4], ["🌽", 22, 8]], palhada: 2 },
-                { linhas: "curvas", cob: 2, culturas: [["🌱", -20, -6], ["🌾", 22, 6]], palhada: 8 },
-                { linhas: "curvas", cob: 3, culturas: [["🌽", 18, 4], ["🌿", -22, 10]], palhada: 12 }
-            ],
-            [ // Talhão 3
-                { linhas: "curvas", cob: 2, culturas: [["🌿", -20, 8], ["🌼", 18, -6]], palhada: 6 },
-                { linhas: "curvas", cob: 2, culturas: [["🌾", -22, -6], ["🌱", 20, 8]], palhada: 9 },
-                { linhas: "curvas", cob: 3, culturas: [["🌽", -18, 6], ["🌿", 20, -2]], palhada: 12 }
-            ]
+        var DICAS = [
+            "🌱 Talhão 1 — soja + milho safrinha em sucessão. A história dele é a palhada: de 0–10% no Ano 1 até mais de 90% no Ano 3.",
+            "⛰️ Talhão 2 — relevo forte! Do Ano 2 as linhas seguem as curvas do terreno (plantio em contorno), com trigo, aveia e depois braquiária na cobertura.",
+            "🐄 Talhão 3 — o mais avançado: contorno desde o Ano 1, braquiária, crotalária, milheto, trigo… e o consórcio braquiária–milho no Ano 3. É aqui que as vacas pastam!"
         ];
-        var OFFS_PALHADA = [[-42, -8], [-26, -20], [-6, -26], [16, -22], [34, -12], [44, 2], [-38, 10], [-18, 0], [2, 10], [22, 0], [36, 16], [-4, -6]];
 
-        for (var t = 0; t < 3; t++) {
-            (function (t) {
-                var centro = CENTROS[t];
-
-                var pedestal = document.createElement("div");
-                pedestal.className = "pedestal";
-                pedestal.style.left = centro.x + "px";
-                pedestal.style.top = (centro.y + (t === 1 ? 22 : 12)) + "px"; // Talhão 2: relevo mais alto
-                paisagem.appendChild(pedestal);
-
-                var b = document.createElement("button");
-                b.className = "talhao cob1 linhas-retas";
-                b.style.left = centro.x + "px";
-                b.style.top = (centro.y - (t === 1 ? 12 : 0)) + "px";
-                b.setAttribute("aria-label", NOMES[t]);
-                b.addEventListener("click", function () { mostrarDica(t); });
-                paisagem.appendChild(b);
-                plataformas.push(b);
-
-                var chip = document.createElement("span");
-                chip.className = "placa-talhao";
-                chip.style.left = centro.x + "px";
-                chip.style.top = (centro.y - (t === 1 ? 12 : 0) - 62) + "px";
-                paisagem.appendChild(chip);
-                b._chip = chip;
-
-                var camada = document.createElement("div"); // sprites deste talhão
-                paisagem.appendChild(camada);
-                b._camada = camada;
-            })(t);
-        }
-
-        // APP preservada (faixa densa entre o Talhão 3 e o rio) + RL ao fundo
-        [[446, 150, 22], [452, 182, 24], [444, 214, 23], [452, 246, 21], [444, 274, 19]].forEach(function (a) {
-            addArvore(a[0], a[1], a[2], false);
-        });
-        [[442, 40, 26], [468, 54, 28], [452, 80, 24], [480, 90, 22], [434, 94, 20], [464, 110, 18]].forEach(function (a) {
-            addArvore(a[0], a[1], a[2], false);
-        });
-        // APP degradada: poucas árvores, murchas
-        [[30, 96, 15], [22, 176, 13]].forEach(function (a) {
-            addArvore(a[0], a[1], a[2], true);
-        });
-
-        function addArvore(x, y, tam, murcha) {
-            var s = document.createElement("span");
-            s.className = "arvore" + (murcha ? " murcha" : "");
-            s.style.left = x + "px";
-            s.style.top = y + "px";
-            s.style.fontSize = tam + "px";
-            s.textContent = "🌳";
-            paisagem.appendChild(s);
-        }
-
-        function aplicarVisual(t) {
-            var ano = estadoAno[t];
-            var cfg = VISUAL[t + 1][ano - 1]; // VISUAL: posição 0 = Talhão 1, índice interno = ano - 1
-            var b = plataformas[t];
-            b.className = "talhao cob" + cfg.cob + (cfg.linhas === "curvas" ? " linhas-curvas" : " linhas-retas");
-            b._chip.textContent = NOMES[t] + " · Ano " + ano;
-
-            b._camada.innerHTML = "";
-            cfg.culturas.forEach(function (c) {
-                addSprite(b._camada, CENTROS[t].x + c[1], CENTROS[t].y - (t === 1 ? 12 : 0) + c[2], "cultura", c[0]);
-            });
-            var offs = OFFS_PALHADA.slice(0, cfg.palhada);
-            offs.forEach(function (o) {
-                addSprite(b._camada, CENTROS[t].x + o[0], CENTROS[t].y - (t === 1 ? 12 : 0) + o[1] * 0.55 + 6, "palhada", "🌾");
-            });
-        }
-
-        function addSprite(camada, x, y, classe, icone) {
-            var s = document.createElement("span");
-            s.className = "sprite " + classe;
-            s.style.left = x + "px";
-            s.style.top = y + "px";
-            s.textContent = icone;
-            camada.appendChild(s);
-        }
-
-        function mostrarDica(t) {
-            document.getElementById("dica-talhao").textContent = DICAS[t];
-            plataformas.forEach(function (b, i) { b.classList.toggle("ativo", i === t); });
-            SBCH.som("clique");
-        }
-
-        /* ================= Vacas (pastam na braquiária) ================= */
-        var vacas = [];
-        function soltarVaca(centro, pontos) {
-            var el = document.createElement("span");
-            el.className = "vaca";
-            el.innerHTML = '<span class="vaca-corpo">🐄</span>';
-            el.style.left = pontos[0][0] + "px";
-            el.style.top = pontos[0][1] + "px";
-            paisagem.appendChild(el);
-            vacas.push({ el: el, pontos: pontos, idx: 0 });
-        }
-        var PONTOS_T3 = [[362, 216], [392, 226], [374, 240], [396, 208]];
-        soltarVaca(CENTROS[2], PONTOS_T3);
-        soltarVaca(CENTROS[2], PONTOS_T3.slice().reverse());
-        var PONTOS_T2 = [[240, 200], [262, 212], [246, 226]];
-        var vacaT2Soltou = false;
-
-        setInterval(function () {
-            vacas.forEach(function (v) {
-                var prox = (v.idx + 1) % v.pontos.length;
-                v.idx = prox;
-                var alvo = v.pontos[prox];
-                v.el.classList.toggle("virada", alvo[0] < parseFloat(v.el.style.left));
-                v.el.style.left = alvo[0] + "px";
-                v.el.style.top = alvo[1] + "px";
-                setTimeout(function () {
-                    v.el.classList.add("comendo");
-                    if (Math.random() < 0.5) SBCH.popupPontos(v.el, "🌿");
-                    setTimeout(function () { v.el.classList.remove("comendo"); }, 1300);
-                }, 1200);
-            });
-        }, 3400);
-
+        var PLACAS = [
+            ["TALHÃO 1", "EVOLUÇÃO DA PALHADA", "Soja e milho em sucessão"],
+            ["TALHÃO 2", "PLANTIO EM CONTORNO", "Em área com relevo forte"],
+            ["TALHÃO 3", "MANEJO AVANÇADO", "Diversidade de coberturas"]
+        ];
         /* ================= Desafios (briefing da maquete) ================= */
         var RODADAS = [
             {
@@ -521,27 +371,352 @@
             }
         ];
 
+        /* ================= Motor de desenho da maquete (SVG) ================= */
+        var SVGNS = "http://www.w3.org/2000/svg";
+
+        function gid(id) { return document.getElementById(id); }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function lerpP(p, q, t) { return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)]; }
+        function meio(p, q) { return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; }
+        function rng(seed) {
+            var s = seed >>> 0;
+            return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+        }
+        function polyPath(p) {
+            var d = "M" + p[0][0] + "," + p[0][1];
+            for (var i = 1; i < p.length; i++) d += " L" + p[i][0] + "," + p[i][1];
+            return d + " Z";
+        }
+        function areaPol(p) {
+            var a = 0;
+            for (var i = 0; i < p.length; i++) {
+                var q = p[(i + 1) % p.length];
+                a += p[i][0] * q[1] - q[0] * p[i][1];
+            }
+            return Math.abs(a) / 2;
+        }
+        function pontoEm(x, y, p) {
+            var dentro = false;
+            for (var i = 0, j = p.length - 1; i < p.length; j = i++) {
+                if ((p[i][1] > y) !== (p[j][1] > y) &&
+                    x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) dentro = !dentro;
+            }
+            return dentro;
+        }
+
+        /* ---------- plantinhas desenhadas (soja, milho, trigo, aveia, braquiária, crotalária, milheto) ---------- */
+        var PLANTAS = {
+            soja: '<path d="M0,0 L0,-13" stroke="#3d8443" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<ellipse cx="-5" cy="-8" rx="5" ry="2.6" fill="#43a047" transform="rotate(-24 -5 -8)"/>' +
+                '<ellipse cx="5" cy="-8" rx="5" ry="2.6" fill="#43a047" transform="rotate(24 5 -8)"/>' +
+                '<ellipse cx="0" cy="-15" rx="4.4" ry="2.6" fill="#4caf50"/>',
+            milho: '<path d="M0,0 L0,-23" stroke="#3d8443" stroke-width="2.4" stroke-linecap="round"/>' +
+                '<path d="M0,-7 Q-7,-10 -9,-17" stroke="#3d8443" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+                '<path d="M0,-11 Q7,-14 9,-21" stroke="#3d8443" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+                '<ellipse cx="2.5" cy="-13" rx="2.6" ry="5.2" fill="#e8c33f" transform="rotate(7 2.5 -13)"/>',
+            trigo: '<path d="M0,0 L0,-17" stroke="#c9a94f" stroke-width="1.7" stroke-linecap="round"/>' +
+                '<ellipse cx="0" cy="-19" rx="2.7" ry="6" fill="#d9b64a"/>' +
+                '<path d="M-2,-25 L-3.2,-28 M2,-25 L3.2,-28" stroke="#d9b64a" stroke-width="1" stroke-linecap="round"/>',
+            aveia: '<path d="M0,0 Q1,-9 -1.5,-15" stroke="#a8b06a" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+                '<ellipse cx="-4.5" cy="-15" rx="4.6" ry="2" fill="#cfc08a" transform="rotate(-32 -4.5 -15)"/>' +
+                '<ellipse cx="2" cy="-12" rx="4.2" ry="2" fill="#d9cfa0" transform="rotate(22 2 -12)"/>',
+            braquiaria: '<path d="M0,0 Q-7,-7 -11,-14" stroke="#4c9a50" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<path d="M0,0 Q-2,-9 -3.5,-17" stroke="#43a047" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<path d="M0,0 Q3,-9 2,-17" stroke="#4c9a50" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<path d="M0,0 Q7,-7 11,-14" stroke="#3d8443" stroke-width="2" fill="none" stroke-linecap="round"/>',
+            crotalaria: '<path d="M0,0 L0,-16" stroke="#3d8443" stroke-width="1.8" stroke-linecap="round"/>' +
+                '<circle cx="0" cy="-18.5" r="3.4" fill="#f2c94c"/>' +
+                '<circle cx="-3.6" cy="-15.6" r="2.6" fill="#e8b93c"/>' +
+                '<circle cx="3.6" cy="-15.6" r="2.6" fill="#f6d465"/>',
+            milheto: '<path d="M0,0 L0,-16" stroke="#7f9a4a" stroke-width="1.7" stroke-linecap="round"/>' +
+                '<path d="M0,0 Q-6,-6 -8,-12" stroke="#7f9a4a" stroke-width="1.5" fill="none" stroke-linecap="round"/>' +
+                '<ellipse cx="0.6" cy="-18.5" rx="3" ry="5.4" fill="#c9a94f" transform="rotate(6 0.6 -18.5)"/>'
+        };
+        function plantaHTML(tipo, x, y, s) {
+            return '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')">' + PLANTAS[tipo] + "</g>";
+        }
+
+        /* ---------- árvores e placas ---------- */
+        var CORES_ARV = ["#2f7d33", "#3f9a44", "#357f3a", "#2a7a30"];
+        function arvoreHTML(x, y, t, cor) {
+            return '<g transform="translate(' + x + "," + y + ')">' +
+                '<ellipse cx="0" cy="2" rx="' + t * 0.42 + '" ry="' + t * 0.13 + '" fill="rgba(20,40,18,.25)"/>' +
+                '<rect x="-1.8" y="' + -t * 0.38 + '" width="3.6" height="' + t * 0.42 + '" rx="1.6" fill="#6d4a24"/>' +
+                '<circle cx="0" cy="' + -t * 0.66 + '" r="' + t * 0.42 + '" fill="' + cor + '"/>' +
+                '<circle cx="' + -t * 0.2 + '" cy="' + -t * 0.55 + '" r="' + t * 0.3 + '" fill="' + cor + '"/>' +
+                '<circle cx="' + t * 0.22 + '" cy="' + -t * 0.72 + '" r="' + t * 0.28 + '" fill="' + cor + '"/>' +
+                '<circle cx="' + -t * 0.05 + '" cy="' + -t * 0.72 + '" r="' + t * 0.16 + '" fill="#4fae57" opacity=".85"/>' +
+                "</g>";
+        }
+        function arvoreSecaHTML(x, y, t) {
+            return '<g transform="translate(' + x + "," + y + ')">' +
+                '<path d="M0,0 L1.5,' + -t * 0.6 + " M1.5," + -t * 0.6 + " L" + -t * 0.3 + "," + -t +
+                " M1.5," + -t * 0.6 + " L" + t * 0.35 + "," + -t * 0.85 +
+                '" stroke="#6d5136" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+                '<ellipse cx="' + -t * 0.3 + '" cy="' + (-t - 2) + '" rx="' + t * 0.18 + '" ry="' + t * 0.09 + '" fill="#7a8a4a" opacity=".55"/>' +
+                "</g>";
+        }
+        function placaTalhaoHTML(x, y, linhas) {
+            var w = 176;
+            return '<g transform="translate(' + x + "," + y + ')">' +
+                '<rect x="-4" y="44" width="8" height="22" rx="2" fill="#6d4a24"/>' +
+                '<rect x="' + -w / 2 + '" y="0" width="' + w + '" height="46" rx="7" fill="#8a5a2b" stroke="#6d4a24" stroke-width="3"/>' +
+                '<text x="0" y="14" text-anchor="middle" font-size="12" font-weight="900" fill="#ffd54d" letter-spacing="1">' + linhas[0] + "</text>" +
+                '<text x="0" y="28" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">' + linhas[1] + "</text>" +
+                '<text x="0" y="40" text-anchor="middle" font-size="9.5" font-weight="700" fill="#ffe9c9">' + linhas[2] + "</text>" +
+                "</g>";
+        }
+        function placaAmbienteHTML(x, y, txt, rot) {
+            var w = txt.length * 6.3 + 18;
+            return '<g transform="translate(' + x + "," + y + ") rotate(" + rot + ')">' +
+                '<rect x="' + -w / 2 + '" y="-13" width="' + w + '" height="26" rx="6" fill="#fff" stroke="#7a5b36" stroke-width="2.5"/>' +
+                '<text x="0" y="4" text-anchor="middle" font-size="11" font-weight="900" fill="#4f3a20" letter-spacing=".4">' + txt + "</text>" +
+                "</g>";
+        }
+        function plateAnoHTML(x, y, t) {
+            return '<g id="plate-ano-' + t + '" transform="translate(' + x + "," + y + ')">' +
+                '<rect x="-34" y="-13" width="68" height="26" rx="13" fill="#0d2a45" stroke="#e5a812" stroke-width="2"/>' +
+                '<text x="0" y="4.5" text-anchor="middle" font-size="13" font-weight="900" fill="#ffd54d">Ano 1</text>' +
+                "</g>";
+        }
+
+        /* ---------- vacas ---------- */
+        function vacaHTML() {
+            return '<g class="vaca-corpo">' +
+                '<ellipse cx="0" cy="15" rx="23" ry="4.6" fill="rgba(20,30,15,.25)"/>' +
+                '<rect x="-14" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
+                '<rect x="-6" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
+                '<rect x="4" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
+                '<rect x="11" y="6" width="4" height="10" rx="2" fill="#d8cfc2"/>' +
+                '<ellipse cx="0" cy="-1" rx="19" ry="11" fill="#f6f1e6" stroke="#d8cfc2" stroke-width="1"/>' +
+                '<ellipse cx="-7" cy="-3" rx="6.5" ry="4.5" fill="#3a2f28"/>' +
+                '<ellipse cx="6" cy="2.5" rx="5" ry="3.6" fill="#3a2f28"/>' +
+                '<path d="M-19,-4 Q-24,4 -21,10" stroke="#d8cfc2" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<g class="vaca-cabeca">' +
+                    '<ellipse cx="21" cy="-11" rx="5" ry="7" fill="#f6f1e6" transform="rotate(18 21 -11)"/>' +
+                    '<ellipse cx="25" cy="-5.5" rx="4.6" ry="3.4" fill="#e2a9a2"/>' +
+                    '<circle cx="24" cy="-5.5" r="0.9" fill="#a05a4c"/>' +
+                    '<circle cx="19.5" cy="-13.5" r="1.2" fill="#2a2622"/>' +
+                    '<ellipse cx="15" cy="-17" rx="3" ry="1.8" fill="#e8e0d2" transform="rotate(-30 15 -17)"/>' +
+                "</g>" +
+                "</g>";
+        }
+
+        /* ---------- construção dos talhões ---------- */
+        var talGrupos = [];
+
+        function montarTalhoes() {
+            for (var t = 0; t < 3; t++) {
+                (function (t) {
+                    var cfg = TALHOES[t];
+                    var p = cfg.poly;
+                    var D = p[3], C = p[2];
+                    var cx = (D[0] + C[0]) / 2, cy = C[1] + cfg.esp + 8;
+                    var rx = Math.max(40, Math.abs(C[0] - D[0]) / 2 + 6);
+
+                    var g = gid("g-t" + t);
+                    g.innerHTML =
+                        '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="12" fill="rgba(30,45,22,.22)" filter="url(#fBlur)"/>' +
+                        '<path d="M' + D[0] + "," + D[1] + " L" + C[0] + "," + C[1] + " L" + C[0] + "," + (C[1] + cfg.esp) +
+                        " L" + D[0] + "," + (D[1] + cfg.esp) + ' Z" fill="#6b4f30"/>' +
+                        '<path class="solo-talhao" d="' + polyPath(p) + '" fill="url(#gSolo)"/>' +
+                        '<path class="veu-palha" d="' + polyPath(p) + '" fill="#d9c07e" opacity="0"/>' +
+                        '<path class="veu-verde" d="' + polyPath(p) + '" fill="#43a047" opacity="0"/>' +
+                        '<g class="g-linhas"></g>' +
+                        '<g class="g-palha"></g>' +
+                        '<g class="g-plantas"></g>' +
+                        '<path class="borda-talhao" d="' + polyPath(p) + '"/>';
+                    g.setAttribute("aria-label", cfg.nome);
+                    g.addEventListener("click", function () { mostrarDica(t); });
+                    talGrupos.push(g);
+                })(t);
+            }
+        }
+
+        /* redesenha um talhão conforme o ano corrente */
+        function renderAno(t) {
+            var cfg = TALHOES[t];
+            var ano = estadoAno[t];
+            var ac = cfg.anos[ano - 1];
+            var p = cfg.poly;
+            var A = p[0], B = p[1], C = p[2], D = p[3];
+            var g = talGrupos[t];
+
+            g.querySelector(".veu-palha").setAttribute("opacity", (ac.palha * 0.85).toFixed(2));
+            g.querySelector(".veu-verde").setAttribute("opacity", (ac.verde * 0.85).toFixed(2));
+
+            /* linhas de plantio */
+            var linhas = "";
+            var N = 8;
+            var caminhos = [];
+            for (var i = 0; i < N; i++) {
+                var t0 = (i + 0.5) / N;
+                var p1 = lerpP(A, D, t0);
+                var p2 = lerpP(B, C, t0);
+                if (ac.linhas === "curvas") {
+                    var m = meio(p1, p2);
+                    var ctrl = [m[0], m[1] + 18 + t0 * 46];
+                    linhas += '<path d="M' + p1[0] + "," + p1[1] + " Q" + ctrl[0] + "," + ctrl[1] + " " + p2[0] + "," + p2[1] + '"/>';
+                    caminhos.push({ tipo: "q", p1: p1, ctrl: ctrl, p2: p2 });
+                } else {
+                    linhas += '<path d="M' + p1[0] + "," + p1[1] + " L" + p2[0] + "," + p2[1] + '"/>';
+                    caminhos.push({ tipo: "l", p1: p1, p2: p2 });
+                }
+            }
+            g.querySelector(".g-linhas").innerHTML =
+                '<g fill="none" stroke="#4c9a50" stroke-width="5" stroke-linecap="round" opacity="' +
+                (1 - ac.palha * 0.3).toFixed(2) + '">' + linhas + "</g>";
+
+            /* plantas ao longo das linhas */
+            var plantas = "";
+            var us = [0.14, 0.34, 0.54, 0.74];
+            var rnd = rng(t * 977 + ano * 131);
+            for (var li = 0; li < caminhos.length; li++) {
+                var c = caminhos[li];
+                for (var u = 0; u < us.length; u++) {
+                    var uu = us[u];
+                    var pt;
+                    if (c.tipo === "q") {
+                        var w1 = (1 - uu) * (1 - uu), w2 = 2 * (1 - uu) * uu, w3 = uu * uu;
+                        pt = [w1 * c.p1[0] + w2 * c.ctrl[0] + w3 * c.p2[0],
+                              w1 * c.p1[1] + w2 * c.ctrl[1] + w3 * c.p2[1]];
+                    } else {
+                        pt = lerpP(c.p1, c.p2, uu);
+                    }
+                    var tipo = ac.culturas[(li + u) % ac.culturas.length];
+                    plantas += plantaHTML(tipo, pt[0].toFixed(1), pt[1].toFixed(1), (0.95 + rnd() * 0.35).toFixed(2));
+                }
+            }
+            g.querySelector(".g-plantas").innerHTML = plantas;
+
+            /* palhada espalhada */
+            var palha = "";
+            var n = Math.round(ac.palha * areaPol(p) / 450);
+            var r2 = rng(t * 313 + ano * 7001);
+            var minX = 999, minY = 999, maxX = 0, maxY = 0;
+            p.forEach(function (v) {
+                minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+                minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+            });
+            var colocadas = 0, guarda = 0;
+            while (colocadas < n && guarda < n * 30) {
+                guarda++;
+                var sx = minX + r2() * (maxX - minX);
+                var sy = minY + r2() * (maxY - minY);
+                if (!pontoEm(sx, sy, p)) continue;
+                colocadas++;
+                var ang = r2() * 360;
+                var cor = r2() < 0.5 ? "#d9c07e" : "#c9ab5f";
+                palha += '<g transform="translate(' + sx.toFixed(0) + "," + sy.toFixed(0) + ") rotate(" + ang.toFixed(0) + ')">' +
+                    '<path d="M0,0 q3,1 7,3" stroke="' + cor + '" stroke-width="2" fill="none" stroke-linecap="round" opacity=".85"/></g>';
+            }
+            g.querySelector(".g-palha").innerHTML = palha;
+
+            /* placa do ano */
+            gid("plate-ano-" + t).querySelector("text").textContent = "Ano " + ano;
+        }
+
+        function mostrarDica(t) {
+            gid("dica-talhao").textContent = DICAS[t];
+            talGrupos.forEach(function (g, i) { g.classList.toggle("ativo", i === t); });
+            SBCH.som("clique");
+        }
+
+        /* ---------- vegetação ambiental (APP e RL) ---------- */
+        function plantarAmbiente() {
+            var rl = "", app = "", deg = "";
+            var r = rng(4242);
+            /* Reserva Legal: fragmento denso ao fundo, à direita */
+            for (var i = 0; i < 18; i++) {
+                var x = 710 + (i % 6) * 38 + r() * 14;
+                var y = 104 + (i % 3) * 30 + r() * 16;
+                rl += arvoreHTML(x.toFixed(0), y.toFixed(0), (24 + (i % 4) * 4).toFixed(0), CORES_ARV[i % 4]);
+            }
+            gid("g-arvores-rl").innerHTML = rl;
+
+            /* APP preservada: faixa contínua entre o Talhão 3 e o rio */
+            for (var j = 0; j < 20; j++) {
+                var ax = 840 + (j % 2) * 26 + r() * 12;
+                var ay = 296 + j * 15;
+                app += arvoreHTML(ax.toFixed(0), ay.toFixed(0), (26 + (j % 3) * 6).toFixed(0), CORES_ARV[(j + 1) % 4]);
+            }
+            app += arvoreHTML(846, 606, 46, CORES_ARV[0]) + arvoreHTML(886, 592, 40, CORES_ARV[1]);
+            gid("g-arvores-app-p").innerHTML = app;
+
+            /* APP degradada: poucas árvores, murchas */
+            deg += arvoreSecaHTML(122, 368, 22) + arvoreSecaHTML(108, 452, 17) + arvoreSecaHTML(128, 512, 13);
+            gid("g-arvores-app-d").innerHTML = deg;
+        }
+
+        /* ---------- placas e plaquinhas de ano ---------- */
+        function montarPlacas() {
+            var html = "";
+            for (var t = 0; t < 3; t++) {
+                html += placaTalhaoHTML(TALHOES[t].placaX, 590, PLACAS[t]);
+                html += plateAnoHTML(TALHOES[t].placaX, TALHOES[t].poly[0][1] - 22, t);
+            }
+            html += placaAmbienteHTML(122, 292, "APP degradada", -3);
+            html += placaAmbienteHTML(866, 570, "APP preservada", 2);
+            html += placaAmbienteHTML(826, 84, "RL preservada e excedente", -2);
+            gid("g-placas").innerHTML = html;
+        }
+
+        /* ---------- vacas ---------- */
+        var vacas = [];
+        function soltarVaca(pontos, esc) {
+            var el = document.createElementNS(SVGNS, "g");
+            el.setAttribute("class", "vaca-g");
+            el.style.transform = "translate(" + pontos[0][0] + "px," + pontos[0][1] + "px)";
+            el.innerHTML = vacaHTML();
+            el.querySelector(".vaca-corpo").style.transform = "scale(" + esc + ")";
+            gid("g-vacas").appendChild(el);
+            vacas.push({ el: el, pontos: pontos, idx: 0, x: pontos[0][0], esc: esc });
+        }
+        var PONTOS_T3 = [[664, 468], [700, 482], [682, 506], [716, 452]];
+        var PONTOS_T2 = [[438, 470], [472, 480], [456, 502]];
+        var vacaT2Soltou = false;
+
+        function pastar() {
+            vacas.forEach(function (v) {
+                var prox = (v.idx + 1) % v.pontos.length;
+                v.idx = prox;
+                var alvo = v.pontos[prox];
+                v.el.querySelector(".vaca-corpo").style.transform =
+                    "scaleX(" + (alvo[0] < v.x ? -1 : 1) + ") scale(" + v.esc + ")";
+                v.x = alvo[0];
+                v.el.style.transform = "translate(" + alvo[0] + "px," + alvo[1] + "px)";
+                setTimeout(function () {
+                    v.el.classList.add("vaca-comendo");
+                    if (Math.random() < 0.5) SBCH.popupPontos(v.el, "🌿");
+                    setTimeout(function () { v.el.classList.remove("vaca-comendo"); }, 1300);
+                }, 1200);
+            });
+        }
+
+        /* ================= Lógica do jogo ================= */
         var rodadaAtual = 0;
         var tentativas = 0;
         var pontos = 0;
-        var finalizada = false;
 
         function atualizarHud() {
-            document.getElementById("h-pontos").textContent = pontos;
-            document.getElementById("h-rodada").textContent = Math.min(rodadaAtual + 1, 6) + "/6";
-            document.getElementById("h-anos").textContent = "Ano " + Math.min.apply(null, estadoAno);
+            gid("h-pontos").textContent = pontos;
+            gid("h-rodada").textContent = Math.min(rodadaAtual + 1, 6) + "/6";
+            gid("h-ano").textContent = "Ano " + Math.min(estadoAno[0], estadoAno[1], estadoAno[2]);
+            var soma = 0;
+            for (var i = 0; i < 3; i++) soma += TALHOES[i].anos[estadoAno[i] - 1].cobertura;
+            gid("h-cob").textContent = Math.round(soma / 3) + "%";
         }
 
         function montarRodada() {
             var rd = RODADAS[rodadaAtual];
             tentativas = 0;
-            document.getElementById("rodada-chip").textContent =
-                "Desafio " + (rodadaAtual + 1) + "/6 · " + NOMES[rd.talhao] + " · Ano " + estadoAno[rd.talhao] + " → Ano " + (estadoAno[rd.talhao] + 1);
-            document.getElementById("pergunta").textContent = rd.pergunta;
+            gid("rodada-chip").textContent =
+                "Desafio " + (rodadaAtual + 1) + "/6 · " + TALHOES[rd.talhao].nome + " · Ano " + estadoAno[rd.talhao] + " → Ano " + (estadoAno[rd.talhao] + 1);
+            gid("pergunta").textContent = rd.pergunta;
             mostrarDica(rd.talhao);
-            plataformas[rd.talhao].classList.add("ativo");
+            talGrupos[rd.talhao].classList.add("ativo");
 
-            var caixa = document.getElementById("opcoes");
+            var caixa = gid("opcoes");
             caixa.innerHTML = "";
             SBCH.embaralhar(rd.opcoes.slice()).forEach(function (op) {
                 var b = document.createElement("button");
@@ -551,37 +726,40 @@
                 caixa.appendChild(b);
             });
 
-            var fb = document.getElementById("feedback");
+            var fb = gid("feedback");
             fb.className = "feedback";
             fb.style.display = "none";
-            document.getElementById("btn-proxima").classList.add("oculto");
+            gid("btn-proxima").classList.add("oculto");
             atualizarHud();
         }
 
         function responder(op, botao) {
             var rd = RODADAS[rodadaAtual];
-            var fb = document.getElementById("feedback");
+            var fb = gid("feedback");
 
             if (op.ok) {
                 var ganho = tentativas === 0 ? 20 : tentativas === 1 ? 10 : 5;
                 pontos += ganho;
                 estadoAno[rd.talhao]++;
-                plataformas[rd.talhao].classList.remove("ativo");
-                aplicarVisual(rd.talhao);
+                talGrupos[rd.talhao].classList.remove("ativo");
+                renderAno(rd.talhao);
+                var gEvoluido = talGrupos[rd.talhao];
+                gEvoluido.classList.add("evoluiu");
+                setTimeout(function () { gEvoluido.classList.remove("evoluiu"); }, 700);
 
-                // vaca nova quando o Talhão 2 chega à braquiária (Ano 3)
+                /* vaca nova quando o Talhão 2 chega à braquiária (Ano 3) */
                 if (rd.talhao === 1 && estadoAno[1] === 3 && !vacaT2Soltou) {
                     vacaT2Soltou = true;
-                    soltarVaca(CENTROS[1], PONTOS_T2);
+                    soltarVaca(PONTOS_T2, 0.95);
                 }
 
                 botao.classList.add("certa");
                 fb.className = "feedback ok";
                 fb.innerHTML = "<strong>✔ Talhão evoluído! +" + ganho + " pts</strong><br>" + op.por;
                 SBCH.som("acerto");
-                SBCH.popupPontos(document.getElementById("h-pontos"), "+" + ganho);
-                document.getElementById("opcoes").querySelectorAll(".opcao").forEach(function (b) { b.disabled = true; });
-                var prox = document.getElementById("btn-proxima");
+                SBCH.popupPontos(gid("h-pontos"), "+" + ganho);
+                gid("opcoes").querySelectorAll(".opcao").forEach(function (b) { b.disabled = true; });
+                var prox = gid("btn-proxima");
                 prox.classList.remove("oculto");
                 prox.textContent = rodadaAtual < RODADAS.length - 1 ? "Próximo desafio ➜" : "Ver a fazenda pronta 🏁";
                 atualizarHud();
@@ -596,45 +774,50 @@
             fb.style.display = "block";
         }
 
-        document.getElementById("btn-proxima").addEventListener("click", function () {
+        gid("btn-proxima").addEventListener("click", function () {
             rodadaAtual++;
             if (rodadaAtual < RODADAS.length) montarRodada();
             else finalizar();
         });
 
         function finalizar() {
-            finalizada = true;
             var classe, titulo, icone;
             if (pontos >= 100) { classe = "ouro"; titulo = "Fazenda de elite SBC!"; icone = "🏆"; }
             else if (pontos >= 70) { classe = "prata"; titulo = "Grande evolução na paisagem!"; icone = "🥈"; }
             else if (pontos >= 40) { classe = "bronze"; titulo = "A fazenda já evoluiu!"; icone = "🥉"; }
             else { classe = ""; titulo = "A paisagem está em transição"; icone = "🌱"; }
 
-            var cEl = document.getElementById("final-classe");
+            var cEl = gid("final-classe");
             cEl.className = "classe-sbc " + classe;
             cEl.textContent = classe === "ouro" ? "Ouro SBC" : classe === "prata" ? "Prata SBC" : classe === "bronze" ? "Bronze SBC" : "Em transição";
-            document.getElementById("trofeu").textContent = icone;
-            document.getElementById("final-titulo").textContent = titulo;
-            document.getElementById("final-msg").textContent = "Você evoluiu os três talhões somando " + pontos + " pontos.";
-            document.getElementById("final-detalhe").textContent =
+            gid("trofeu").textContent = icone;
+            gid("final-titulo").textContent = titulo;
+            gid("final-msg").textContent = "Você evoluiu os três talhões somando " + pontos + " pontos.";
+            gid("final-detalhe").textContent =
                 "Do Ano 1 ao Ano 3 a paisagem conta a história: mais palhada, plantio em contorno, mais diversidade de coberturas, " +
                 "solo e água protegidos — e o gado integrado na braquiária. É esse conjunto que reduz a intensidade de emissões do SBC.";
 
-            SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
-            document.getElementById("tela-maquete").classList.add("oculto");
-            document.getElementById("tela-desafio").classList.add("oculto");
+            SBCH.desenharRanking(gid("ranking"), "maquete", " pts");
+            gid("tela-maquete").classList.add("oculto");
+            gid("tela-desafio").classList.add("oculto");
             document.querySelector(".placar").classList.add("oculto");
-            document.getElementById("tela-final").classList.remove("oculto");
+            gid("tela-final").classList.remove("oculto");
 
             SBCH.pedirNomeESalvar("maquete", pontos, true, function () {
-                SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
+                SBCH.desenharRanking(gid("ranking"), "maquete", " pts");
             });
             SBCH.confete();
             SBCH.som("vitoria");
         }
 
         /* ================= Início ================= */
-        for (var i = 0; i < 3; i++) aplicarVisual(i);
+        montarTalhoes();
+        plantarAmbiente();
+        montarPlacas();
+        for (var i = 0; i < 3; i++) renderAno(i);
+        soltarVaca(PONTOS_T3, 1);
+        soltarVaca(PONTOS_T3.slice().reverse(), 0.85);
+        setInterval(pastar, 3400);
         montarRodada();
     </script>
 </body>

@@ -173,6 +173,14 @@
             <span class="classe-sbc bronze" id="final-classe">Em transição</span>
             <p id="final-resumo" style="font-size:1.05em;"></p>
             <div id="final-dicas" style="text-align:left;margin-top:8px;"></div>
+            <div style="text-align:left;margin-top:14px;background:var(--dourado-claro);border:2px solid var(--dourado);border-radius:12px;padding:12px 14px;">
+                <strong>Quer levar o SBC para sua fazenda?</strong>
+                <ol style="margin:6px 0 0;padding-left:20px;">
+                    <li>Anote os dados da safra (produtividade, insumos, operações) — o selo exige controle MRV.</li>
+                    <li>Comece pelo degrau que já cabe no seu sistema: o SPD é a porta de entrada.</li>
+                    <li>Fale com as empresas apoiadoras e com uma certificadora aqui no estande.</li>
+                </ol>
+            </div>
             <button class="botao" onclick="location.reload()">Recalcular</button>
             <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
         </section>
@@ -199,11 +207,15 @@
             { id: "fbn", icone: "🦠", nome: "Fixação Biológica do Nitrogênio",
               desc: "Fim da adubação nitrogenada química + inoculantes.",
               peso: 20, degrau: 2,
-              fonte: "Evita N₂O, gás com potencial de aquecimento 298× maior que o CO₂." },
+              fonte: "Evita N₂O, gás com potencial de aquecimento 265× maior que o CO₂ (IPCC 2006)." },
             { id: "coinoculacao", icone: "🧬", nome: "Coinoculação (Bradyrhizobium + Azospirillum)",
               desc: "Aumenta a eficiência da fixação de nitrogênio.",
               peso: 10, degrau: 2,
               fonte: "Mais eficiência da FBN, mais produtividade, menos custo." },
+            { id: "adubacao", icone: "🧪", nome: "Adubação e correção de solo",
+              desc: "Análise de solo, calagem e adubação conforme recomendação técnica.",
+              peso: 10, degrau: 2,
+              fonte: "Boas práticas de adubação melhoram o carbono orgânico do solo e o balanço de GEEs." },
             { id: "manejos", icone: "🔬", nome: "Manejos Integrados (pragas, doenças e daninhas)",
               desc: "Monitorar e aplicar produto químico só quando necessário.",
               peso: 15, degrau: 3,
@@ -220,7 +232,7 @@
 
         var DEGRAUS = [
             { n: 1, nome: "Manejo conservacionista do solo", ids: ["spd"] },
-            { n: 2, nome: "Redução racional de fertilizantes (FBN + coinoculação)", ids: ["fbn", "coinoculacao"] },
+            { n: 2, nome: "Nutrição racional: FBN, coinoculação e correção de solo", ids: ["fbn", "coinoculacao", "adubacao"] },
             { n: 3, nome: "Redução racional de agrotóxicos (manejos integrados)", ids: ["manejos"] },
             { n: 4, nome: "Aumento de produtividade e redução de perdas", ids: ["produtividade"] },
             { n: 5, nome: "Integração Lavoura-Pecuária-Floresta", ids: ["ilpf"] }

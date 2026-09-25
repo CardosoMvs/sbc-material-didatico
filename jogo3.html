@@ -123,7 +123,7 @@
             { dif: "f", q: "Quantas toneladas de CO₂eq por hectare o SPD imobiliza por ano?", opcoes: ["1 tonelada", "3 toneladas", "10 toneladas"], resp: 1,
               exp: "3 t CO₂eq/ha·ano — 60 toneladas ao longo de 20 anos (Embrapa)." },
             { dif: "f", q: "A eliminação da adubação nitrogenada química na soja reduz a emissão de qual gás?", opcoes: ["Óxido nitroso (N₂O)", "Metano (CH₄)", "Vapor d'água"], resp: 0,
-              exp: "N₂O tem potencial de aquecimento global 298× maior que o CO₂. A FBN elimina essa fonte." },
+              exp: "N₂O tem potencial de aquecimento global 265× maior que o CO₂ (IPCC 2006). A FBN elimina essa fonte." },
             { dif: "f", q: "Quais bactérias formam a coinoculação recomendada para a soja?", opcoes: ["Bradyrhizobium + Azospirillum", "Rhizobium + Pseudomonas", "Azotobacter + Bacillus"], resp: 0,
               exp: "Bradyrhizobium + Azospirillum — a coinoculação aumenta a eficiência da FBN." },
             { dif: "f", q: "Qual instituição lidera o Programa SBC?", opcoes: ["Embrapa Soja", "IAC de Campinas", "UFV de Viçosa"], resp: 0,
@@ -155,11 +155,34 @@
             { dif: "d", q: "Com SPD pleno em toda a área de soja do Brasil, as emissões mitigadas equivaleriam às de quantos brasileiros por ano?", opcoes: ["1 milhão", "10 milhões", "50 milhões"], resp: 1,
               exp: "10 milhões de brasileiros/ano — os ~40 mi ha de soja em SPD pleno." },
             { dif: "d", q: "Qual é aproximadamente a área cultivada com soja no Brasil?", opcoes: ["~10 milhões de hectares", "~40 milhões de hectares", "~80 milhões de hectares"], resp: 1,
-              exp: "Cerca de 40 milhões de hectares (safra 2020/21)." },
-            { dif: "d", q: "Qual o potencial de aquecimento global (PAG) do óxido nitroso, segundo o IPCC 2006?", opcoes: ["298× o CO₂", "28× o CO₂", "56× o CO₂"], resp: 0,
-              exp: "N₂O = 298×; o metano = 28×. Por isso cada kg de N₂O conta muito no IEGEE." },
+              exp: "Cerca de 40 milhões de hectares — 38,47 mi ha na safra 2020/21 (Conab)." },
+            { dif: "d", q: "Qual o potencial de aquecimento global (PAG) do óxido nitroso, segundo o IPCC 2006?", opcoes: ["265× o CO₂", "298× o CO₂", "28× o CO₂"], resp: 0,
+              exp: "N₂O = 265× e o metano = 28× (IPCC 2006, base do CT 100). Por isso cada kg de N₂O pesa muito no IEGEE." },
             { dif: "d", q: "A construção do protocolo de certificação SBC segue o Código de Boas Práticas de qual entidade?", opcoes: ["ISEAL Alliance", "FAO", "ISO 9001"], resp: 0,
-              exp: "ISEAL Alliance: código internacional de boas práticas para sistemas de certificação." }
+              exp: "ISEAL Alliance: código internacional de boas práticas para sistemas de certificação." },
+            // Perguntas do Comunicado Técnico 100 e Folder 01/2024
+            { dif: "f", q: "Desde que ano a Embrapa Soja conduz o Programa SBC?", opcoes: ["Desde 2021", "Desde 2010", "Desde 2015"], resp: 0,
+              exp: "Desde 2021 — com o modelo de inovação setorial e 7 empresas apoiadoras (Folder 01/2024)." },
+            { dif: "f", q: "O foco da marca-conceito SBC é certificar…", opcoes: ["O sistema de produção de soja", "A propriedade rural inteira", "A indústria de processamento"], resp: 0,
+              exp: "Diferencial do SBC: foco no sistema de produção de soja e no balanço das emissões de GEEs — não na propriedade inteira." },
+            { dif: "f", q: "Além de reduzir emissões, as boas práticas SBC trazem…", opcoes: ["Mais produtividade e menos custo", "Mais custo e menos grãos", "Dependência de mais insumos químicos"], resp: 0,
+              exp: "As práticas que cortam emissões são as mesmas que aumentam a produtividade e reduzem custos — ganho duplo para o produtor." },
+            { dif: "f", q: "Qual destas é uma das boas práticas agrícolas listadas pelo SBC?", opcoes: ["Adubação e correção de solo", "Queima da palha da colheita", "Ureia em excesso 'para garantir'"], resp: 0,
+              exp: "As bases: SPD, FBN, ILPF, Adubação e correção de solo e Manejo Integrado de Pragas, Doenças e Plantas Daninhas." },
+            { dif: "m", q: "Quais são as 7 empresas apoiadoras do Programa SBC?", opcoes: ["Bayer, Bunge, Cargill, Coamo, Cocamar, GDM e UPL", "Petrobras, Vale e JBS", "Somente cooperativas do Paraná"], resp: 0,
+              exp: "Bayer, Bunge, Cargill, Coamo, Cocamar, GDM e UPL apoiam o programa desde o início (Folder 01/2024)." },
+            { dif: "m", q: "O índice IEGEE do selo SBC é baseado no indicador proposto por…", opcoes: ["Mosier et al. (2006)", "Kaster e Farias (2012)", "Escobar et al. (2020)"], resp: 0,
+              exp: "IEGEE = balanço de CO₂eq ÷ produtividade, em kg CO₂eq por tonelada de soja (Mosier et al., 2006)." },
+            { dif: "m", q: "O que o controle MRV pede que a fazenda faça com os dados da safra?", opcoes: ["Manter dados mensuráveis, reportáveis e verificáveis", "Guardar tudo só na memória do produtor", "Divulgar apenas no final da colheita"], resp: 0,
+              exp: "MRV (OECD): o selo SBC é voluntário, de 3ª parte, e depende de dados organizados da lavoura." },
+            { dif: "d", q: "Quanto o Brasil produziu de soja na safra 2020/21?", opcoes: ["~135,5 milhões de toneladas", "~50 milhões de toneladas", "~200 milhões de toneladas"], resp: 0,
+              exp: "135,5 milhões de toneladas em 38,47 milhões de hectares (Conab) — Brasil é o maior produtor e exportador mundial." },
+            { dif: "d", q: "As emissões atribuídas às exportações brasileiras de soja (2010–2015) equivalem à queima de…", opcoes: ["~73 bilhões de litros de diesel", "~7 milhões de litros de diesel", "~730 litros de diesel"], resp: 0,
+              exp: "223,46 milhões de t CO₂eq ≈ 73 bi de litros de diesel — 15 meses do consumo nacional (Escobar et al., 2020). Números distorcidos que o SBC quer corrigir com dados." },
+            { dif: "d", q: "O protocolo de certificação SBC será submetido a registro em qual órgão?", opcoes: ["MAPA – Ministério da Agricultura", "INPI", "Banco Central"], resp: 0,
+              exp: "MAPA (ou entidade indicada). O memorial descritivo será público; o checklist é construído com cada certificadora. A marca em si é registrada no INPI." },
+            { dif: "d", q: "Quais marcas-conceito irmãs da Embrapa Gado de Corte inspiraram a SBC?", opcoes: ["Carne Carbono Neutro e Carne Baixo Carbono", "Soja Plus e Agro Clean", "Green Farm e Eco Soy"], resp: 0,
+              exp: "A experiência com CCN e CBC dá agilidade e assertividade à construção da marca SBC." }
         ];
 
         var TOTAL = 8;                       // 3 fáceis + 3 médias + 2 difíceis
@@ -332,7 +355,7 @@
             else if (pontos >= 1000) { document.getElementById("trofeu").textContent = "🥈"; document.getElementById("final-titulo").textContent = "Nível produtor SBC!"; }
             else { document.getElementById("trofeu").textContent = "🌱"; document.getElementById("final-titulo").textContent = "Bom começo!"; }
             document.getElementById("final-msg").textContent =
-                "Você acertou " + totalAcertos + " de " + TOTAL + " perguntas. O quiz sorteia 8 de um banco de 20 — jogue de novo e venha perguntas novas!";
+                "Você acertou " + totalAcertos + " de " + TOTAL + " perguntas. O quiz sorteia 8 de um banco de " + PERGUNTAS.length + " — jogue de novo e venha perguntas novas!";
 
             var tabela = document.getElementById("tabela-dif");
             tabela.innerHTML = "";

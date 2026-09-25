@@ -58,7 +58,7 @@
             <div class="nome">Sequência</div>
         </div>
         <div class="placar-item">
-            <div class="valor" id="prog">1/16</div>
+            <div class="valor" id="prog">1/21</div>
             <div class="nome">Situação</div>
         </div>
     </div>
@@ -121,15 +121,21 @@
               exp: "O preparo convencional expõe a matéria orgânica e libera CO₂. Converter para o SPD é o primeiro degrau da escada SBC." },
             { fase: 0, texto: "Rodar o mesmo cultivo todos os anos, sem rotação de culturas.", sbc: false,
               exp: "Rotação e diversificação de culturas são premissas do SPD pleno — sem elas, o sistema perde capacidade de imobilizar carbono." },
+            { fase: 0, texto: "Planejar a safra com análise de solo e cultivar indicada para a sua macrorregião.", sbc: true,
+              exp: "Cultivar indicada por macrorregião (ensaios de VCU) + adubação conforme análise: menos insumo desperdiçado, mais grãos e melhor balanço de GEEs." },
+            { fase: 0, texto: "Abrir área nova em vegetação nativa em vez de intensificar a área já aberta.", sbc: false,
+              exp: "O SBC valoriza a intensificação sustentável: mais grãos na mesma área reduz as emissões por tonelada e diminui a pressão de expansão sobre novas áreas." },
             // Plantio
             { fase: 1, texto: "Eliminar a adubação nitrogenada química da soja e usar inoculantes.", sbc: true,
-              exp: "Com a Fixação Biológica do Nitrogênio, a soja tira o N do ar. Evita-se N₂O — 298× mais potente que o CO₂ — e adubo derivado de petróleo." },
+              exp: "Com a Fixação Biológica do Nitrogênio, a soja tira o N do ar. Evita-se N₂O — 265× mais potente que o CO₂ (IPCC 2006) — e adubo derivado de petróleo." },
             { fase: 1, texto: "Aplicar ureia pesada na soja 'para garantir', sem recomendação técnica.", sbc: false,
               exp: "Nitrogênio químico em excesso emite N₂O e aumenta custo sem retorno. O caminho SBC é a FBN com coinoculação." },
             { fase: 1, texto: "Semear com coinoculação: Bradyrhizobium + Azospirillum.", sbc: true,
               exp: "A coinoculação aumenta a eficiência da fixação de nitrogênio, a produtividade e ainda reduz custos." },
             { fase: 1, texto: "Plantar em solo compactado, sem correção, 'para não atrasar'.", sbc: false,
               exp: "Solo mal preparado derruba a produtividade — e o IEGEE é por tonelada: menos grãos dividindo as emissões deixa o índice alto." },
+            { fase: 1, texto: "Reusar o inoculante que sobrou da safra passada 'para economizar'.", sbc: false,
+              exp: "Inoculante fora da validade perde viabilidade: menos nodulação, menos nitrogênio fixado pela FBN — e o prejuízo na lavoura é maior que a economia." },
             // Condução
             { fase: 2, texto: "Monitorar pragas e doenças semanalmente e aplicar produto só quando necessário.", sbc: true,
               exp: "Manejo Integrado: menos aplicações = menos trânsito de máquinas, menos combustível fóssil queimado e economia na fazenda." },
@@ -141,11 +147,15 @@
               exp: "A adubação e correção de solo bem feitas impactam o teor de carbono orgânico — pilar do balanço de GEEs com soja." },
             { fase: 2, texto: "Planejar o tráfego das máquinas para reduzir passadas na lavoura.", sbc: true,
               exp: "Menos passadas = menos diesel, menos compactação e mais eficiência operacional — emissões menores por tonelada." },
+            { fase: 2, texto: "Monitorar a ferrugem-asiática e aplicar fungicida só quando atingir o nível de dano.", sbc: true,
+              exp: "Monitorar a Phakopsora pachyrhizi orienta a decisão de controle: menos aplicações, menos custo e menos diesel de máquina na lavoura." },
             // Colheita
             { fase: 3, texto: "Regular a plataforma de corte da colhedora para reduzir perdas de grãos.", sbc: true,
               exp: "O IEGEE é por tonelada de grãos: menos perdas e mais produtividade dividem as emissões por mais produto — o índice cai." },
             { fase: 3, texto: "Deixar grãos no campo: 'perda pequena não faz diferença'.", sbc: false,
               exp: "Faz! Cada saca perdida é emissão diluída por menos produto. Reduzir perdas é um degrau da escada SBC." },
+            { fase: 3, texto: "Queimar a palha e os restos de colheita para 'limpar' a área rapidamente.", sbc: false,
+              exp: "A queima devolve à atmosfera o carbono que o SPD imobilizou e destrói a palha — insumo essencial do plantio direto e da matéria orgânica do solo." },
             { fase: 3, texto: "Anotar os dados da safra (produtividade, insumos, operações) para o relatório SBC.", sbc: true,
               exp: "O selo SBC exige controle MRV — Mensurável, Reportável e Verificável. Dados organizados são a porta de entrada da certificação." }
         ];
@@ -243,9 +253,9 @@
         function finalizar() {
             var acertos = acertosPorFase.reduce(function (a, b) { return a + b; }, 0);
             var classe, titulo, icone;
-            if (pontos >= 210) { classe = "Ouro SBC"; titulo = "Safra de elite SBC!"; icone = "🏆"; }
-            else if (pontos >= 160) { classe = "Prata SBC"; titulo = "Grande safra — sua fazenda pensa em carbono"; icone = "🥈"; }
-            else if (pontos >= 100) { classe = "Bronze SBC"; titulo = "Boa safra — dá para afinar o manejo"; icone = "🥉"; }
+            if (pontos >= 320) { classe = "Ouro SBC"; titulo = "Safra de elite SBC!"; icone = "🏆"; }
+            else if (pontos >= 240) { classe = "Prata SBC"; titulo = "Grande safra — sua fazenda pensa em carbono"; icone = "🥈"; }
+            else if (pontos >= 150) { classe = "Bronze SBC"; titulo = "Boa safra — dá para afinar o manejo"; icone = "🥉"; }
             else { classe = "Em transição"; titulo = "Safra em transição — vale uma conversa no estande"; icone = "🌱"; }
 
             var cEl = document.getElementById("final-classe");

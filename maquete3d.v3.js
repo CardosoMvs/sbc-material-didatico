@@ -151,26 +151,29 @@ var Maquete3D = (function () {
         var lx = x - LAGOA.x, lz = z - LAGOA.z;
         y -= LAGOA.p * Math.exp(-(lx * lx + lz * lz) / (2 * LAGOA.s * LAGOA.s));
         var d = Math.min(distAte(rioAmoEsq, x, z), distAte(rioAmoDir, x, z));
-        y -= 1.05 * Math.exp(-(d * d) / (2 * 1.05 * 1.05));
+        y -= 1.35 * Math.exp(-(d * d) / (2 * 0.95 * 0.95));
         return y;
     }
 
     /* ====================== cores do solo por ano ====================== */
-    var COR_T1 = [0x8a7052, 0x9c8a5e, 0xb3a06a];
-    var COR_T2 = [0x9d8055, 0x6f9e58, 0x559050];
+    var COR_T1 = [0x9c8a62, 0xa89b6e, 0xb8a97a];
+    var COR_T2 = [0xa88a5a, 0x79a86a, 0x5fa85a];
     var COR_T3 = 0x4f9455;
-    var COR_LEITO_ESQ = [0x6e5c3e, 0x6a6648, 0x5f6b4e];
+    var COR_LEITO_ESQ = [0x5a6b52, 0x5c7a5a, 0x5f8f6e];
     var COR_RIO_ESQ = [0x9c8b55, 0x94a065, 0x74b287];
     var COR_RIO_DIR = 0x54b4e8;
 
-    function corSolo(x, z, ano) {
+    function corSolo(x, z, ano, h) {
         var dE = distAte(rioAmoEsq, x, z), dD = distAte(rioAmoDir, x, z);
+        var lx = x - LAGOA.x, lz = z - LAGOA.z;
+        var naAgua = h < NIVEL_AGUA - 0.03 || (lx * lx + lz * lz) < 2.2 && h < NIVEL_AGUA;
         var c = 0x79ab5e;
         var k, dC;
-        if (dE < 1.45) c = COR_LEITO_ESQ[ano - 1];
-        else if (dE < 3.4) c = 0xa89268;
-        if (dD < 1.45) c = 0x55684a;
-        else if (dD < 3.4 && c === 0x79ab5e) c = 0x3e7d46;
+        // leito do rio: só aparece se a margem estiver acima da água
+        if (dE < 1.35) c = naAgua ? COR_RIO_ESQ[ano - 1] : COR_LEITO_ESQ[ano - 1];
+        else if (dE < 2.8) c = 0xa89268;
+        if (dD < 1.35) c = naAgua ? COR_RIO_DIR : 0x55684a;
+        else if (dD < 2.8 && c === 0x79ab5e) c = 0x3e7d46;
         for (k = 0; k < CAMINHOS.length; k++) {
             dC = distAte(caminhoAmo[k], x, z);
             if (dC < 0.9) c = 0xbfab85;
@@ -191,19 +194,21 @@ var Maquete3D = (function () {
         for (var i = 0; i < pos.count; i++) {
             var x = pos.getX(i), z = pos.getZ(i);
             var h = pos.getY(i);
-            c.setHex(corSolo(x, z, ano));
-            if (h < NIVEL_AGUA + 0.09) {
+            c.setHex(corSolo(x, z, ano, h));
+            if (h < NIVEL_AGUA + 0.06) {
                 var dE = distAte(rioAmoEsq, x, z), dD = distAte(rioAmoDir, x, z);
                 var lx = x - LAGOA.x, lz = z - LAGOA.z;
-                if (dE < 3.6 || dD < 3.6 || (lx * lx + lz * lz) < 6.2) {
-                    if (h < NIVEL_AGUA - 0.02) {
-                        var prof = Math.min(1, (NIVEL_AGUA - h) / 1.1);
-                        var corAgua = (lx * lx + lz * lz) < 6.2 ? 0x4b9ecb :
+                var dentroRio = dE < 3.2 || dD < 3.2 || (lx * lx + lz * lz) < 5.0;
+                if (dentroRio) {
+                    if (h < NIVEL_AGUA - 0.015) {
+                        var prof = Math.min(1, (NIVEL_AGUA - h) / 1.0);
+                        var corAgua = (lx * lx + lz * lz) < 5.0 ? 0x4b9ecb :
                             (dE <= dD ? COR_RIO_ESQ[ano - 1] : COR_RIO_DIR);
-                        c.lerp(_cAgua.setHex(corAgua), 0.16 + prof * 0.16);
+                        c.lerp(_cAgua.setHex(corAgua), 0.55 + prof * 0.25);
                         c.offsetHSL(0, 0, -prof * 0.05);
                     } else {
-                        c.setHex(0x96855f);
+                        // faixa de margem molhada bem estreita
+                        c.lerp(_cAgua.setHex(0x96855f), 0.35);
                     }
                 }
             }
@@ -695,7 +700,7 @@ var Maquete3D = (function () {
         espumaMatEsq = espumas(rioCurvaEsq, 0x8f7f52, 12, 0.026);
         espumas(rioCurvaDir, 0xeaf7fa, 14, 0.032);
 
-        // pedras e seixos nas margens
+        // pedras e seixos nas margens (apenas fora da água)
         var pedras = [];
         [rioCurvaEsq, rioCurvaDir].forEach(function (curva) {
             for (var t3 = 0.05; t3 <= 0.95; t3 += 0.06) {
@@ -705,10 +710,11 @@ var Maquete3D = (function () {
                 var nx = -tg.z / l, nz = tg.x / l;
                 for (var lado = -1; lado <= 1; lado += 2) {
                     if (Math.random() < 0.35) continue;
-                    var d = 1.1 + Math.random() * 0.8;
+                    var d = 1.25 + Math.random() * 0.7;
                     var px = p.x + nx * d * lado + (Math.random() - 0.5) * 0.4;
                     var pz = p.z + nz * d * lado + (Math.random() - 0.5) * 0.4;
-                    var s = 0.4 + Math.random() * 0.5;
+                    if (altura(px, pz) < NIVEL_AGUA + 0.05) continue;
+                    var s = 0.35 + Math.random() * 0.45;
                     pedras.push({
                         p: [px, altura(px, pz) + 0.05 * s, pz],
                         s: [s, s * 0.7, s * 1.1],
@@ -1192,7 +1198,7 @@ var Maquete3D = (function () {
         scene.background = ceuTextura();
 
         camera = new THREE.PerspectiveCamera(40, 1.55, 0.1, 400);
-        camera.position.set(24, 14.5, 29);
+        camera.position.set(28, 18.5, 34);
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 0.2, 0);

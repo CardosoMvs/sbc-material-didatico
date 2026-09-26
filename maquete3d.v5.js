@@ -1345,12 +1345,17 @@ var Maquete3D = (function () {
         atualizarMarcadores();
     }
 
+    var panAtivo = false;
     function aoRedimensionar() {
         var w = container.clientWidth, h = container.clientHeight;
         if (!w || !h) return;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
+    }
+    function setPan(ativo) {
+        panAtivo = !!ativo;
+        if (controls) controls.enablePan = panAtivo;
     }
 
     /* ====================== céu e luz ====================== */
@@ -1407,12 +1412,12 @@ var Maquete3D = (function () {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 0.2, 0);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.06;
-        controls.enablePan = false;
-        controls.minDistance = 14;
-        controls.maxDistance = 70;
-        controls.minPolarAngle = 0.18;
-        controls.maxPolarAngle = 1.42;
+        controls.dampingFactor = 0.08;
+        controls.enablePan = true;
+        controls.minDistance = 8;
+        controls.maxDistance = 90;
+        controls.minPolarAngle = 0.10;
+        controls.maxPolarAngle = 1.55;
         controls.autoRotate = true;
         controls.autoRotateSpeed = 0.45;
         renderer.domElement.addEventListener("pointerdown", function () { controls.autoRotate = false; });
@@ -1461,6 +1466,7 @@ var Maquete3D = (function () {
         init: init,
         trocarAno: montarAno,
         redimensionar: aoRedimensionar,
+        setPan: setPan,
         info: function () {
             return {
                 fixos: gCena.children.length,

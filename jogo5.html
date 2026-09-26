@@ -72,6 +72,9 @@
             cursor: grab;
             touch-action: none;
         }
+        #cena3d.panning {
+            cursor: move;
+        }
         #cena3d.cheia {
             position: fixed;
             inset: 0;
@@ -92,10 +95,9 @@
         #cena3d.cheia canvas { width: 100% !important; height: 100% !important; }
         #marcadores { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 
-        .btn-cheia {
+        .btn-acao {
             position: absolute;
             top: 10px;
-            right: 10px;
             z-index: 10;
             width: 38px;
             height: 38px;
@@ -110,7 +112,15 @@
             align-items: center;
             justify-content: center;
         }
-        #cena3d.cheia .btn-cheia { top: 14px; right: 14px; }
+        .btn-acao.ativo { background: var(--verde); color: #fff; }
+        #cena3d.cheia .btn-acao { top: 14px; }
+        .btn-cheia { right: 10px; }
+        #cena3d.cheia .btn-cheia { right: 14px; }
+        .btn-pan { right: 54px; }
+        #cena3d.cheia .btn-pan { right: 58px; }
+        @media (pointer: fine) {
+            .btn-pan { display: none; }
+        }
 
         .marcador {
             position: absolute;
@@ -274,9 +284,10 @@
     <!-- A super maquete 3D -->
     <div class="maquete-box">
         <div id="cena3d">
-            <button class="btn-cheia" id="btn-cheia" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button>
+            <button class="btn-acao btn-pan" id="btn-pan" type="button" title="Mover a maquete" aria-label="Mover a maquete">✥</button>
+            <button class="btn-acao btn-cheia" id="btn-cheia" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button>
             <div id="marcadores"></div>
-            <div class="dica-3d">🖱️ Arraste para girar · roda/pinça para zoom</div>
+            <div class="dica-3d" id="dica-3d">🖱️ Arraste para girar · roda/pinça para zoom</div>
         </div>
     </div>
 
@@ -575,8 +586,44 @@
             tela.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        /* ---------- tela cheia ---------- */
+        /* ---------- controles extras: pan com Shift + botão mobile ---------- */
         var cena3d = document.getElementById("cena3d");
+        var btnPan = document.getElementById("btn-pan");
+        var dica3d = document.getElementById("dica-3d");
+        var modoPan = false;
+
+        function atualizarDica() {
+            if (modoPan) {
+                dica3d.textContent = "✥ Arraste para mover · 2 dedos para zoom";
+            } else {
+                dica3d.textContent = "🖱️ Arraste para girar · roda/pinça para zoom";
+            }
+        }
+
+        function alternarModoPan() {
+            modoPan = !modoPan;
+            btnPan.classList.toggle("ativo", modoPan);
+            if (typeof Maquete3D.setPan === "function") Maquete3D.setPan(modoPan);
+            atualizarDica();
+        }
+
+        btnPan.addEventListener("click", alternarModoPan);
+
+        // Shift no desktop alterna pan temporariamente
+        window.addEventListener("keydown", function (e) {
+            if (e.key === "Shift" && !modoPan) {
+                cena3d.classList.add("panning");
+                if (typeof Maquete3D.setPan === "function") Maquete3D.setPan(true);
+            }
+        });
+        window.addEventListener("keyup", function (e) {
+            if (e.key === "Shift" && !modoPan) {
+                cena3d.classList.remove("panning");
+                if (typeof Maquete3D.setPan === "function") Maquete3D.setPan(false);
+            }
+        });
+
+        /* ---------- tela cheia ---------- */
         var btnCheia = document.getElementById("btn-cheia");
         function aoMudarTela() {
             var ehCheia = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);

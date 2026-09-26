@@ -145,7 +145,7 @@ var Maquete3D = (function () {
         y -= LAGOA.p * Math.exp(-(lx * lx + lz * lz) / (2 * LAGOA.s * LAGOA.s));
         /* calhas escavadas pelos rios */
         var d = Math.min(distAte(rioAmoEsq, x, z), distAte(rioAmoDir, x, z));
-        y -= 1.25 * Math.exp(-(d * d) / (2 * 1.5 * 1.5));
+        y -= 0.9 * Math.exp(-(d * d) / (2 * 1.05 * 1.05));
         return y;
     }
 
@@ -153,11 +153,11 @@ var Maquete3D = (function () {
     var COR_T1 = [0x8a7052, 0x9c8a5e, 0xb3a06a];
     var COR_T2 = [0x9d8055, 0x6f9e58, 0x559050];
     var COR_T3 = 0x4f9455;
-    var COR_LEITO_ESQ = [0x57462f, 0x534e39, 0x4a5640];
+    var COR_LEITO_ESQ = [0x6e5c3e, 0x6a6648, 0x5f6b4e];
     /* água barrenta do rio esquerdo clareando com o manejo (contorno
        segura o sedimento: Ano 3 quase limpa, como no rio preservado) */
-    var COR_RIO_ESQ = [0x8a7d4a, 0x7f8455, 0x5f9a68];
-    var COR_RIO_DIR = 0x4fa8dd;
+    var COR_RIO_ESQ = [0x9c8b55, 0x94a065, 0x74b287];
+    var COR_RIO_DIR = 0x54b4e8;
 
     function corSolo(x, z, ano) {
         var dE = distAte(rioAmoEsq, x, z), dD = distAte(rioAmoDir, x, z);
@@ -165,7 +165,7 @@ var Maquete3D = (function () {
         var k, dC;
         if (dE < 1.35) c = COR_LEITO_ESQ[ano - 1];           // leito do rio esquerdo
         else if (dE < 3.4) c = 0xa89268;                      // margem da APP degradada
-        if (dD < 1.35) c = 0x46583f;                         // leito do rio direito
+        if (dD < 1.35) c = 0x55684a;                         // leito do rio direito
         else if (dD < 3.4 && c === 0x79ab5e) c = 0x3e7d46;    // faixa da APP preservada
         for (k = 0; k < CAMINHOS.length; k++) {              // caminhos de terra
             dC = distAte(caminhoAmo[k], x, z);
@@ -197,8 +197,8 @@ var Maquete3D = (function () {
                         var prof = Math.min(1, (NIVEL_AGUA - h) / 1.1);
                         var corAgua = (lx * lx + lz * lz) < 6.2 ? 0x4b9ecb :
                             (dE <= dD ? COR_RIO_ESQ[ano - 1] : COR_RIO_DIR);
-                        c.lerp(_cAgua.setHex(corAgua), 0.22 + prof * 0.22);
-                        c.offsetHSL(0, 0, -prof * 0.1);        // mais fundo, mais escuro
+                        c.lerp(_cAgua.setHex(corAgua), 0.16 + prof * 0.16);
+                        c.offsetHSL(0, 0, -prof * 0.05);       // mais fundo, mais escuro
                     } else {
                         c.setHex(0x96855f);                     // areia molhada na margem
                     }
@@ -363,12 +363,12 @@ var Maquete3D = (function () {
                         pts.push(new THREE.Vector3(x, altura(x, z) + 0.06, z));
                     }
                     var ravina = new THREE.Mesh(
-                        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.13, 6),
-                        mat(0x6e4a26));
+                        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.055, 6),
+                        mat(0x5c3f22));
                     ravina.castShadow = true;
                     g.add(ravina);
                     var fx = m.cx - m.sx * 1.05 * lado, fz = m.cz + m.sz * 0.95;
-                    var leque = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.75, 0.1, 10), mat(0x8a5a33));
+                    var leque = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 0.08, 10), mat(0x8a5a33));
                     leque.position.set(fx, altura(fx, fz) + 0.08, fz);
                     leque.scale.set(1.4, 1, 0.9);
                     leque.receiveShadow = true;
@@ -592,10 +592,10 @@ var Maquete3D = (function () {
             aguas.push({ mesh: m, fases: fases });
             return m;
         }
-        var fitaEsq = fita(rioCurvaEsq, COR_RIO_ESQ[0], 0.93);
+        var fitaEsq = fita(rioCurvaEsq, COR_RIO_ESQ[0], 0.95);
         aguaMatEsq = fitaEsq.material;
         gCena.add(fitaEsq);
-        gCena.add(fita(rioCurvaDir, COR_RIO_DIR, 0.9));
+        gCena.add(fita(rioCurvaDir, COR_RIO_DIR, 0.93));
         /* lagoa: contorno segue a linha d'água real do relevo */
         var NA = 30, posL = [LAGOA.x, NIVEL_AGUA, LAGOA.z], idxL = [];
         for (var a = 0; a < NA; a++) {

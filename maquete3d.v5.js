@@ -91,6 +91,7 @@ var Maquete3D = (function () {
     var terreno;
     var rioCurvaEsq, rioCurvaDir;
     var rioAmoEsq = [], rioAmoDir = [], caminhoAmo = [], valeAmo = [];
+    var ravinasT2Ano1 = [];
     var drone, rotores = [], vacas = [], aves = [], borboletas = [], abelhas = [], nuvens = [];
     var espuma = [];
     var aguaMatEsq = null, espumaMatEsq = null;
@@ -473,111 +474,63 @@ var Maquete3D = (function () {
             }
             g.add(instanciar(GE.tufo, 0xb8a85e, fileirasItens));
 
-            // ravinas de erosão: canais em V com leques de sedimento e pedras
-            function ravinaErosao(m, ladoSinal) {
+            // ravina de erosão visível: sulco escuro seguindo a vertente
+            function ravinaVisible(m, ladoSinal) {
+                var r2 = rng(551 + Math.floor(m.cx * 10) + Math.floor(ladoSinal * 10));
+                var N = 24;
                 var pts = [];
-                var N = 30;
                 for (var t = 0; t <= 1.001; t += 1 / N) {
-                    var x = m.cx - t * m.sx * 1.15 * ladoSinal + (Math.random() - 0.5) * 0.25;
-                    var z = m.cz + t * m.sz * 1.05 + (Math.random() - 0.5) * 0.15;
-                    pts.push(new THREE.Vector3(x, altura(x, z) + 0.04, z));
+                    var curvatura = Math.sin(t * Math.PI) * 0.35 * (ladoSinal > 0 ? 1 : -1);
+                    var x = m.cx - t * m.sx * 1.15 * ladoSinal + curvatura * 0.18;
+                    var z = m.cz + t * m.sz * 1.05;
+                    pts.push(new THREE.Vector3(x, altura(x, z) + 0.02, z));
                 }
                 var curva = new THREE.CatmullRomCurve3(pts);
-                var posArr = [], idx = [];
-                var largTopo = 0.55, largFundo = 0.12, prof = 0.38;
-                var samples = curva.getPoints(N);
-                for (var i = 0; i <= N; i++) {
-                    var p = samples[i];
-                    var tg = curva.getTangent(i / N);
-                    var l = Math.sqrt(tg.x * tg.x + tg.z * tg.z) || 1;
-                    var nx = -tg.z / l, nz = tg.x / l;
-                    // abertura da ravina aumenta em direção ao pé do morro
-                    var fator = i / N;
-                    var wTopo = largTopo * (1 + fator * 1.2);
-                    var wFundo = largFundo * (1 + fator * 0.6);
-                    var pY = prof * (1 - fator * 0.25);
-                    // fundo arredondado
-                    posArr.push(p.x + nx * wFundo, p.y - pY, p.z + nz * wFundo); // 0 fundo esq
-                    posArr.push(p.x - nx * wFundo, p.y - pY, p.z - nz * wFundo); // 1 fundo dir
-                    posArr.push(p.x + nx * wTopo, p.y - 0.04, p.z + nz * wTopo); // 2 borda esq
-                    posArr.push(p.x - nx * wTopo, p.y - 0.04, p.z - nz * wTopo); // 3 borda dir
-                    if (i < N) {
-                        var b = i * 4;
-                        // lado esquerdo
-                        idx.push(b, b + 2, b + 4, b + 2, b + 6, b + 4);
-                        // fundo
-                        idx.push(b, b + 5, b + 1, b + 0, b + 4, b + 5);
-                        // lado direito
-                        idx.push(b + 1, b + 5, b + 7, b + 1, b + 3, b + 7);
-                    }
-                }
-                var geo = new THREE.BufferGeometry();
-                geo.setAttribute("position", new THREE.Float32BufferAttribute(posArr, 3));
-                geo.setIndex(idx);
-                geo.computeVertexNormals();
-                var rav = new THREE.Mesh(geo, mat(0x4a3020));
-                rav.castShadow = true; rav.receiveShadow = true;
-                g.add(rav);
+                // sulco marrom-claro no fundo (menos agressivo visualmente)
+                var sulco = new THREE.Mesh(
+                    new THREE.TubeGeometry(curva, 24, 0.13, 7),
+                    mat(0x8a6a4a));
+                sulco.castShadow = true; sulco.receiveShadow = true;
+                g.add(sulco);
 
-                // leque de sedimento no pé do morro
+                // leque de sedimento no pé do morro (levemente menor)
                 var fx = m.cx - m.sx * 1.15 * ladoSinal;
                 var fz = m.cz + m.sz * 1.05;
                 var leque = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.35, 1.05, 0.12, 14),
-                    mat(0x8a5a33));
-                leque.position.set(fx, altura(fx, fz) + 0.06, fz);
-                leque.scale.set(2.0, 1, 1.4);
+                    new THREE.CylinderGeometry(0.26, 0.78, 0.06, 16),
+                    mat(0xc4a47a));
+                leque.position.set(fx, altura(fx, fz) + 0.03, fz);
+                leque.scale.set(1.45, 1, 1.05);
                 leque.receiveShadow = true;
                 g.add(leque);
 
-                // pedregulhos soltos no leito e no leque
-                var pedrasRavina = [];
-                for (var r = 0; r < 18; r++) {
-                    var rt = 0.15 + Math.random() * 0.8;
-                    var rp = curva.getPointAt(rt);
-                    var rtg = curva.getTangentAt(rt);
-                    var rl = Math.sqrt(rtg.x * rtg.x + rtg.z * rtg.z) || 1;
-                    var rnx = -rtg.z / rl, rnz = rtg.x / rl;
-                    var offset = (Math.random() - 0.5) * (0.15 + rt * 0.4);
-                    var px = rp.x + rnx * offset + (Math.random() - 0.5) * 0.2;
-                    var pz = rp.z + rnz * offset + (Math.random() - 0.5) * 0.2;
-                    var py = altura(px, pz) + 0.04;
-                    var esc = 0.15 + Math.random() * 0.22;
-                    pedrasRavina.push({
-                        p: [px, py, pz],
-                        r: [Math.random() * 0.4, Math.random() * Math.PI, Math.random() * 0.4],
-                        s: [esc, esc * 0.7, esc * 1.1]
-                    });
-                }
-                g.add(instanciar(GE.pedra, 0x7a6a55, pedrasRavina, true));
-
-                // sulcos laterais menores (ramificações)
-                for (var s = 0; s < 3; s++) {
-                    var st = 0.35 + Math.random() * 0.45;
-                    var sp = curva.getPointAt(st);
-                    var stg = curva.getTangentAt(st);
-                    var sl = Math.sqrt(stg.x * stg.x + stg.z * stg.z) || 1;
-                    var snx = -stg.z / sl, snz = stg.x / sl;
-                    var sDir = Math.random() < 0.5 ? 1 : -1;
-                    var sulPts = [];
-                    for (var st2 = 0; st2 <= 1.001; st2 += 0.12) {
-                        var sx = sp.x + snx * sDir * st2 * 1.6 + (Math.random() - 0.5) * 0.12;
-                        var sz = sp.z + snz * sDir * st2 * 1.6 + (Math.random() - 0.5) * 0.12;
-                        sulPts.push(new THREE.Vector3(sx, altura(sx, sz) + 0.02, sz));
+                // faixa de solo exposto ao redor do sulco
+                var soloRavina = [];
+                var samples = curva.getPoints(N);
+                for (var i = 0; i < samples.length; i += 1) {
+                    var p = samples[i];
+                    var prog = i / samples.length;
+                    var larg = 0.25 + prog * 0.35;
+                    for (var s = 0; s < 5; s++) {
+                        var ang = r2() * Math.PI * 2;
+                        var dist = r2() * larg;
+                        var sx = p.x + Math.cos(ang) * dist;
+                        var sz = p.z + Math.sin(ang) * dist;
+                        var esc = 0.9 + r2() * 0.7;
+                        soloRavina.push({
+                            p: [sx, altura(sx, sz) + 0.02, sz],
+                            s: [esc, 0.25, esc]
+                        });
                     }
-                    var sulco = new THREE.Mesh(
-                        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(sulPts), 10, 0.055, 5),
-                        mat(0x5c3f22));
-                    sulco.castShadow = true;
-                    g.add(sulco);
                 }
+                g.add(instanciar(GE.pedra, 0xb08a6a, soloRavina, true));
             }
 
             MORROS.forEach(function (m, mi) {
                 var n = mi === 0 ? 2 : 1;
                 for (var k = 0; k < n; k++) {
                     var lado = k === 0 ? 1 : -0.6;
-                    ravinaErosao(m, lado);
+                    ravinaVisible(m, lado);
                 }
             });
 
@@ -774,11 +727,19 @@ var Maquete3D = (function () {
     }
 
     function montarAno(ano) {
+        // limpa dados de ravinas do ano anterior para recalcular o terreno
+        ravinasT2Ano1 = [];
         disposeGrupo(gAno);
         gAno.add(talhao1(ano));
         gAno.add(talhao2(ano));
         gAno.add(talhao3(ano));
         gAno.add(lavouraApp(ano));
+        // recria o terreno para aplicar o corte das ravinas
+        if (terreno) {
+            gCena.remove(terreno);
+            terreno.geometry.dispose();
+        }
+        montarIlha();
         pintarTerreno(ano);
         montarVida(ano);
         if (aguaMatEsq) aguaMatEsq.color.setHex(COR_RIO_ESQ[ano - 1]);
@@ -1070,9 +1031,39 @@ var Maquete3D = (function () {
     }
 
     function montarSede() {
-        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 1.8, 0.35, function (obj) {
+        // casa um pouco maior para dar presenca na cena
+        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.2, 0.35, function (obj) {
             obj.userData.fumaca = null;
         });
+
+        // caixa d'agua tipica de fazenda: base conica + cilindro + tampa
+        var caixa = new THREE.Group();
+        var base = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 0.55, 10), mat(0x9a7a5a));
+        base.position.y = 0.28;
+        base.castShadow = true;
+        caixa.add(base);
+        var tambor = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.72, 14), mat(0x5a8ab0));
+        tambor.position.y = 0.9;
+        tambor.castShadow = true;
+        caixa.add(tambor);
+        var tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.06, 14), mat(0x4a7aa0));
+        tampa.position.y = 1.29;
+        tampa.castShadow = true;
+        caixa.add(tampa);
+        // pequeno cano de saida
+        var cano = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 6), mat(0x7a7a7a));
+        cano.rotation.z = Math.PI / 2;
+        cano.position.set(0.34, 0.55, 0);
+        caixa.add(cano);
+
+        // posiciona ao lado de fora da casa, proximo ao canto
+        var ang = 0.35;
+        var dist = 2.4;
+        var cx = SEDE.x + Math.cos(ang) * dist;
+        var cz = SEDE.z + Math.sin(ang) * dist;
+        caixa.position.set(cx, altura(cx, cz), cz);
+        caixa.rotation.y = ang + 0.2;
+        gCena.add(caixa);
     }
 
     function montarPasto() {

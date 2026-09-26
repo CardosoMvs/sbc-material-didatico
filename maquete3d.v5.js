@@ -472,30 +472,115 @@ var Maquete3D = (function () {
                 }
             }
             g.add(instanciar(GE.tufo, 0xb8a85e, fileirasItens));
-            // ravinas de erosão bem visíveis descendo cada morro
+
+            // ravinas de erosão: canais em V com leques de sedimento e pedras
+            function ravinaErosao(m, ladoSinal) {
+                var pts = [];
+                var N = 30;
+                for (var t = 0; t <= 1.001; t += 1 / N) {
+                    var x = m.cx - t * m.sx * 1.15 * ladoSinal + (Math.random() - 0.5) * 0.25;
+                    var z = m.cz + t * m.sz * 1.05 + (Math.random() - 0.5) * 0.15;
+                    pts.push(new THREE.Vector3(x, altura(x, z) + 0.04, z));
+                }
+                var curva = new THREE.CatmullRomCurve3(pts);
+                var posArr = [], idx = [];
+                var largTopo = 0.55, largFundo = 0.12, prof = 0.38;
+                var samples = curva.getPoints(N);
+                for (var i = 0; i <= N; i++) {
+                    var p = samples[i];
+                    var tg = curva.getTangent(i / N);
+                    var l = Math.sqrt(tg.x * tg.x + tg.z * tg.z) || 1;
+                    var nx = -tg.z / l, nz = tg.x / l;
+                    // abertura da ravina aumenta em direção ao pé do morro
+                    var fator = i / N;
+                    var wTopo = largTopo * (1 + fator * 1.2);
+                    var wFundo = largFundo * (1 + fator * 0.6);
+                    var pY = prof * (1 - fator * 0.25);
+                    // fundo arredondado
+                    posArr.push(p.x + nx * wFundo, p.y - pY, p.z + nz * wFundo); // 0 fundo esq
+                    posArr.push(p.x - nx * wFundo, p.y - pY, p.z - nz * wFundo); // 1 fundo dir
+                    posArr.push(p.x + nx * wTopo, p.y - 0.04, p.z + nz * wTopo); // 2 borda esq
+                    posArr.push(p.x - nx * wTopo, p.y - 0.04, p.z - nz * wTopo); // 3 borda dir
+                    if (i < N) {
+                        var b = i * 4;
+                        // lado esquerdo
+                        idx.push(b, b + 2, b + 4, b + 2, b + 6, b + 4);
+                        // fundo
+                        idx.push(b, b + 5, b + 1, b + 0, b + 4, b + 5);
+                        // lado direito
+                        idx.push(b + 1, b + 5, b + 7, b + 1, b + 3, b + 7);
+                    }
+                }
+                var geo = new THREE.BufferGeometry();
+                geo.setAttribute("position", new THREE.Float32BufferAttribute(posArr, 3));
+                geo.setIndex(idx);
+                geo.computeVertexNormals();
+                var rav = new THREE.Mesh(geo, mat(0x4a3020));
+                rav.castShadow = true; rav.receiveShadow = true;
+                g.add(rav);
+
+                // leque de sedimento no pé do morro
+                var fx = m.cx - m.sx * 1.15 * ladoSinal;
+                var fz = m.cz + m.sz * 1.05;
+                var leque = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.35, 1.05, 0.12, 14),
+                    mat(0x8a5a33));
+                leque.position.set(fx, altura(fx, fz) + 0.06, fz);
+                leque.scale.set(2.0, 1, 1.4);
+                leque.receiveShadow = true;
+                g.add(leque);
+
+                // pedregulhos soltos no leito e no leque
+                var pedrasRavina = [];
+                for (var r = 0; r < 18; r++) {
+                    var rt = 0.15 + Math.random() * 0.8;
+                    var rp = curva.getPointAt(rt);
+                    var rtg = curva.getTangentAt(rt);
+                    var rl = Math.sqrt(rtg.x * rtg.x + rtg.z * rtg.z) || 1;
+                    var rnx = -rtg.z / rl, rnz = rtg.x / rl;
+                    var offset = (Math.random() - 0.5) * (0.15 + rt * 0.4);
+                    var px = rp.x + rnx * offset + (Math.random() - 0.5) * 0.2;
+                    var pz = rp.z + rnz * offset + (Math.random() - 0.5) * 0.2;
+                    var py = altura(px, pz) + 0.04;
+                    var esc = 0.15 + Math.random() * 0.22;
+                    pedrasRavina.push({
+                        p: [px, py, pz],
+                        r: [Math.random() * 0.4, Math.random() * Math.PI, Math.random() * 0.4],
+                        s: [esc, esc * 0.7, esc * 1.1]
+                    });
+                }
+                g.add(instanciar(GE.pedra, 0x7a6a55, pedrasRavina, true));
+
+                // sulcos laterais menores (ramificações)
+                for (var s = 0; s < 3; s++) {
+                    var st = 0.35 + Math.random() * 0.45;
+                    var sp = curva.getPointAt(st);
+                    var stg = curva.getTangentAt(st);
+                    var sl = Math.sqrt(stg.x * stg.x + stg.z * stg.z) || 1;
+                    var snx = -stg.z / sl, snz = stg.x / sl;
+                    var sDir = Math.random() < 0.5 ? 1 : -1;
+                    var sulPts = [];
+                    for (var st2 = 0; st2 <= 1.001; st2 += 0.12) {
+                        var sx = sp.x + snx * sDir * st2 * 1.6 + (Math.random() - 0.5) * 0.12;
+                        var sz = sp.z + snz * sDir * st2 * 1.6 + (Math.random() - 0.5) * 0.12;
+                        sulPts.push(new THREE.Vector3(sx, altura(sx, sz) + 0.02, sz));
+                    }
+                    var sulco = new THREE.Mesh(
+                        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(sulPts), 10, 0.055, 5),
+                        mat(0x5c3f22));
+                    sulco.castShadow = true;
+                    g.add(sulco);
+                }
+            }
+
             MORROS.forEach(function (m, mi) {
                 var n = mi === 0 ? 2 : 1;
                 for (var k = 0; k < n; k++) {
-                    var lado = k === 0 ? 1 : -0.55;
-                    var pts = [];
-                    for (var t = 0; t <= 1.001; t += 0.08) {
-                        var x = m.cx - t * m.sx * 1.05 * lado;
-                        var z = m.cz + t * m.sz * 0.95;
-                        pts.push(new THREE.Vector3(x, altura(x, z) + 0.06, z));
-                    }
-                    var ravina = new THREE.Mesh(
-                        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 18, 0.09, 7),
-                        mat(0x5c3f22));
-                    ravina.castShadow = true;
-                    g.add(ravina);
-                    var fx = m.cx - m.sx * 1.05 * lado, fz = m.cz + m.sz * 0.95;
-                    var leque = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 0.08, 12), mat(0x8a5a33));
-                    leque.position.set(fx, altura(fx, fz) + 0.08, fz);
-                    leque.scale.set(1.7, 1, 1.1);
-                    leque.receiveShadow = true;
-                    g.add(leque);
+                    var lado = k === 0 ? 1 : -0.6;
+                    ravinaErosao(m, lado);
                 }
             });
+
             // pouca palhada: 0-10% de cobertura
             g.add(instanciar(GE.palhaDeitada, 0xcbb26a, palhada(T2, 90, 0.55, 221, 0.8), false));
         } else {

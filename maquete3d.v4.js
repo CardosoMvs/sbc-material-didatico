@@ -113,6 +113,18 @@ var Maquete3D = (function () {
         return MAT[chave];
     }
 
+    /* carregamento assíncrono de modelos GLB */
+    var gltfLoader = null;
+    var cacheGLB = {};
+    function carregarGLB(url, cb) {
+        if (cacheGLB[url]) { cb(cacheGLB[url]); return; }
+        if (!gltfLoader) gltfLoader = new THREE.GLTFLoader();
+        gltfLoader.load(url, function (gltf) {
+            cacheGLB[url] = gltf;
+            cb(gltf);
+        });
+    }
+
     /* perturba vértices de uma geometria com noise para deixar orgânica */
     function perturbarGeo(geo, amp, seed) {
         var r2 = rng(seed || 1);
@@ -912,125 +924,41 @@ var Maquete3D = (function () {
 
         var r2 = rng(4321);
         for (var v = 0; v < 3; v++) {
-            var vaca = new THREE.Group();
-            // corpo arredondado
-            var corpo = new THREE.Mesh(new THREE.SphereGeometry(0.6, 14, 11), mat(0xf7f4ee));
-            corpo.scale.set(1.0, 0.55, 0.55);
-            corpo.position.set(0, 0.62, 0);
-            corpo.castShadow = true;
-            vaca.add(corpo);
-            // manchas
-            var mancha = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), mat(0x3a3a3a));
-            mancha.scale.set(1, 0.5, 0.6);
-            mancha.position.set(-0.22, 0.72, 0.18);
-            vaca.add(mancha);
-            var mancha2 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), mat(0x3a3a3a));
-            mancha2.scale.set(0.8, 0.5, 0.6);
-            mancha2.position.set(0.18, 0.58, -0.18);
-            vaca.add(mancha2);
-            // cabeça arredondada
-            var cabeca = new THREE.Mesh(new THREE.SphereGeometry(0.23, 12, 10), mat(0xf7f4ee));
-            cabeca.scale.set(1.1, 1, 0.95);
-            cabeca.position.set(0.68, 0.72, 0);
-            cabeca.castShadow = true;
-            vaca.add(cabeca);
-            // focinho
-            var focinho = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), mat(0xf2cfc9));
-            focinho.scale.set(1, 0.8, 1.1);
-            focinho.position.set(0.9, 0.62, 0);
-            vaca.add(focinho);
-            // orelhas
-            var orelhaGeo = new THREE.ConeGeometry(0.08, 0.16, 6);
-            var o1 = new THREE.Mesh(orelhaGeo, mat(0x3a3a3a));
-            o1.position.set(0.58, 0.9, 0.18);
-            o1.rotation.set(0, 0, -0.5);
-            vaca.add(o1);
-            var o2 = new THREE.Mesh(orelhaGeo, mat(0x3a3a3a));
-            o2.position.set(0.58, 0.9, -0.18);
-            o2.rotation.set(0, 0, 0.5);
-            vaca.add(o2);
-            // chifrinhos
-            var chifreGeo = new THREE.ConeGeometry(0.035, 0.22, 5);
-            var ch1 = new THREE.Mesh(chifreGeo, mat(0xe8e2d8));
-            ch1.position.set(0.55, 0.98, 0.12);
-            ch1.rotation.set(0.2, 0, 0.25);
-            vaca.add(ch1);
-            var ch2 = new THREE.Mesh(chifreGeo, mat(0xe8e2d8));
-            ch2.position.set(0.55, 0.98, -0.12);
-            ch2.rotation.set(-0.2, 0, 0.25);
-            vaca.add(ch2);
-            // pernas arredondadas
-            var pernaGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.34, 8);
-            function perna(px, pz) {
-                var p = new THREE.Mesh(pernaGeo, mat(0xe8e2d8));
-                p.position.set(px, 0.18, pz);
-                p.castShadow = true;
-                vaca.add(p);
-            }
-            perna(-0.12, 0.22); perna(-0.12, -0.22);
-            perna(0.36, 0.2); perna(0.36, -0.2);
-            // rabo
-            var rabo = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.28, 5), mat(0x3a3a3a));
-            rabo.geometry.translate(0, 0.14, 0);
-            rabo.position.set(-0.58, 0.72, 0);
-            rabo.rotation.z = 0.5;
-            vaca.add(rabo);
-            vaca.userData.rabo = rabo;
-
-            var x = PASTO.x0 + 0.8 + r2() * (PASTO.x1 - PASTO.x0 - 1.6);
-            var z = PASTO.z0 + 0.5 + r2() * (PASTO.z1 - PASTO.z0 - 1);
-            vaca.position.set(x, altura(x, z), z);
-            vaca.rotation.y = r2() * Math.PI * 2;
-            vaca.userData.fase = v * 1.3;
-            vacas.push(vaca);
-            gCena.add(vaca);
+            (function (idx) {
+                var x = PASTO.x0 + 0.8 + r2() * (PASTO.x1 - PASTO.x0 - 1.6);
+                var z = PASTO.z0 + 0.5 + r2() * (PASTO.z1 - PASTO.z0 - 1);
+                var rot = r2() * Math.PI * 2;
+                carregarGLB('modelos/cow_poly.glb', function (gltf) {
+                    var vaca = gltf.scene;
+                    vaca.scale.setScalar(0.018);
+                    var box = new THREE.Box3().setFromObject(vaca);
+                    var h = box.max.y - box.min.y;
+                    vaca.position.set(x, altura(x, z) - h * 0.02, z);
+                    vaca.rotation.y = rot;
+                    vaca.traverse(function (o) {
+                        if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
+                    });
+                    vaca.userData.fase = idx * 1.3;
+                    vacas.push(vaca);
+                    gCena.add(vaca);
+                });
+            })(v);
         }
     }
 
     function montarTrator(x, z, rot) {
-        var g = new THREE.Group();
-        // motor traseiro arredondado
-        var motor = new THREE.Mesh(new THREE.SphereGeometry(0.55, 14, 10), mat(0xc23b22));
-        motor.scale.set(1.35, 0.55, 0.65);
-        motor.position.set(-0.2, 0.62, 0);
-        motor.castShadow = true;
-        g.add(motor);
-        // capô
-        var capo = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 8), mat(0xa92f1a));
-        capo.scale.set(0.95, 0.45, 0.6);
-        capo.position.set(0.65, 0.68, 0);
-        capo.castShadow = true;
-        g.add(capo);
-        // cabine com vidro
-        var cabine = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xc23b22));
-        cabine.scale.set(0.9, 0.85, 0.75);
-        cabine.position.set(-0.45, 1.18, 0);
-        cabine.castShadow = true;
-        g.add(cabine);
-        var vidro = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2),
-            new THREE.MeshLambertMaterial({ color: 0xbfe3f2, transparent: true, opacity: 0.5 }));
-        vidro.scale.set(0.88, 0.82, 0.72);
-        vidro.position.set(-0.45, 1.18, 0);
-        g.add(vidro);
-        // escapamento
-        var escap = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 8), mat(0x2a2a2a));
-        escap.position.set(0.35, 1.05, 0.32);
-        g.add(escap);
-        // rodas
-        var geoRoda = new THREE.CylinderGeometry(0.34, 0.34, 0.24, 14);
-        var geoRodaP = new THREE.CylinderGeometry(0.22, 0.22, 0.2, 12);
-        [[-0.55, 0.36, geoRoda], [0.55, 0.24, geoRodaP]].forEach(function (r) {
-            [0.44, -0.44].forEach(function (lz) {
-                var roda = new THREE.Mesh(r[2], mat(0x2f2f2f));
-                roda.rotation.x = Math.PI / 2;
-                roda.position.set(r[0], r[1], lz);
-                roda.castShadow = true;
-                g.add(roda);
+        carregarGLB('modelos/tractor_scaled.glb', function (gltf) {
+            var trator = gltf.scene;
+            trator.scale.setScalar(0.35);
+            var box = new THREE.Box3().setFromObject(trator);
+            var h = box.max.y - box.min.y;
+            trator.position.set(x, altura(x, z) - h * 0.05, z);
+            trator.rotation.y = rot;
+            trator.traverse(function (o) {
+                if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
             });
+            gCena.add(trator);
         });
-        g.position.set(x, altura(x, z), z);
-        g.rotation.y = rot;
-        gCena.add(g);
     }
 
     function montarDrone() {
@@ -1229,8 +1157,6 @@ var Maquete3D = (function () {
         });
         vacas.forEach(function (v) {
             v.position.y = altura(v.position.x, v.position.z) + Math.abs(Math.sin(tGlobal * 1.1 + v.userData.fase)) * 0.03;
-            v.children[2].rotation.z = Math.sin(tGlobal * 1.4 + v.userData.fase) * 0.03;
-            if (v.userData.rabo) v.userData.rabo.rotation.z = 0.5 + Math.sin(tGlobal * 2 + v.userData.fase) * 0.1;
         });
         // fumaça da chaminé
         gCena.traverse(function (o) {

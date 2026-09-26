@@ -1499,24 +1499,24 @@ var Maquete3D = (function () {
             g.add(poste);
 
             var cv = document.createElement("canvas");
-            cv.width = 512; cv.height = 160;
+            cv.width = 800; cv.height = 180;
             var cx = cv.getContext("2d");
             cx.fillStyle = "#f3ead9";
-            cx.fillRect(0, 0, 512, 160);
+            cx.fillRect(0, 0, 800, 180);
             cx.strokeStyle = "#6b4a2b";
             cx.lineWidth = 10;
-            cx.strokeRect(5, 5, 502, 150);
+            cx.strokeRect(5, 5, 790, 170);
             cx.fillStyle = "#3e2b18";
-            cx.font = "bold 42px Arial";
+            cx.font = "bold 44px Arial";
             cx.textAlign = "center";
             cx.textBaseline = "middle";
-            cx.fillText(texto, 256, 80);
+            cx.fillText(texto, 400, 90);
 
             var tex = new THREE.CanvasTexture(cv);
-            var m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.5), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
+            var m = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.55), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
             m.position.set(0, 1.15, 0.02);
             g.add(m);
-            var verso = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.5), new THREE.MeshBasicMaterial({ color: 0xf3ead9, side: THREE.DoubleSide }));
+            var verso = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.55), new THREE.MeshBasicMaterial({ color: 0xf3ead9, side: THREE.DoubleSide }));
             verso.position.set(0, 1.15, -0.02);
             g.add(verso);
 

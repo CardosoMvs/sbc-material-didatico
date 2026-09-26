@@ -566,17 +566,29 @@ var Maquete3D = (function () {
                 g.add(folha);
             }
             // haste central fina, ligeiramente curvada
-            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.005, 0.36, 4), matHaste);
-            haste.position.set(0.01, 0.24, 0);
-            haste.rotation.z = 0.08;
+            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.005, 0.56, 4), matHaste);
+            haste.position.set(0.015, 0.34, 0);
+            haste.rotation.z = 0.10;
             g.add(haste);
+            // folhas amarelas ao longo da haste superior
+            for (var k = 0; k < 12; k++) {
+                var t = k / 11;
+                var a = k * 2.1;
+                var folha = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.018, 4, 3), 0.004, 220 + k), matFolhaAmarela);
+                folha.scale.set(0.65, 0.28, 0.42);
+                var y = 0.28 + t * 0.34;
+                var rr = 0.01 + t * 0.025;
+                folha.position.set(Math.cos(a) * rr, y, Math.sin(a) * rr);
+                folha.rotation.set((Math.random() - 0.5) * 0.6, a, (Math.random() - 0.5) * 0.6);
+                g.add(folha);
+            }
             // cacho de flores amarelas no topo (parecendo folhas/flores pequenas)
             for (var k = 0; k < 8; k++) {
                 var a = (k / 8) * Math.PI * 2;
                 var rr = 0.02 + Math.random() * 0.02;
-                var flor = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.020, 4, 3), 0.005, 220 + k), matFlor);
+                var flor = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.020, 4, 3), 0.005, 232 + k), matFlor);
                 flor.scale.set(0.7, 0.35, 0.45);
-                flor.position.set(Math.cos(a) * rr, 0.42 + Math.random() * 0.03, Math.sin(a) * rr);
+                flor.position.set(Math.cos(a) * rr, 0.62 + Math.random() * 0.03, Math.sin(a) * rr);
                 flor.rotation.set((Math.random() - 0.5) * 0.5, a, (Math.random() - 0.5) * 0.5);
                 g.add(flor);
             }

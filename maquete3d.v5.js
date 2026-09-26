@@ -99,6 +99,7 @@ var Maquete3D = (function () {
     var tGlobal = 0, relogio;
     var posFixas = {};
     var MAT = {};
+    var anoAtual = 1;
 
     function mat(cor, transparente) {
         var chave = (transparente ? "t" : "") + cor;
@@ -157,6 +158,38 @@ var Maquete3D = (function () {
             });
             if (extras) extras(obj, size, escala);
             gCena.add(obj);
+        });
+    }
+
+    /* extrai a geometria do primeiro mesh de um GLB, aplicando transformações */
+    function extrairGeoGLB(gltf) {
+        var geo = null;
+        gltf.scene.traverse(function (o) {
+            if (!geo && o.isMesh && o.geometry) {
+                var g = o.geometry.clone();
+                g.applyMatrix4(o.matrixWorld);
+                g.computeVertexNormals();
+                geo = g;
+            }
+        });
+        return geo;
+    }
+
+    /* carrega um GLB e usa sua geometria como substituto para uma cultura procedural */
+    function carregarGeoGLB(url, nomeGeo, escalaBase) {
+        carregarGLB(url, function (gltf) {
+            var g = extrairGeoGLB(gltf);
+            if (!g) { console.warn('Nenhuma geometria em', url); return; }
+            // centraliza e aplica escala base para que fique no tamanho desejado
+            g.center();
+            var s = escalaBase || 1;
+            g.scale(s, s, s);
+            if (GE) {
+                GE[nomeGeo] = g;
+                GE[nomeGeo].userData.compartilhada = true;
+                // regenera a cena para aplicar a nova geometria
+                if (gCena) montarAno(anoAtual || 1);
+            }
         });
     }
 
@@ -291,7 +324,11 @@ var Maquete3D = (function () {
 
     function instanciar(geo, cor, itens, sombra) {
         if (!itens.length) return null;
-        var m = new THREE.InstancedMesh(geo, typeof cor === "number" ? mat(cor) : cor, itens.length);
+        var material;
+        if (typeof cor === "number") material = mat(cor);
+        else if (cor === null && geo.attributes.color) material = new THREE.MeshLambertMaterial({ vertexColors: true });
+        else material = cor;
+        var m = new THREE.InstancedMesh(geo, material, itens.length);
         for (var i = 0; i < itens.length; i++) {
             var it = itens[i];
             _e.set(it.r ? it.r[0] : 0, it.r ? it.r[1] : 0, it.r ? it.r[2] : 0);
@@ -319,15 +356,229 @@ var Maquete3D = (function () {
     var GE = null;
     function geos() {
         if (GE) return GE;
+
+        // converte um THREE.Group em uma única BufferGeometry (merged)
+        function mergeGroup(group) {
+            var geometries = [];
+            group.traverse(function (o) {
+                if (o.isMesh && o.geometry) {
+                    var g = o.geometry.clone();
+                    g.applyMatrix4(o.matrixWorld);
+                    geometries.push(g);
+                }
+            });
+            if (geometries.length === 0) return new THREE.BufferGeometry();
+            // merge manual simples (three.js r128 não tem BufferGeometryUtils nativo no bundle)
+            var totalPos = 0, totalIndex = 0;
+            geometries.forEach(function (g) {
+                totalPos += g.attributes.position.count;
+                totalIndex += g.index ? g.index.count : g.attributes.position.count;
+            });
+            var posArr = new Float32Array(totalPos * 3);
+            var normArr = new Float32Array(totalPos * 3);
+            var idxArr = new (totalPos < 65536 ? Uint16Array : Uint32Array)(totalIndex);
+            var posOff = 0, idxOff = 0;
+            geometries.forEach(function (g) {
+                var pos = g.attributes.position;
+                var norm = g.attributes.normal;
+                var idx = g.index ? g.index.array : null;
+                for (var i = 0; i < pos.count; i++) {
+                    posArr[(posOff + i) * 3] = pos.getX(i);
+                    posArr[(posOff + i) * 3 + 1] = pos.getY(i);
+                    posArr[(posOff + i) * 3 + 2] = pos.getZ(i);
+                    if (norm) {
+                        normArr[(posOff + i) * 3] = norm.getX(i);
+                        normArr[(posOff + i) * 3 + 1] = norm.getY(i);
+                        normArr[(posOff + i) * 3 + 2] = norm.getZ(i);
+                    }
+                }
+                if (idx) {
+                    for (var i = 0; i < idx.length; i++) {
+                        idxArr[idxOff + i] = idx[i] + posOff;
+                    }
+                    idxOff += idx.length;
+                } else {
+                    for (var i = 0; i < pos.count; i++) {
+                        idxArr[idxOff + i] = posOff + i;
+                    }
+                    idxOff += pos.count;
+                }
+                posOff += pos.count;
+            });
+            var merged = new THREE.BufferGeometry();
+            merged.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
+            merged.setAttribute("normal", new THREE.BufferAttribute(normArr, 3));
+            merged.setIndex(new THREE.BufferAttribute(idxArr, 1));
+            merged.computeBoundingSphere();
+            return merged;
+        }
+
+        // soja: arbusto baixo e ramificado, folhas arredondadas em três folíolos
+        function geoSoja() {
+            var g = new THREE.Group();
+            var matHaste = new THREE.MeshLambertMaterial({ color: 0x5fa84c });
+            var matFolha = new THREE.MeshLambertMaterial({ color: 0x6ab55a });
+            var matFolhaEscura = new THREE.MeshLambertMaterial({ color: 0x4e9a42 });
+            // haste central curta
+            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.011, 0.16, 5), matHaste);
+            haste.position.y = 0.08;
+            g.add(haste);
+            // 3 a 5 ramos curvos saindo do centro
+            for (var b = 0; b < 5; b++) {
+                var ang = (b / 5) * Math.PI * 2;
+                var ramo = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.008, 0.12, 4), matHaste);
+                ramo.position.set(Math.cos(ang) * 0.04, 0.10, Math.sin(ang) * 0.04);
+                ramo.rotation.set(Math.sin(ang) * 0.6, 0, -Math.cos(ang) * 0.6);
+                g.add(ramo);
+                // folha em cada ramo (três folíolos)
+                for (var f = 0; f < 3; f++) {
+                    var folha = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.042, 6, 5), 0.010, 101 + b * 3 + f), (b + f) % 2 ? matFolha : matFolhaEscura);
+                    var aa = ang + (f - 1) * 0.55;
+                    folha.scale.set(1.0, 0.22, 0.55);
+                    folha.position.set(Math.cos(aa) * 0.09, 0.14 + f * 0.015, Math.sin(aa) * 0.09);
+                    folha.rotation.set((Math.random() - 0.5) * 0.4, aa, (Math.random() - 0.5) * 0.4);
+                    g.add(folha);
+                }
+            }
+            // vagem pequena em alguns ramos
+            var vagem = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.004, 0.045, 5), new THREE.MeshLambertMaterial({ color: 0x8fbc5a }));
+            vagem.position.set(0.05, 0.12, 0.03);
+            vagem.rotation.z = 0.5;
+            g.add(vagem);
+            g.updateMatrixWorld(true);
+            return mergeGroup(g);
+        }
+
+        // milho: haste fina e alta, folhas longas e levemente curvadas, espiga amarela
+        function geoMilho() {
+            var g = new THREE.Group();
+            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.028, 0.92, 8), new THREE.MeshLambertMaterial({ color: 0x7cb342 }));
+            haste.position.y = 0.46;
+            g.add(haste);
+            // folhas como cones finos e longos, inclinados alternadamente
+            for (var i = 0; i < 6; i++) {
+                var folha = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.58, 6), new THREE.MeshLambertMaterial({ color: 0x8bc34a }));
+                folha.position.y = 0.18 + i * 0.13;
+                folha.rotation.z = 0.45 + (i % 2) * 0.15;
+                folha.rotation.y = i * 1.04;
+                folha.scale.set(0.35, 1, 0.18);
+                g.add(folha);
+            }
+            var espiga = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.025, 0.24, 8), new THREE.MeshLambertMaterial({ color: 0xf0d040 }));
+            espiga.position.y = 0.68;
+            g.add(espiga);
+            // seda do milho
+            var seda = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.12, 5), new THREE.MeshLambertMaterial({ color: 0xffe082 }));
+            seda.position.y = 0.84;
+            g.add(seda);
+            g.updateMatrixWorld(true);
+            return mergeGroup(g);
+        }
+
+        // trigo: haste fina, espigas douradas em cacho e folhas finas
+        function geoTrigo() {
+            var g = new THREE.Group();
+            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.009, 0.72, 5), new THREE.MeshLambertMaterial({ color: 0xc7b46a }));
+            haste.position.y = 0.36;
+            g.add(haste);
+            // cacho de espigas douradas curvado
+            for (var i = 0; i < 5; i++) {
+                var espiga = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.08, 6), new THREE.MeshLambertMaterial({ color: 0xe6c84a }));
+                var a = (i / 5) * Math.PI * 2;
+                espiga.position.set(Math.cos(a) * 0.025, 0.68 + i * 0.015, Math.sin(a) * 0.025);
+                espiga.rotation.z = 0.25 + Math.random() * 0.15;
+                espiga.rotation.y = a;
+                g.add(espiga);
+            }
+            // folhas finas na base
+            for (var j = 0; j < 3; j++) {
+                var folha = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.35, 5), new THREE.MeshLambertMaterial({ color: 0xd4c86a }));
+                folha.position.set((j === 0 ? 0.03 : -0.03), 0.14, (j === 2 ? 0.03 : 0));
+                folha.rotation.z = (j === 0 ? -1 : 1) * 0.3;
+                folha.rotation.x = (j === 2 ? 1 : -1) * 0.2;
+                folha.scale.set(0.3, 1, 0.1);
+                g.add(folha);
+            }
+            g.updateMatrixWorld(true);
+            return mergeGroup(g);
+        }
+
+        // braquiária: touca de grama densa
+        function geoBraquiaria() {
+            var g = new THREE.Group();
+            for (var i = 0; i < 7; i++) {
+                var f = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.28 + Math.random() * 0.12, 5), new THREE.MeshLambertMaterial({ color: 0x4a9a4a }));
+                var a = (i / 7) * Math.PI * 2;
+                var r = 0.06 + Math.random() * 0.05;
+                f.position.set(Math.cos(a) * r, 0.1, Math.sin(a) * r);
+                f.rotation.x = (Math.random() - 0.5) * 0.35;
+                f.rotation.z = (Math.random() - 0.5) * 0.35;
+                g.add(f);
+            }
+            g.updateMatrixWorld(true);
+            return mergeGroup(g);
+        }
+
+        // crotalária: base verde com folhas, haste fina verde e cacho de flores amarelas no topo
+        function geoCrotalaria() {
+            var g = new THREE.Group();
+            var matFolhaVerde = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+            var matFolhaVerdeEscura = new THREE.MeshLambertMaterial({ color: 0x00cc00 });
+            var matHaste = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+            var matFolhaAmarela = new THREE.MeshLambertMaterial({ color: 0xffe135 });
+            var matFlor = new THREE.MeshLambertMaterial({ color: 0xffd700 });
+            // base: folhas verdes radiando do solo (mais densas, baixas e totalmente verdes)
+            for (var i = 0; i < 30; i++) {
+                var a = (i / 30) * Math.PI * 2;
+                var r = 0.04 + Math.random() * 0.07;
+                var folha = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.058, 5, 4), 0.012, 201 + i), (i % 2) ? matFolhaVerde : matFolhaVerdeEscura);
+                folha.scale.set(1.15, 0.13, 0.75);
+                folha.position.set(Math.cos(a) * r, 0.02 + Math.random() * 0.03, Math.sin(a) * r);
+                folha.rotation.set((Math.random() - 0.5) * 1.0, a + (Math.random() - 0.5) * 0.6, (Math.random() - 0.5) * 1.0);
+                g.add(folha);
+            }
+            // segunda camada de folhas verdes mais altas para fechar o meio
+            for (var i = 0; i < 16; i++) {
+                var a = (i / 16) * Math.PI * 2;
+                var r = 0.02 + Math.random() * 0.03;
+                var folha = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.048, 5, 4), 0.010, 230 + i), matFolhaVerde);
+                folha.scale.set(1.0, 0.14, 0.65);
+                folha.position.set(Math.cos(a) * r, 0.10 + Math.random() * 0.04, Math.sin(a) * r);
+                folha.rotation.set((Math.random() - 0.5) * 0.8, a, (Math.random() - 0.5) * 0.8);
+                g.add(folha);
+            }
+            // haste central fina, ligeiramente curvada
+            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.005, 0.36, 4), matHaste);
+            haste.position.set(0.01, 0.24, 0);
+            haste.rotation.z = 0.08;
+            g.add(haste);
+            // cacho de flores amarelas no topo (parecendo folhas/flores pequenas)
+            for (var k = 0; k < 8; k++) {
+                var a = (k / 8) * Math.PI * 2;
+                var rr = 0.02 + Math.random() * 0.02;
+                var flor = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.020, 4, 3), 0.005, 220 + k), matFlor);
+                flor.scale.set(0.7, 0.35, 0.45);
+                flor.position.set(Math.cos(a) * rr, 0.42 + Math.random() * 0.03, Math.sin(a) * rr);
+                flor.rotation.set((Math.random() - 0.5) * 0.5, a, (Math.random() - 0.5) * 0.5);
+                g.add(flor);
+            }
+            g.updateMatrixWorld(true);
+            return mergeGroup(g);
+        }
+
         GE = {
+            soja: geoSoja(),
+            milho: geoMilho(),
+            trigo: geoTrigo(),
+            braquiaria: geoBraquiaria(),
+            crotalaria: geoCrotalaria(),
             tufo: perturbarGeo(new THREE.SphereGeometry(0.15, 7, 6), 0.04, 41),
             capim: perturbarGeo(new THREE.ConeGeometry(0.09, 0.34, 7), 0.03, 42),
             capimAlto: perturbarGeo(new THREE.ConeGeometry(0.10, 0.62, 8), 0.035, 421),
             palha: perturbarGeo(new THREE.CylinderGeometry(0.018, 0.022, 0.46, 7), 0.02, 43),
             palhaCurta: perturbarGeo(new THREE.CylinderGeometry(0.015, 0.018, 0.28, 7), 0.02, 44),
-            palhaDeitada: perturbarGeo(new THREE.CylinderGeometry(0.014, 0.018, 0.62, 7), 0.025, 431),
+            palhaDeitada: perturbarGeo(new THREE.CylinderGeometry(0.018, 0.022, 0.62, 7), 0.025, 431),
             flor: perturbarGeo(new THREE.SphereGeometry(0.055, 7, 6), 0.02, 45),
-            crotalaria: perturbarGeo(new THREE.SphereGeometry(0.09, 8, 7), 0.025, 451),
             haste: new THREE.CylinderGeometry(0.018, 0.028, 0.58, 7),
             folhaTrigo: perturbarGeo(new THREE.CylinderGeometry(0.012, 0.018, 0.72, 7), 0.02, 452),
             espiga: perturbarGeo(new THREE.CylinderGeometry(0.045, 0.025, 0.18, 8), 0.015, 453),
@@ -404,20 +655,21 @@ var Maquete3D = (function () {
         return itens;
     }
 
-    /* palhada deitada no solo: hastes secas espalhadas aleatoriamente */
+    /* palhada deitada no solo: hastes secas bem horizontais, como deposito */
     function palhada(r, qtd, comprimento, seed, inclinacao) {
         var r2 = rng(seed || 1), itens = [];
         for (var i = 0; i < qtd; i++) {
             var x = r.x0 + r2() * (r.x1 - r.x0);
             var z = r.z0 + r2() * (r.z1 - r.z0);
-            var ax = (r2() - 0.5) * (inclinacao || 0.75);
-            var az = (r2() - 0.5) * (inclinacao || 0.75);
-            var escala = 0.7 + r2() * 0.6;
+            var ax = (r2() - 0.5) * (inclinacao || 0.35);
+            var az = (r2() - 0.5) * (inclinacao || 0.35);
+            var escala = 0.8 + r2() * 0.5;
             var sy = comprimento ? comprimento * (0.8 + r2() * 0.4) : 1;
+            // achata no Y para parecer deitada e escala horizontalmente
             itens.push({
-                p: [x, altura(x, z) + 0.03, z],
+                p: [x, altura(x, z) + 0.02, z],
                 r: [ax, r2() * Math.PI, az],
-                s: [escala, sy, escala]
+                s: [escala * 1.4, sy * 0.25, escala * 1.4]
             });
         }
         return itens;
@@ -426,36 +678,26 @@ var Maquete3D = (function () {
     /* ====================== talhões por ano ====================== */
     function talhao1(ano) {
         var g = new THREE.Group();
-        var sojaItens = [], milhoItens = [], espigasItens = [];
-        var nLinhas = 0;
-        // fileiras de soja e milho intercaladas (sucessão soja / milho)
-        for (var x = T1.x0 + 0.5; x <= T1.x1 - 0.5; x += 0.66, nLinhas++) {
-            var ehMilho = nLinhas % 4 === 3;
-            for (var z = T1.z0 + 0.4; z <= T1.z1 - 0.4; z += 0.42) {
-                if (ehMilho) {
-                    var escMilho = 0.85 + ano * 0.12;
-                    milhoItens.push({ p: [x, altura(x, z) + 0.28, z], s: [0.85, escMilho, 0.85], r: [(Math.random() - 0.5) * 0.08, Math.random() * Math.PI, 0] });
-                    if (ano >= 2 && Math.random() < 0.35) {
-                        espigasItens.push({ p: [x, altura(x, z) + 0.48, z], s: [0.9, 0.9, 0.9] });
-                    }
-                } else {
-                    var escSoja = 0.75 + ano * 0.12;
-                    sojaItens.push({ p: [x, altura(x, z) + 0.10, z], s: [escSoja, escSoja, escSoja] });
-                }
+        var sojaItens = [], milhoItens = [];
+        var meioZ = (T1.z0 + T1.z1) / 2;
+        var escSoja = 0.75 + ano * 0.12;
+        var escMilho = 0.85 + ano * 0.12;
+        // safra/soja de um lado, safrinha/milho do outro (sucessão real)
+        for (var x = T1.x0 + 0.5; x <= T1.x1 - 0.5; x += 0.55) {
+            for (var z = T1.z0 + 0.4; z <= meioZ - 0.3; z += 0.42) {
+                sojaItens.push({ p: [x, altura(x, z), z], s: [escSoja, escSoja, escSoja] });
+            }
+            for (var z = meioZ + 0.3; z <= T1.z1 - 0.4; z += 0.45) {
+                milhoItens.push({ p: [x, altura(x, z), z], s: [0.9, escMilho, 0.9], r: [(Math.random() - 0.5) * 0.08, Math.random() * Math.PI, 0] });
             }
         }
-        // cores da soja evoluem de verde-claro para verde mais escuro/saudável
-        g.add(instanciar(GE.tufo, [0x8db85c, 0x5fa84c, 0x3a963c][ano - 1], sojaItens));
-        // milho mais alto e amarelado
-        g.add(instanciar(GE.capimAlto, 0x9ccc65, milhoItens));
-        if (espigasItens.length) g.add(instanciar(GE.espiga, 0xe6c84a, espigasItens));
+        g.add(instanciar(GE.soja, 0x5fa84c, sojaItens, true));
+        g.add(instanciar(GE.milho, 0x7cb342, milhoItens, true));
 
         // palhada progressiva: 0-10% / ~40% / >90% de cobertura
         var densPalha = [160, 520, 1300][ano - 1];
         var comprPalha = [0.65, 0.85, 1.05][ano - 1];
-        // palha longa e deitada (maior cobertura visual)
         g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T1, densPalha, comprPalha, 11 + ano, 0.9), false));
-        // palha curta e fina espalhada entre as fileiras
         g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T1, Math.floor(densPalha * 0.6), 0.55, 111 + ano, 1.1), false));
 
         return g;
@@ -463,16 +705,27 @@ var Maquete3D = (function () {
 
     function talhao2(ano) {
         var g = new THREE.Group();
-        if (ano === 1) {
-            // linhas retas descendo a vertente: plantio convencional que acelera erosão
-            var fileirasItens = [];
-            for (var x = T2.x0 + 0.4; x <= T2.x1 - 0.4; x += 0.7) {
-                for (var z = T2.z0 + 0.4; z <= T2.z1 - 0.4; z += 0.48) {
-                    // plantas baixas e amareladas, com solo exposto entre elas
-                    fileirasItens.push({ p: [x, altura(x, z) + 0.12, z], s: [0.8, 0.65, 0.8] });
+        var meioZ2 = (T2.z0 + T2.z1) / 2;
+        var escSoja2 = 0.75 + ano * 0.12;
+        var escMilho2 = 0.85 + ano * 0.12;
+
+        function plantioConvencional() {
+            var soja = [], milho = [];
+            for (var x = T2.x0 + 0.4; x <= T2.x1 - 0.4; x += 0.65) {
+                for (var z = T2.z0 + 0.4; z <= meioZ2 - 0.25; z += 0.45) {
+                    soja.push({ p: [x, altura(x, z), z], s: [escSoja2, escSoja2, escSoja2] });
+                }
+                for (var z = meioZ2 + 0.25; z <= T2.z1 - 0.4; z += 0.48) {
+                    milho.push({ p: [x, altura(x, z), z], s: [0.9, escMilho2, 0.9], r: [(Math.random() - 0.5) * 0.08, Math.random() * Math.PI, 0] });
                 }
             }
-            g.add(instanciar(GE.tufo, 0xb8a85e, fileirasItens));
+            g.add(instanciar(GE.soja, 0x8db85c, soja, true));
+            g.add(instanciar(GE.milho, 0x7cb342, milho, true));
+        }
+
+        if (ano === 1) {
+            // linhas retas descendo a vertente: plantio convencional com soja (safra) e milho (safrinha) separados
+            plantioConvencional();
 
             // ravina de erosão visível: sulco escuro seguindo a vertente
             function ravinaVisible(m, ladoSinal) {
@@ -538,50 +791,43 @@ var Maquete3D = (function () {
             g.add(instanciar(GE.palhaDeitada, 0xcbb26a, palhada(T2, 90, 0.55, 221, 0.8), false));
         } else {
             // contorno: fileiras seguem as curvas de nível dos morros
-            if (ano === 2) {
-                // trigo (dourado) + aveia (verde-claro) em anéis de contorno
-                MORROS.forEach(function (m, mi) {
-                    var aneis = aneisContorno(m, m.sz * 1.6);
-                    var trigo = [], aveia = [];
-                    aneis.forEach(function (it, i) {
-                        // alterna cores a cada anel
-                        if (Math.floor(i / 24) % 2 === 0) trigo.push(it);
-                        else aveia.push(it);
-                    });
-                    g.add(instanciar(GE.folhaTrigo, 0xd9b64e, trigo));
-                    g.add(instanciar(GE.folhaTrigo, 0xa8c96a, aveia));
+            // soja (safra) em anéis internos e milho (safrinha) em anéis externos, para não parecer plantio misturado
+            MORROS.forEach(function (m, mi) {
+                var aneis = aneisContorno(m, m.sz * (ano === 2 ? 1.6 : 1.55));
+                var soja = [], milho = [];
+                var raioCorte = m.sz * 0.85;
+                aneis.forEach(function (it) {
+                    var dx = it.p[0] - m.cx, dz = it.p[2] - m.cz;
+                    var r = Math.sqrt(dx * dx / (m.sx * m.sx) + dz * dz / (m.sz * m.sz));
+                    if (r < raioCorte) soja.push({ p: it.p, s: [escSoja2, escSoja2, escSoja2] });
+                    else milho.push({ p: it.p, s: [0.85, escMilho2, 0.85] });
                 });
-                // fileiras onduladas fora dos morros: trigo + aveia
-                var fora = [];
-                for (var z = T2.z0 + 0.4; z <= T2.z1 - 0.4; z += 0.8) {
-                    for (var x = T2.x0 + 0.4; x <= T2.x1 - 0.4; x += 0.45) {
-                        var perto = MORROS.some(function (m2) {
-                            var dx = x - m2.cx, dz = z - m2.cz;
-                            return (dx * dx / (m2.sx * m2.sx) + dz * dz / (m2.sz * m2.sz)) < 1.8;
-                        });
-                        if (perto) continue;
-                        var zz = z + Math.sin(x * 0.5 + z) * 0.35;
-                        fora.push({ p: [x, altura(x, zz) + 0.28, zz], s: [0.85, 0.9 + Math.random() * 0.2, 0.85] });
-                    }
+                g.add(instanciar(GE.soja, 0x5fa84c, soja, true));
+                g.add(instanciar(GE.milho, 0x7cb342, milho, true));
+            });
+            // fora dos morros: metade do terreno em soja, metade em milho
+            var foraSoja = [], foraMilho = [];
+            for (var z = T2.z0 + 0.4; z <= T2.z1 - 0.4; z += 0.8) {
+                for (var x = T2.x0 + 0.4; x <= T2.x1 - 0.4; x += 0.45) {
+                    var perto = MORROS.some(function (m2) {
+                        var dx = x - m2.cx, dz = z - m2.cz;
+                        return (dx * dx / (m2.sx * m2.sx) + dz * dz / (m2.sz * m2.sz)) < 1.8;
+                    });
+                    if (perto) continue;
+                    var zz = z + Math.sin(x * 0.5 + z) * 0.35;
+                    if (z < meioZ2) foraSoja.push({ p: [x, altura(x, zz), zz], s: [escSoja2, escSoja2, escSoja2] });
+                    else foraMilho.push({ p: [x, altura(x, zz), zz], s: [0.85, escMilho2, 0.85] });
                 }
-                g.add(instanciar(GE.folhaTrigo, 0xcfb058, fora));
+            }
+            g.add(instanciar(GE.soja, 0x5fa84c, foraSoja, true));
+            g.add(instanciar(GE.milho, 0x7cb342, foraMilho, true));
+
+            if (ano === 2) {
                 // palhada intermediária (~40%)
                 g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T2, 360, 0.75, 222, 0.9), false));
                 g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T2, 220, 0.5, 1222, 1.0), false));
             } else {
-                // ano 3: soja + milho + braquiária em contorno
-                MORROS.forEach(function (m, mi) {
-                    var aneis = aneisContorno(m, m.sz * 1.55);
-                    var soja = [], milho = [];
-                    aneis.forEach(function (it, i) {
-                        // intercala anéis de soja e milho
-                        if (Math.floor(i / 20) % 2 === 0) soja.push({ p: it.p, s: [1, 1.1, 1] });
-                        else milho.push({ p: it.p, s: [0.85, 1.3, 0.85] });
-                    });
-                    g.add(instanciar(GE.tufo, 0x4ea24f, soja));
-                    g.add(instanciar(GE.capimAlto, 0x6a9a3a, milho));
-                });
-                // braquiária densa fora dos morros
+                // ano 3: braquiária densa fora dos morros (mantém separação soja/milho)
                 var braq = [];
                 for (var z2 = T2.z0 + 0.4; z2 <= T2.z1 - 0.4; z2 += 0.55) {
                     for (var x2 = T2.x0 + 0.4; x2 <= T2.x1 - 0.4; x2 += 0.55) {
@@ -590,10 +836,10 @@ var Maquete3D = (function () {
                             return (dx * dx / (m2.sx * m2.sx) + dz * dz / (m2.sz * m2.sz)) < 1.6;
                         });
                         if (perto2) continue;
-                        braq.push({ p: [x2, altura(x2, z2) + 0.12, z2], s: [0.9, 0.8 + Math.random() * 0.3, 0.9] });
+                        braq.push({ p: [x2, altura(x2, z2), z2], s: [0.9, 0.8 + Math.random() * 0.3, 0.9] });
                     }
                 }
-                g.add(instanciar(GE.capim, 0x3a8f3a, braq));
+                g.add(instanciar(GE.braquiaria, 0x3a8f3a, braq, true));
                 // palhada densa (>90%)
                 g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T2, 900, 1.05, 223, 1.0), false));
                 g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T2, 500, 0.55, 1223, 1.1), false));
@@ -609,28 +855,28 @@ var Maquete3D = (function () {
         var baseBraq = [];
         for (var zz = T3.z0 + 0.35; zz <= T3.z1 - 0.35; zz += 0.55) {
             for (var xx = T3.x0 + 0.35; xx <= T3.x1 - 0.35; xx += 0.55) {
-                baseBraq.push({ p: [xx, altura(xx, zz) + 0.10, zz], s: [0.85, 0.75 + Math.random() * 0.25, 0.85] });
+                baseBraq.push({ p: [xx, altura(xx, zz), zz], s: [0.85, 0.75 + Math.random() * 0.25, 0.85] });
             }
         }
-        g.add(instanciar(GE.capim, 0x358f3c, baseBraq));
+        g.add(instanciar(GE.braquiaria, 0x358f3c, baseBraq, true));
 
         if (ano === 1) {
             // soja em fileiras regulares sobre a braquiária
             var soja = [];
             for (var z1 = T3.z0 + 0.5; z1 <= T3.z1 - 0.5; z1 += 0.8) {
                 for (var x1 = T3.x0 + 0.5; x1 <= T3.x1 - 0.5; x1 += 0.45) {
-                    soja.push({ p: [x1, altura(x1, z1) + 0.18, z1], s: [0.95, 0.95, 0.95] });
+                    soja.push({ p: [x1, altura(x1, z1), z1], s: [0.95, 0.95, 0.95] });
                 }
             }
-            g.add(instanciar(GE.tufo, 0x5fb44f, soja));
-            // crotalária em flor (flores amarelas maiores e mais densas)
+            g.add(instanciar(GE.soja, 0x5fb44f, soja, true));
+            // crotalária em flor (arbustos amarelos espalhados)
             var flores = [];
             for (var i = 0; i < 160; i++) {
                 var fx = T3.x0 + Math.random() * (T3.x1 - T3.x0);
                 var fz = T3.z0 + Math.random() * (T3.z1 - T3.z0);
-                flores.push({ p: [fx, altura(fx, fz) + 0.38, fz], s: [0.9, 0.9, 0.9] });
+                flores.push({ p: [fx, altura(fx, fz), fz], s: [1.0, 1.0, 1.0] });
             }
-            g.add(instanciar(GE.crotalaria, 0xf0d040, flores));
+            g.add(instanciar(GE.crotalaria, 0xf4d03f, flores, true));
             // pouca palhada no primeiro ano de transição
             g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 200, 0.65, 331, 0.8), false));
         } else if (ano === 2) {
@@ -641,33 +887,29 @@ var Maquete3D = (function () {
                 linha++;
                 for (var x2 = T3.x0 + 0.5; x2 <= T3.x1 - 0.5; x2 += 0.4) {
                     if (linha % 4 === 1) {
-                        trigo2.push({ p: [x2, altura(x2, z2) + 0.32, z2], s: [0.9, 1.05, 0.9] });
+                        trigo2.push({ p: [x2, altura(x2, z2), z2], s: [0.9, 1.05, 0.9] });
                     } else if (linha % 4 === 2) {
-                        milheto.push({ p: [x2, altura(x2, z2) + 0.42, z2], s: [0.85, 1.15, 0.85] });
+                        milheto.push({ p: [x2, altura(x2, z2), z2], s: [0.85, 1.15, 0.85] });
                     } else {
-                        soja2.push({ p: [x2, altura(x2, z2) + 0.18, z2], s: [0.95, 0.95, 0.95] });
+                        soja2.push({ p: [x2, altura(x2, z2), z2], s: [0.95, 0.95, 0.95] });
                     }
                 }
             }
-            g.add(instanciar(GE.tufo, 0x4ea24f, soja2));
-            g.add(instanciar(GE.folhaTrigo, 0xd9b64e, trigo2));
-            g.add(instanciar(GE.capimAlto, 0xc7c46a, milheto));
+            g.add(instanciar(GE.soja, 0x4ea24f, soja2, true));
+            g.add(instanciar(GE.trigo, 0xd9b64e, trigo2, true));
+            g.add(instanciar(GE.milho, 0xc7c46a, milheto, true));
             // palhada intermediária
             g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 420, 0.85, 332, 0.9), false));
             g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T3, 260, 0.5, 1332, 1.0), false));
         } else {
             // consórcio braquiária-milho: milho em fileiras com braquiária entrelinhas
-            var milho3 = [], espigas3 = [];
+            var milho3 = [];
             for (var z3 = T3.z0 + 0.6; z3 <= T3.z1 - 0.6; z3 += 1.1) {
                 for (var x3 = T3.x0 + 0.5; x3 <= T3.x1 - 0.5; x3 += 0.55) {
-                    milho3.push({ p: [x3, altura(x3, z3) + 0.30, z3], s: [0.9, 1.25, 0.9] });
-                    if (Math.random() < 0.45) {
-                        espigas3.push({ p: [x3, altura(x3, z3) + 0.55, z3], s: [1, 1, 1] });
-                    }
+                    milho3.push({ p: [x3, altura(x3, z3), z3], s: [0.9, 1.25, 0.9] });
                 }
             }
-            g.add(instanciar(GE.capimAlto, 0x6a9a3a, milho3));
-            g.add(instanciar(GE.espiga, 0xe6c84a, espigas3));
+            g.add(instanciar(GE.milho, 0x6a9a3a, milho3, true));
             // palhada densa característica do sistema avançado
             g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 800, 1.05, 333, 1.0), false));
             g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T3, 450, 0.55, 1333, 1.1), false));
@@ -683,10 +925,10 @@ var Maquete3D = (function () {
             var p = curva.getPointAt(t);
             var x = p.x + 2.1, z = p.z;
             for (var zz = z - 1.4; zz <= z + 1.4; zz += 0.55) {
-                itens.push({ p: [x, altura(x, zz) + 0.14, zz] });
+                itens.push({ p: [x, altura(x, zz), zz] });
             }
         }
-        return instanciar(GE.tufo, [0x79b25c, 0x4ea24f, 0x2f9e42][ano - 1], itens);
+        return instanciar(GE.soja, 0x79b25c, itens, true);
     }
 
     /* ====================== vida na cena ====================== */
@@ -727,6 +969,7 @@ var Maquete3D = (function () {
     }
 
     function montarAno(ano) {
+        anoAtual = ano;
         // limpa dados de ravinas do ano anterior para recalcular o terreno
         ravinasT2Ano1 = [];
         disposeGrupo(gAno);
@@ -1474,6 +1717,11 @@ var Maquete3D = (function () {
         valeAmo = amostrar(curvaDe(VALE_PTS), 24);
 
         geos();
+        // modelos prontos baixados da internet: substituem geometrias procedurais quando carregam
+        carregarGeoGLB('modelos/corn_quaternius.glb', 'milho', 0.8);
+        carregarGeoGLB('modelos/wheat_quaternius.glb', 'trigo', 0.65);
+        // braquiaria: escala maior porque o modelo de grama é pequeno
+        carregarGeoGLB('modelos/grass_quaternius.glb', 'braquiaria', 0.85);
         luzes();
         montarIlha();
         montarAgua();

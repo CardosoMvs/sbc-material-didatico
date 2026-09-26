@@ -1031,39 +1031,46 @@ var Maquete3D = (function () {
     }
 
     function montarSede() {
-        // casa um pouco maior para dar presenca na cena
-        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.2, 0.35, function (obj) {
+        // casa maior para dar presenca na cena
+        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.5, 0.35, function (obj) {
             obj.userData.fumaca = null;
         });
 
-        // caixa d'agua tipica de fazenda: base conica + cilindro + tampa
-        var caixa = new THREE.Group();
-        var base = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 0.55, 10), mat(0x9a7a5a));
-        base.position.y = 0.28;
-        base.castShadow = true;
-        caixa.add(base);
-        var tambor = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.72, 14), mat(0x5a8ab0));
-        tambor.position.y = 0.9;
-        tambor.castShadow = true;
-        caixa.add(tambor);
-        var tampa = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.06, 14), mat(0x4a7aa0));
-        tampa.position.y = 1.29;
-        tampa.castShadow = true;
-        caixa.add(tampa);
-        // pequeno cano de saida
-        var cano = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 6), mat(0x7a7a7a));
-        cano.rotation.z = Math.PI / 2;
-        cano.position.set(0.34, 0.55, 0);
-        caixa.add(cano);
+        // silo de grãos ao lado da casa: corpo cilíndrico + teto cônico + escada
+        var silo = new THREE.Group();
+        var corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.25, 16), mat(0xc0c4c8));
+        corpo.position.y = 0.63;
+        corpo.castShadow = true; corpo.receiveShadow = true;
+        silo.add(corpo);
+        var teto = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.42, 16), mat(0xa8aeb4));
+        teto.position.y = 1.46;
+        teto.castShadow = true;
+        silo.add(teto);
+        var anel = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.04, 8, 18), mat(0x90959a));
+        anel.rotation.x = Math.PI / 2;
+        anel.position.y = 1.24;
+        silo.add(anel);
+        // escada em espiral simplificada: degraus ao redor
+        var escada = new THREE.Group();
+        for (var e = 0; e < 8; e++) {
+            var dy = e * 0.14;
+            var raio = 0.62 + (e % 2) * 0.02;
+            var angE = e * 0.65;
+            var degrau = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.22), mat(0x7a7a7a));
+            degrau.position.set(Math.cos(angE) * raio, dy + 0.12, Math.sin(angE) * raio);
+            degrau.rotation.y = angE;
+            escada.add(degrau);
+        }
+        silo.add(escada);
 
-        // posiciona ao lado de fora da casa, proximo ao canto
-        var ang = 0.35;
-        var dist = 2.4;
+        // posiciona ao lado de fora da casa, afastado da árvore próxima
+        var ang = 0.7;
+        var dist = 2.7;
         var cx = SEDE.x + Math.cos(ang) * dist;
         var cz = SEDE.z + Math.sin(ang) * dist;
-        caixa.position.set(cx, altura(cx, cz), cz);
-        caixa.rotation.y = ang + 0.2;
-        gCena.add(caixa);
+        silo.position.set(cx, altura(cx, cz), cz);
+        silo.rotation.y = ang + 0.3;
+        gCena.add(silo);
     }
 
     function montarPasto() {

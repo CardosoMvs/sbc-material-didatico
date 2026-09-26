@@ -118,10 +118,18 @@ var Maquete3D = (function () {
     var cacheGLB = {};
     function carregarGLB(url, cb) {
         if (cacheGLB[url]) { cb(cacheGLB[url]); return; }
-        if (!gltfLoader) gltfLoader = new THREE.GLTFLoader();
+        if (!gltfLoader) {
+            if (typeof THREE.GLTFLoader === "undefined") {
+                console.error("GLTFLoader não encontrado. Verifique se modelos/GLTFLoader.js foi carregado.");
+                return;
+            }
+            gltfLoader = new THREE.GLTFLoader();
+        }
         gltfLoader.load(url, function (gltf) {
             cacheGLB[url] = gltf;
             cb(gltf);
+        }, undefined, function (err) {
+            console.error("Erro ao carregar " + url + ":", err);
         });
     }
 
@@ -947,7 +955,7 @@ var Maquete3D = (function () {
     }
 
     function montarTrator(x, z, rot) {
-        carregarGLB('modelos/tractor_scaled.glb', function (gltf) {
+        carregarGLB('modelos/tractor_poly.glb', function (gltf) {
             var trator = gltf.scene;
             trator.scale.setScalar(0.35);
             var box = new THREE.Box3().setFromObject(trator);

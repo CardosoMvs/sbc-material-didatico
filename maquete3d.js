@@ -39,11 +39,17 @@ var Maquete3D = (function () {
     var RL = { x0: 6.5, z0: -13, x1: 20, z1: -8 };
     var SEDE = { x: 0.6, z: -9.6 };
 
-    /* morros do Talhão 2 (centro, altura, abertura) */
+    /* morros do Talhão 2: crista alongada com sela entre eles */
     var MORROS = [
-        { cx: 0.2, cz: 0.8, a: 2.0, s: 2.6 },
-        { cx: 2.2, cz: 4.2, a: 1.25, s: 2.0 }
+        { cx: 0.2, cz: 0.8, a: 2.3, sx: 3.0, sz: 2.2 },
+        { cx: 2.2, cz: 4.2, a: 1.35, sx: 2.2, sz: 1.8 }
     ];
+
+    /* vala de drenagem: leva a enxurrada das ravinas do T2 ao rio esquerdo */
+    var VALE_PTS = [[-3.4, 3.4], [-7, 3.6], [-10.5, 4.2], [-13.8, 4.8]];
+
+    /* lagoa do gado junto ao pasto */
+    var LAGOA = { x: 6.3, z: -6.9, p: 1.3, s: 0.85 };
 
     var NIVEL_AGUA = -0.45;
 
@@ -58,6 +64,15 @@ var Maquete3D = (function () {
         var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
         return s - Math.floor(s);
     }
+    /* value noise suavizado (blocos interpolados) — base do relevo orgânico */
+    function vRuido(x, z) {
+        var xi = Math.floor(x), zi = Math.floor(z);
+        var xf = x - xi, zf = z - zi;
+        var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+        var a = ruido(xi, zi), b = ruido(xi + 1, zi);
+        var c = ruido(xi, zi + 1), d = ruido(xi + 1, zi + 1);
+        return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+    }
     function noRect(r, x, z) { return x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1; }
     function dentro(p, margem, x, z) {
         return x >= p[0] - margem && x <= p[0] + margem && z >= p[1] - margem && z <= p[1] + margem;
@@ -67,10 +82,11 @@ var Maquete3D = (function () {
     var gCena, gAno, gVida;
     var terreno, aguaGeoInfo = [];
     var rioCurvaEsq, rioCurvaDir;
-    var rioAmoEsq = [], rioAmoDir = [], caminhoAmo = [];
+    var rioAmoEsq = [], rioAmoDir = [], caminhoAmo = [], valeAmo = [];
     var drone, rotores = [], vacas = [], aves = [], borboletas = [], abelhas = [], nuvens = [];
     var espuma = [];                 // espuma dos rios: { mesh, t, curva, vel }
     var aguaMatEsq = null, espumaMatEsq = null;
+    var aguas = [];                  // malhas d'água com superfície ondulante
     var tGlobal = 0, relogio;
     var posFixas = {};
     var MAT = {};                     // cache de materiais por cor
@@ -108,18 +124,25 @@ var Maquete3D = (function () {
 
     /* ====================== relevo ====================== */
     function altura(x, z) {
-        var y = 0.28 * Math.sin(x * 0.32 + 1.7) * Math.cos(z * 0.38 + 0.4)
-              + 0.2 * Math.sin(z * 0.5 + 2.1) * Math.sin(x * 0.21 + 0.6)
-              + 0.06 * Math.sin(x * 1.9 + 3.0) * Math.sin(z * 2.2 + 1.0)     /* micro-relevo */
-              + 0.04 * Math.sin(x * 3.7 + 0.5) * Math.cos(z * 4.1 + 2.0);
+        /* base orgânica: duas oitavas de value noise + granulado fino */
+        var y = (vRuido(x * 0.16 + 5, z * 0.16 + 9) - 0.5) * 0.62
+              + (vRuido(x * 0.42 + 2, z * 0.42 + 7) - 0.5) * 0.26
+              + (ruido(x * 1.6, z * 1.6) - 0.5) * 0.06;
+        /* cristas alongadas do Talhão 2 */
         for (var i = 0; i < MORROS.length; i++) {
             var m = MORROS[i];
             var dx = x - m.cx, dz = z - m.cz;
-            y += m.a * Math.exp(-(dx * dx + dz * dz) / (2 * m.s * m.s));
+            y += m.a * Math.exp(-(dx * dx / (2 * m.sx * m.sx) + dz * dz / (2 * m.sz * m.sz)));
         }
         /* patamar da Reserva Legal */
         var rx = x - 12.5, rz = z + 10.5;
         y += 0.55 * Math.exp(-(rx * rx + rz * rz) / (2 * 5.5 * 5.5));
+        /* vala de drenagem das ravinas ao rio esquerdo */
+        var dv = distAte(valeAmo, x, z);
+        y -= 0.4 * Math.exp(-(dv * dv) / (2 * 1.15 * 1.15));
+        /* lagoa do gado */
+        var lx = x - LAGOA.x, lz = z - LAGOA.z;
+        y -= LAGOA.p * Math.exp(-(lx * lx + lz * lz) / (2 * LAGOA.s * LAGOA.s));
         /* calhas escavadas pelos rios */
         var d = Math.min(distAte(rioAmoEsq, x, z), distAte(rioAmoDir, x, z));
         y -= 1.25 * Math.exp(-(d * d) / (2 * 1.5 * 1.5));
@@ -162,7 +185,21 @@ var Maquete3D = (function () {
         var c = new THREE.Color();
         for (var i = 0; i < pos.count; i++) {
             var x = pos.getX(i), z = pos.getZ(i);
+            var h = pos.getY(i);
             c.setHex(corSolo(x, z, ano));
+            /* sombreamento d'água: margem molhada + fundo escurecendo */
+            if (h < NIVEL_AGUA + 0.09) {
+                var dE = distAte(rioAmoEsq, x, z), dD = distAte(rioAmoDir, x, z);
+                var lx = x - LAGOA.x, lz = z - LAGOA.z;
+                if (dE < 3.6 || dD < 3.6 || (lx * lx + lz * lz) < 6.2) {
+                    if (h < NIVEL_AGUA - 0.02) {
+                        var prof = Math.min(1, (NIVEL_AGUA - h) / 1.1);
+                        c.offsetHSL(0, 0, -prof * 0.22);       // mais fundo, mais escuro
+                    } else {
+                        c.setHex(0x8a7a58);                     // areia molhada na margem
+                    }
+                }
+            }
             /* manchas grandes + granulado: solo real nunca é cor chapada */
             var n1 = ruido(x * 0.9 + 11, z * 0.8 + 7);
             var n2 = ruido(x * 3.1, z * 2.7);
@@ -245,13 +282,14 @@ var Maquete3D = (function () {
         return { itens: itens, cor: cor };
     }
 
-    /* anéis de contorno ao redor dos morros — o plantio acompanha o relevo */
+    /* anéis de contorno ao redor dos morros — elípticos, acompanhando a crista */
     function aneisContorno(m, cor, rMax) {
         var itens = [];
-        for (var raio = 0.7; raio <= rMax; raio += 0.55) {
-            for (var a = 0; a < Math.PI * 2; a += 0.26) {
-                var x = m.cx + Math.cos(a) * raio;
-                var z = m.cz + Math.sin(a) * raio * 0.85;
+        var kx = m.sx / 2.2, kz = m.sz / 2.2;
+        for (var raio = 0.6; raio <= rMax; raio += 0.5) {
+            for (var a = 0; a < Math.PI * 2; a += 0.24) {
+                var x = m.cx + Math.cos(a) * raio * kx;
+                var z = m.cz + Math.sin(a) * raio * kz;
                 if (!noRect(T2, x, z)) continue;
                 itens.push({ p: [x, altura(x, z) + 0.15, z] });
             }
@@ -316,8 +354,8 @@ var Maquete3D = (function () {
                     var lado = k === 0 ? 1 : -0.6;
                     var pts = [];
                     for (var t = 0; t <= 1.001; t += 0.1) {
-                        var x = m.cx - t * m.s * 1.15 * lado;
-                        var z = m.cz + t * m.s * 1.0;
+                        var x = m.cx - t * m.sx * 1.05 * lado;
+                        var z = m.cz + t * m.sz * 0.95;
                         pts.push(new THREE.Vector3(x, altura(x, z) + 0.06, z));
                     }
                     var ravina = new THREE.Mesh(
@@ -325,7 +363,7 @@ var Maquete3D = (function () {
                         mat(0x6e4a26));
                     ravina.castShadow = true;
                     g.add(ravina);
-                    var fx = m.cx - m.s * 1.15 * lado, fz = m.cz + m.s * 1.0;
+                    var fx = m.cx - m.sx * 1.05 * lado, fz = m.cz + m.sz * 0.95;
                     var leque = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.75, 0.1, 10), mat(0x8a5a33));
                     leque.position.set(fx, altura(fx, fz) + 0.08, fz);
                     leque.scale.set(1.4, 1, 0.9);
@@ -338,7 +376,7 @@ var Maquete3D = (function () {
             var corAnel = ano === 2 ? 0xb8cf9a : 0x67b26a;
             var corResta = ano === 2 ? 0xd9b64e : 0x2f7d3c;
             MORROS.forEach(function (m) {
-                g.add(instanciar(GE.tufo, corAnel, aneisContorno(m, corAnel, m.s * 1.05).itens));
+                g.add(instanciar(GE.tufo, corAnel, aneisContorno(m, corAnel, m.sz * 1.4).itens));
             });
             /* fileiras onduladas fora do raio dos morros */
             var itens = [];
@@ -346,7 +384,7 @@ var Maquete3D = (function () {
                 for (var x = T2.x0 + 0.4; x <= T2.x1 - 0.4; x += 0.5) {
                     var perto = MORROS.some(function (m2) {
                         var dx = x - m2.cx, dz = z - m2.cz;
-                        return (dx * dx + dz * dz) < (m2.s * m2.s * 1.35);
+                        return (dx * dx / (m2.sx * m2.sx) + dz * dz / (m2.sz * m2.sz)) < 1.5;
                     });
                     if (perto) continue;
                     var zz = z + Math.sin(x * 0.5 + z) * 0.3;
@@ -508,7 +546,7 @@ var Maquete3D = (function () {
 
     function montarAgua() {
         function fita(curva, cor, opac, largura) {
-            var N = 70, posArr = [], idx = [];
+            var N = 70, posArr = [], idx = [], fases = [];
             for (var i = 0; i <= N; i++) {
                 var t = i / N;
                 var p = curva.getPointAt(t);
@@ -516,8 +554,11 @@ var Maquete3D = (function () {
                 var nx = -tg.z, nz = tg.x;
                 var l = Math.sqrt(nx * nx + nz * nz) || 1;
                 nx /= l; nz /= l;
-                posArr.push(p.x + nx * largura, NIVEL_AGUA, p.z + nz * largura);
-                posArr.push(p.x - nx * largura, NIVEL_AGUA, p.z - nz * largura);
+                /* margens irregulares: a largura respira ao longo do curso */
+                var w = largura * (0.78 + 0.3 * Math.sin(t * 12.6));
+                posArr.push(p.x + nx * w, NIVEL_AGUA, p.z + nz * w);
+                posArr.push(p.x - nx * w, NIVEL_AGUA, p.z - nz * w);
+                fases.push(i * 0.55, i * 0.55 + 1.7);
                 if (i < N) {
                     var b = i * 2;
                     idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
@@ -531,12 +572,21 @@ var Maquete3D = (function () {
                 color: cor, transparent: true, opacity: opac, shininess: 130, specular: 0xbfe3f2
             }));
             m.receiveShadow = true;
+            aguas.push({ mesh: m, fases: fases });
             return m;
         }
         var fitaEsq = fita(rioCurvaEsq, COR_RIO_ESQ[0], 0.95, 1.35);
         aguaMatEsq = fitaEsq.material;
         gCena.add(fitaEsq);
         gCena.add(fita(rioCurvaDir, 0x46a1dc, 0.9, 1.2));
+        /* lagoa do gado junto ao pasto */
+        var lagoa = new THREE.Mesh(new THREE.CircleGeometry(1.5, 28), new THREE.MeshPhongMaterial({
+            color: 0x4b9ecb, transparent: true, opacity: 0.9, shininess: 130, specular: 0xbfe3f2
+        }));
+        lagoa.rotation.x = -Math.PI / 2;
+        lagoa.position.set(LAGOA.x, NIVEL_AGUA, LAGOA.z);
+        lagoa.receiveShadow = true;
+        gCena.add(lagoa);
         /* espuma correndo rio abaixo */
         var geoEsp = new THREE.BoxGeometry(0.3, 0.03, 0.09);
         function espumas(curva, cor, n, vel) {
@@ -842,9 +892,17 @@ var Maquete3D = (function () {
             e.t += e.vel * dt * 10;
             if (e.t > 1) e.t -= 1;
             var p = e.curva.getPointAt(e.t);
-            e.mesh.position.set(p.x, NIVEL_AGUA + 0.03, p.z);
+            e.mesh.position.set(p.x, NIVEL_AGUA + 0.07, p.z);
             var tg = e.curva.getTangentAt(e.t);
             e.mesh.rotation.y = Math.atan2(tg.x, tg.z);
+        });
+        /* superfície d'água viva: ondulação suave dos vértices */
+        aguas.forEach(function (a) {
+            var pos = a.mesh.geometry.attributes.position;
+            for (var i = 0; i < pos.count; i++) {
+                pos.setY(i, NIVEL_AGUA + Math.sin(tGlobal * 2.2 + a.fases[i]) * 0.03);
+            }
+            pos.needsUpdate = true;
         });
         vacas.forEach(function (v) {
             v.position.y = altura(v.position.x, v.position.z) + Math.abs(Math.sin(tGlobal * 1.1 + v.userData.fase)) * 0.03;
@@ -962,6 +1020,7 @@ var Maquete3D = (function () {
         caminhoAmo = CAMINHOS.map(function (pts) {
             return amostrar(curvaDe(pts), 40);
         });
+        valeAmo = amostrar(curvaDe(VALE_PTS), 24);
 
         geos();
         luzes();

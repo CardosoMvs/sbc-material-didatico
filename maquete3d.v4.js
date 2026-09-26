@@ -787,7 +787,8 @@ var Maquete3D = (function () {
             return f;
         }
         var forma = formaArredondada(ILHA_W - 0.15, ILHA_D - 0.15, 2.2);
-        [[0, -0.75, 0x4a3a28], [-0.75, -1.25, 0x8a6a44], [-2.0, -1.4, 0xa08b74]].forEach(function (L) {
+        // camadas abaixo do terreno: topo bem abaixo do nível da água para não sobrepor
+        [[-0.85, -0.75, 0x6e5a48], [-1.6, -1.25, 0x9a7a5a], [-2.85, -1.4, 0xb89b7a]].forEach(function (L) {
             var g = new THREE.ExtrudeGeometry(forma, { depth: L[1], bevelEnabled: false });
             g.rotateX(Math.PI / 2);
             var m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({

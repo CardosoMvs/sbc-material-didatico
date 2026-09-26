@@ -623,10 +623,10 @@ var Maquete3D = (function () {
             addArvore(p2.x + 2.4 + r2() * 0.7, p2.z + (r2() - 0.5) * 1.3, 0.45 + r2() * 0.2, PAL.seca[0], "seca");
         }
 
-        // árvores soltas: sede e cantos do campo — usar modelo GLB
-        [[-2.6, -8.2], [3.4, -8.4], [-16.5, 10.5], [-11, 11.2],
-         [13.6, 10.8], [-18.5, -3], [15.2, -4.6]].forEach(function (a) {
-            colocarModelo('modelos/tree.glb', a[0], a[1], 2.2, Math.random() * Math.PI * 2, null, [-Math.PI / 2, 0, 0]);
+        // árvores soltas: sede e cantos do campo — voltar ao procedural
+        [[-2.6, -8.2, 1.1], [3.4, -8.4, 0.9], [-16.5, 10.5, 1.0], [-11, 11.2, 0.9],
+         [13.6, 10.8, 1.0], [-18.5, -3, 0.9], [15.2, -4.6, 1.0]].forEach(function (a, k) {
+            addArvore(a[0], a[1], a[2], PAL.solta[k % 2]);
         });
 
         gCena.add(instanciar(GE.tronco, 0x6b4a2b, troncos));
@@ -854,45 +854,25 @@ var Maquete3D = (function () {
     }
 
     function montarSede() {
-        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.2, 0.35, function (obj) {
+        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 1.8, 0.35, function (obj) {
             obj.userData.fumaca = null;
         });
     }
 
     function montarPasto() {
-        // cerca de madeira nos limites do pasto
-        carregarGLB('modelos/fence.glb', function (gltf) {
-            var base = gltf.scene;
-            // medir com rotação de eixo corrigida (modelo vem deitado)
-            var tmp = base.clone();
-            tmp.rotation.x = -Math.PI / 2;
-            var box = new THREE.Box3().setFromObject(tmp);
-            var size = new THREE.Vector3();
-            box.getSize(size);
-            console.log('fence size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
-            // altura desejada da cerca ~0.55m, comprimento ~1.0m
-            var escala = 0.55 / size.y;
-            var passo = size.x * escala * 0.95;
-            for (var x = PASTO.x0; x <= PASTO.x1 + 0.01; x += passo) {
-                colocarCerca(base, x, PASTO.z0, escala, 0);
-                colocarCerca(base, x, PASTO.z1, escala, Math.PI);
-            }
-            for (var z = PASTO.z0; z <= PASTO.z1 + 0.01; z += passo) {
-                colocarCerca(base, PASTO.x0, z, escala, -Math.PI / 2);
-                colocarCerca(base, PASTO.x1, z, escala, Math.PI / 2);
-            }
-        });
-
-        function colocarCerca(base, x, z, escala, rot) {
-            var obj = base.clone();
-            obj.rotation.x = -Math.PI / 2;
-            obj.scale.setScalar(escala);
-            obj.rotation.y += rot;
-            var box = new THREE.Box3().setFromObject(obj);
-            obj.position.set(x, altura(x, z) - box.min.y, z);
-            obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-            gCena.add(obj);
+        // cerca de madeira simples (procedural — o GLB de cerca era achatado)
+        var postes = [];
+        var passo = 0.62;
+        for (var x = PASTO.x0; x <= PASTO.x1 + 0.01; x += passo) {
+            postes.push([x, PASTO.z0]); postes.push([x, PASTO.z1]);
         }
+        for (var z = PASTO.z0; z <= PASTO.z1 + 0.01; z += passo) {
+            postes.push([PASTO.x0, z]); postes.push([PASTO.x1, z]);
+        }
+        var itens = postes.map(function (p) {
+            return { p: [p[0], altura(p[0], p[1]) + 0.28, p[1]] };
+        });
+        gCena.add(instanciar(GE.poste, 0x8a5a33, itens));
 
         var r2 = rng(4321);
         for (var v = 0; v < 3; v++) {
@@ -900,7 +880,7 @@ var Maquete3D = (function () {
                 var x = PASTO.x0 + 0.8 + r2() * (PASTO.x1 - PASTO.x0 - 1.6);
                 var z = PASTO.z0 + 0.5 + r2() * (PASTO.z1 - PASTO.z0 - 1);
                 var rot = r2() * Math.PI * 2;
-                colocarModelo('modelos/cow_google.glb', x, z, 0.45, rot, function (obj) {
+                colocarModelo('modelos/cow_google.glb', x, z, 0.95, rot, function (obj) {
                     obj.userData.fase = idx * 1.3;
                     vacas.push(obj);
                 });

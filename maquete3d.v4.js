@@ -133,6 +133,27 @@ var Maquete3D = (function () {
         });
     }
 
+    /* coloca um modelo GLB na cena ajustando escala e apoiando no terreno */
+    function colocarModelo(url, x, z, escalaAlvo, rot, extras) {
+        carregarGLB(url, function (gltf) {
+            var obj = gltf.scene.clone();
+            var box = new THREE.Box3().setFromObject(obj);
+            var size = new THREE.Vector3();
+            box.getSize(size);
+            console.log(url.replace('modelos/', ''), 'size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
+            var escala = escalaAlvo / Math.max(size.x, size.y, size.z);
+            obj.scale.setScalar(escala);
+            box.setFromObject(obj);
+            obj.position.set(x, altura(x, z) - box.min.y, z);
+            obj.rotation.y = rot || 0;
+            obj.traverse(function (o) {
+                if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
+            });
+            if (extras) extras(obj, size, escala);
+            gCena.add(obj);
+        });
+    }
+
     /* perturba vértices de uma geometria com noise para deixar orgânica */
     function perturbarGeo(geo, amp, seed) {
         var r2 = rng(seed || 1);
@@ -601,10 +622,10 @@ var Maquete3D = (function () {
             addArvore(p2.x + 2.4 + r2() * 0.7, p2.z + (r2() - 0.5) * 1.3, 0.45 + r2() * 0.2, PAL.seca[0], "seca");
         }
 
-        // árvores soltas: sede e cantos do campo
+        // árvores soltas: sede e cantos do campo — usar modelo GLB
         [[-2.6, -8.2, 1.1], [3.4, -8.4, 0.9], [-16.5, 10.5, 1.0], [-11, 11.2, 0.9],
-         [13.6, 10.8, 1.0], [-18.5, -3, 0.9], [15.2, -4.6, 1.0]].forEach(function (a, k) {
-            addArvore(a[0], a[1], a[2], PAL.solta[k % 2]);
+         [13.6, 10.8, 1.0], [-18.5, -3, 0.9], [15.2, -4.6, 1.0]].forEach(function (a) {
+            colocarModelo('modelos/tree.glb', a[0], a[1], a[2] * 1.6, Math.random() * Math.PI * 2);
         });
 
         gCena.add(instanciar(GE.tronco, 0x6b4a2b, troncos));
@@ -734,46 +755,40 @@ var Maquete3D = (function () {
         espumaMatEsq = espumas(rioCurvaEsq, 0x8f7f52, 12, 0.026);
         espumas(rioCurvaDir, 0xeaf7fa, 14, 0.032);
 
-        // pedras e seixos nas margens (apenas fora da água)
-        var pedras = [];
-        [rioCurvaEsq, rioCurvaDir].forEach(function (curva) {
-            for (var t3 = 0.05; t3 <= 0.95; t3 += 0.06) {
-                var p = curva.getPointAt(t3);
-                var tg = curva.getTangentAt(t3);
-                var l = Math.sqrt(tg.x * tg.x + tg.z * tg.z) || 1;
-                var nx = -tg.z / l, nz = tg.x / l;
-                for (var lado = -1; lado <= 1; lado += 2) {
-                    if (Math.random() < 0.35) continue;
-                    var d = 1.25 + Math.random() * 0.7;
-                    var px = p.x + nx * d * lado + (Math.random() - 0.5) * 0.4;
-                    var pz = p.z + nz * d * lado + (Math.random() - 0.5) * 0.4;
-                    if (altura(px, pz) < NIVEL_AGUA + 0.05) continue;
-                    var s = 0.35 + Math.random() * 0.45;
-                    pedras.push({
-                        p: [px, altura(px, pz) + 0.05 * s, pz],
-                        s: [s, s * 0.7, s * 1.1],
-                        r: [(Math.random() - 0.5) * 0.5, Math.random() * Math.PI, (Math.random() - 0.5) * 0.5]
-                    });
+        // pedras e seixos nas margens usando modelo GLB
+        carregarGLB('modelos/rock.glb', function (gltf) {
+            var base = gltf.scene;
+            var box = new THREE.Box3().setFromObject(base);
+            var size = new THREE.Vector3();
+            box.getSize(size);
+            console.log('rock size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
+            var pedras = [];
+            [rioCurvaEsq, rioCurvaDir].forEach(function (curva) {
+                for (var t3 = 0.05; t3 <= 0.95; t3 += 0.06) {
+                    var p = curva.getPointAt(t3);
+                    var tg = curva.getTangentAt(t3);
+                    var l = Math.sqrt(tg.x * tg.x + tg.z * tg.z) || 1;
+                    var nx = -tg.z / l, nz = tg.x / l;
+                    for (var lado = -1; lado <= 1; lado += 2) {
+                        if (Math.random() < 0.35) continue;
+                        var d = 1.25 + Math.random() * 0.7;
+                        var px = p.x + nx * d * lado + (Math.random() - 0.5) * 0.4;
+                        var pz = p.z + nz * d * lado + (Math.random() - 0.5) * 0.4;
+                        if (altura(px, pz) < NIVEL_AGUA + 0.05) continue;
+                        pedras.push({ x: px, z: pz, s: 0.3 + Math.random() * 0.4, r: Math.random() * Math.PI });
+                    }
                 }
-            }
+            });
+            pedras.forEach(function (it) {
+                var obj = base.clone();
+                var escala = it.s / Math.max(size.x, size.y, size.z);
+                obj.scale.setScalar(escala);
+                obj.position.set(it.x, altura(it.x, it.z), it.z);
+                obj.rotation.y = it.r;
+                obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+                gCena.add(obj);
+            });
         });
-        var coresPedra = [0x8a8a8a, 0x9e9e9e, 0x7a7a7a, 0x858585];
-        var pedraM = new THREE.InstancedMesh(GE.pedra,
-            new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: false, roughness: 0.9 }),
-            pedras.length);
-        for (var p2 = 0; p2 < pedras.length; p2++) {
-            var it = pedras[p2];
-            _q.setFromEuler(_e.set(it.r[0], it.r[1], it.r[2]));
-            _v.set(it.p[0], it.p[1], it.p[2]);
-            _s.set(it.s[0], it.s[1], it.s[2]);
-            _mtx.compose(_v, _q, _s);
-            pedraM.setMatrixAt(p2, _mtx);
-            pedraM.setColorAt(p2, _col.setHex(coresPedra[p2 % coresPedra.length]));
-        }
-        pedraM.instanceMatrix.needsUpdate = true;
-        if (pedraM.instanceColor) pedraM.instanceColor.needsUpdate = true;
-        pedraM.castShadow = true; pedraM.receiveShadow = true;
-        gCena.add(pedraM);
     }
 
     function montarIlha() {
@@ -836,99 +851,40 @@ var Maquete3D = (function () {
     }
 
     function montarSede() {
-        var g = new THREE.Group();
-        var y = altura(SEDE.x, SEDE.z);
-        function b(w, h, d, cor, px, py, pz, arred) {
-            var geo = arred ? new THREE.CylinderGeometry(w / 2, w / 2, h, 14) : new THREE.BoxGeometry(w, h, d);
-            var m = new THREE.Mesh(geo, mat(cor));
-            m.position.set(px, py, pz);
-            m.castShadow = true; m.receiveShadow = true;
-            g.add(m);
-            return m;
-        }
-        // casa principal com base arredondada e alpendre
-        b(2.6, 1.3, 1.9, 0xf3e3c3, 0, 0.65, 0);
-        // alpendre frontal
-        var alpendre = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.08, 0.55), mat(0xe8d8b8));
-        alpendre.position.set(0, 1.32, 1.12);
-        alpendre.castShadow = true; alpendre.receiveShadow = true;
-        g.add(alpendre);
-        // colunas do alpendre
-        for (var cx = -1.0; cx <= 1.0; cx += 0.67) {
-            var col = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.32, 8), mat(0xffffff));
-            col.position.set(cx, 0.66, 1.35);
-            col.castShadow = true;
-            g.add(col);
-        }
-        // telhado com mais segmentos
-        var telhado = new THREE.Mesh(new THREE.ConeGeometry(2.05, 1.1, 4, 1, true), mat(0xb3402e));
-        telhado.rotation.y = Math.PI / 4;
-        telhado.position.set(0, 1.85, 0);
-        telhado.castShadow = true;
-        g.add(telhado);
-        // beiral
-        var beiral = new THREE.Mesh(new THREE.BoxGeometry(2.95, 0.08, 2.25), mat(0x9a3525));
-        beiral.position.set(0, 1.35, 0);
-        beiral.castShadow = true;
-        g.add(beiral);
-        // porta e janelas com molduras
-        b(0.5, 0.8, 0.12, 0x8a5a33, 0.55, 0.4, 0.98);
-        var moldJ1 = new THREE.Mesh(new THREE.BoxGeometry(0.61, 0.61, 0.06), mat(0xffffff));
-        moldJ1.position.set(-0.75, 0.85, 0.98);
-        g.add(moldJ1);
-        b(0.55, 0.55, 0.12, 0xffe9a8, -0.75, 0.85, 0.99);
-        var moldJ2 = new THREE.Mesh(new THREE.BoxGeometry(0.61, 0.61, 0.06), mat(0xffffff));
-        moldJ2.position.set(0.75, 0.85, 0.98);
-        g.add(moldJ2);
-        b(0.55, 0.55, 0.12, 0xffe9a8, 0.75, 0.85, 0.99);
-        // chaminé
-        var chim = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.7, 10), mat(0xb3402e));
-        chim.position.set(-0.85, 2.2, -0.4);
-        chim.castShadow = true;
-        g.add(chim);
-        var fumaca = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), mat(0xdddddd, true));
-        fumaca.position.set(-0.85, 2.7, -0.4);
-        fumaca.material.opacity = 0.35;
-        g.add(fumaca);
-        g.userData.fumaca = fumaca;
-        // silo
-        var silo = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 2.3, 16), mat(0xd7dee2));
-        silo.position.set(2.3, 1.15, -0.3);
-        silo.castShadow = true;
-        g.add(silo);
-        var tampa = new THREE.Mesh(new THREE.ConeGeometry(0.62, 0.5, 16), mat(0x9aa7ad));
-        tampa.position.set(2.3, 2.55, -0.3);
-        tampa.castShadow = true;
-        g.add(tampa);
-        // silo menor ao lado
-        var silo2 = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.6, 14), mat(0xcfd6da));
-        silo2.position.set(3.1, 0.8, -0.8);
-        silo2.castShadow = true;
-        g.add(silo2);
-        // cercado simples
-        for (var fx = -2.4; fx <= 2.4; fx += 0.7) {
-            var rip = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.55, 5), mat(0x8a5a33));
-            rip.position.set(fx, 0.27, 1.9);
-            g.add(rip);
-        }
-        g.position.set(SEDE.x, y - 0.05, SEDE.z);
-        g.rotation.y = 0.35;
-        gCena.add(g);
+        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.8, 0.35, function (obj) {
+            obj.userData.fumaca = null;
+        });
     }
 
     function montarPasto() {
-        var postes = [];
-        var passo = 0.62;
-        for (var x = PASTO.x0; x <= PASTO.x1 + 0.01; x += passo) {
-            postes.push([x, PASTO.z0]); postes.push([x, PASTO.z1]);
-        }
-        for (var z = PASTO.z0; z <= PASTO.z1 + 0.01; z += passo) {
-            postes.push([PASTO.x0, z]); postes.push([PASTO.x1, z]);
-        }
-        var itens = postes.map(function (p) {
-            return { p: [p[0], altura(p[0], p[1]) + 0.28, p[1]] };
+        // cerca de madeira nos limites do pasto
+        carregarGLB('modelos/fence.glb', function (gltf) {
+            var base = gltf.scene;
+            var box = new THREE.Box3().setFromObject(base);
+            var size = new THREE.Vector3();
+            box.getSize(size);
+            console.log('fence size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
+            var escala = 0.6 / size.z;
+            var passo = size.z * escala * 0.95;
+            for (var x = PASTO.x0; x <= PASTO.x1 + 0.01; x += passo) {
+                colocarCerca(base, x, PASTO.z0, escala, 0);
+                colocarCerca(base, x, PASTO.z1, escala, Math.PI);
+            }
+            for (var z = PASTO.z0; z <= PASTO.z1 + 0.01; z += passo) {
+                colocarCerca(base, PASTO.x0, z, escala, -Math.PI / 2);
+                colocarCerca(base, PASTO.x1, z, escala, Math.PI / 2);
+            }
         });
-        gCena.add(instanciar(GE.poste, 0x8a5a33, itens));
+
+        function colocarCerca(base, x, z, escala, rot) {
+            var obj = base.clone();
+            obj.scale.setScalar(escala);
+            var box = new THREE.Box3().setFromObject(obj);
+            obj.position.set(x, altura(x, z) - box.min.y, z);
+            obj.rotation.y = rot;
+            obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+            gCena.add(obj);
+        }
 
         var r2 = rng(4321);
         for (var v = 0; v < 3; v++) {
@@ -936,37 +892,16 @@ var Maquete3D = (function () {
                 var x = PASTO.x0 + 0.8 + r2() * (PASTO.x1 - PASTO.x0 - 1.6);
                 var z = PASTO.z0 + 0.5 + r2() * (PASTO.z1 - PASTO.z0 - 1);
                 var rot = r2() * Math.PI * 2;
-                carregarGLB('modelos/cow_poly.glb', function (gltf) {
-                    var vaca = gltf.scene;
-                    vaca.scale.setScalar(0.018);
-                    var box = new THREE.Box3().setFromObject(vaca);
-                    var h = box.max.y - box.min.y;
-                    vaca.position.set(x, altura(x, z) - h * 0.02, z);
-                    vaca.rotation.y = rot;
-                    vaca.traverse(function (o) {
-                        if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
-                    });
-                    vaca.userData.fase = idx * 1.3;
-                    vacas.push(vaca);
-                    gCena.add(vaca);
+                colocarModelo('modelos/cow_google.glb', x, z, 0.55, rot, function (obj) {
+                    obj.userData.fase = idx * 1.3;
+                    vacas.push(obj);
                 });
             })(v);
         }
     }
 
     function montarTrator(x, z, rot) {
-        carregarGLB('modelos/tractor_poly.glb', function (gltf) {
-            var trator = gltf.scene;
-            trator.scale.setScalar(0.35);
-            var box = new THREE.Box3().setFromObject(trator);
-            var h = box.max.y - box.min.y;
-            trator.position.set(x, altura(x, z) - h * 0.05, z);
-            trator.rotation.y = rot;
-            trator.traverse(function (o) {
-                if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
-            });
-            gCena.add(trator);
-        });
+        colocarModelo('modelos/tractor_poly.glb', x, z, 1.8, rot);
     }
 
     function montarDrone() {

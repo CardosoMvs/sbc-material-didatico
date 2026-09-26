@@ -134,18 +134,19 @@ var Maquete3D = (function () {
     }
 
     /* coloca um modelo GLB na cena ajustando escala e apoiando no terreno */
-    function colocarModelo(url, x, z, escalaAlvo, rot, extras) {
+    function colocarModelo(url, x, z, escalaAlvo, rot, extras, preRot) {
         carregarGLB(url, function (gltf) {
             var obj = gltf.scene.clone();
+            if (preRot) obj.rotation.set(preRot[0], preRot[1], preRot[2]);
             var box = new THREE.Box3().setFromObject(obj);
             var size = new THREE.Vector3();
             box.getSize(size);
-            console.log(url.replace('modelos/', ''), 'size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
+            console.log(url.replace('modelos/', ''), 'raw size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
             var escala = escalaAlvo / Math.max(size.x, size.y, size.z);
             obj.scale.setScalar(escala);
+            obj.rotation.y += rot || 0;
             box.setFromObject(obj);
             obj.position.set(x, altura(x, z) - box.min.y, z);
-            obj.rotation.y = rot || 0;
             obj.traverse(function (o) {
                 if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
             });
@@ -623,9 +624,9 @@ var Maquete3D = (function () {
         }
 
         // árvores soltas: sede e cantos do campo — usar modelo GLB
-        [[-2.6, -8.2, 1.1], [3.4, -8.4, 0.9], [-16.5, 10.5, 1.0], [-11, 11.2, 0.9],
-         [13.6, 10.8, 1.0], [-18.5, -3, 0.9], [15.2, -4.6, 1.0]].forEach(function (a) {
-            colocarModelo('modelos/tree.glb', a[0], a[1], a[2] * 1.6, Math.random() * Math.PI * 2);
+        [[-2.6, -8.2], [3.4, -8.4], [-16.5, 10.5], [-11, 11.2],
+         [13.6, 10.8], [-18.5, -3], [15.2, -4.6]].forEach(function (a) {
+            colocarModelo('modelos/tree.glb', a[0], a[1], 2.2, Math.random() * Math.PI * 2, null, [-Math.PI / 2, 0, 0]);
         });
 
         gCena.add(instanciar(GE.tronco, 0x6b4a2b, troncos));
@@ -781,9 +782,11 @@ var Maquete3D = (function () {
             });
             pedras.forEach(function (it) {
                 var obj = base.clone();
+                // o modelo rock vem com escala 100x, então o tamanho real já está em size
                 var escala = it.s / Math.max(size.x, size.y, size.z);
                 obj.scale.setScalar(escala);
-                obj.position.set(it.x, altura(it.x, it.z), it.z);
+                var box = new THREE.Box3().setFromObject(obj);
+                obj.position.set(it.x, altura(it.x, it.z) - box.min.y, it.z);
                 obj.rotation.y = it.r;
                 obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
                 gCena.add(obj);
@@ -851,7 +854,7 @@ var Maquete3D = (function () {
     }
 
     function montarSede() {
-        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.8, 0.35, function (obj) {
+        colocarModelo('modelos/farmhouse.glb', SEDE.x, SEDE.z, 2.2, 0.35, function (obj) {
             obj.userData.fumaca = null;
         });
     }
@@ -860,12 +863,16 @@ var Maquete3D = (function () {
         // cerca de madeira nos limites do pasto
         carregarGLB('modelos/fence.glb', function (gltf) {
             var base = gltf.scene;
-            var box = new THREE.Box3().setFromObject(base);
+            // medir com rotação de eixo corrigida (modelo vem deitado)
+            var tmp = base.clone();
+            tmp.rotation.x = -Math.PI / 2;
+            var box = new THREE.Box3().setFromObject(tmp);
             var size = new THREE.Vector3();
             box.getSize(size);
             console.log('fence size:', size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2));
-            var escala = 0.6 / size.z;
-            var passo = size.z * escala * 0.95;
+            // altura desejada da cerca ~0.55m, comprimento ~1.0m
+            var escala = 0.55 / size.y;
+            var passo = size.x * escala * 0.95;
             for (var x = PASTO.x0; x <= PASTO.x1 + 0.01; x += passo) {
                 colocarCerca(base, x, PASTO.z0, escala, 0);
                 colocarCerca(base, x, PASTO.z1, escala, Math.PI);
@@ -878,10 +885,11 @@ var Maquete3D = (function () {
 
         function colocarCerca(base, x, z, escala, rot) {
             var obj = base.clone();
+            obj.rotation.x = -Math.PI / 2;
             obj.scale.setScalar(escala);
+            obj.rotation.y += rot;
             var box = new THREE.Box3().setFromObject(obj);
             obj.position.set(x, altura(x, z) - box.min.y, z);
-            obj.rotation.y = rot;
             obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
             gCena.add(obj);
         }
@@ -892,7 +900,7 @@ var Maquete3D = (function () {
                 var x = PASTO.x0 + 0.8 + r2() * (PASTO.x1 - PASTO.x0 - 1.6);
                 var z = PASTO.z0 + 0.5 + r2() * (PASTO.z1 - PASTO.z0 - 1);
                 var rot = r2() * Math.PI * 2;
-                colocarModelo('modelos/cow_google.glb', x, z, 0.55, rot, function (obj) {
+                colocarModelo('modelos/cow_google.glb', x, z, 0.45, rot, function (obj) {
                     obj.userData.fase = idx * 1.3;
                     vacas.push(obj);
                 });
@@ -901,7 +909,7 @@ var Maquete3D = (function () {
     }
 
     function montarTrator(x, z, rot) {
-        colocarModelo('modelos/tractor_poly.glb', x, z, 1.8, rot);
+        colocarModelo('modelos/tractor_poly.glb', x, z, 1.5, rot);
     }
 
     function montarDrone() {

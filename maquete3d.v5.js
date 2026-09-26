@@ -413,38 +413,56 @@ var Maquete3D = (function () {
             return merged;
         }
 
-        // soja: arbusto baixo e ramificado, folhas arredondadas em três folíolos
+        // soja: planta alta com haste central, folhas trifoliadas e vagens verdes em cacho
         function geoSoja() {
             var g = new THREE.Group();
-            var matHaste = new THREE.MeshLambertMaterial({ color: 0x5fa84c });
-            var matFolha = new THREE.MeshLambertMaterial({ color: 0x6ab55a });
+            var matHaste = new THREE.MeshLambertMaterial({ color: 0x6ab55a });
+            var matFolha = new THREE.MeshLambertMaterial({ color: 0x5fa84c });
             var matFolhaEscura = new THREE.MeshLambertMaterial({ color: 0x4e9a42 });
-            // haste central curta
-            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.011, 0.16, 5), matHaste);
-            haste.position.y = 0.08;
+            var matVagem = new THREE.MeshLambertMaterial({ color: 0x9dc96e });
+            var altura = 0.62;
+            // haste central fina e alta
+            var haste = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.010, altura, 5), matHaste);
+            haste.position.y = altura / 2;
             g.add(haste);
-            // 3 a 5 ramos curvos saindo do centro
-            for (var b = 0; b < 5; b++) {
-                var ang = (b / 5) * Math.PI * 2;
-                var ramo = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.008, 0.12, 4), matHaste);
-                ramo.position.set(Math.cos(ang) * 0.04, 0.10, Math.sin(ang) * 0.04);
-                ramo.rotation.set(Math.sin(ang) * 0.6, 0, -Math.cos(ang) * 0.6);
-                g.add(ramo);
-                // folha em cada ramo (três folíolos)
+            // folhas trifoliadas em vários níveis
+            var niveis = 6;
+            for (var n = 0; n < niveis; n++) {
+                var y = 0.12 + (n / (niveis - 1)) * (altura - 0.18);
+                var aBase = n * 1.1;
+                var tamanho = 0.038 + (n / niveis) * 0.018;
+                // pecíolo
+                var pec = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.14, 3), matHaste);
+                pec.position.set(Math.cos(aBase) * 0.02, y, Math.sin(aBase) * 0.02);
+                pec.rotation.set(0, aBase, Math.PI / 2.6);
+                g.add(pec);
+                // três folíolos
                 for (var f = 0; f < 3; f++) {
-                    var folha = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(0.042, 6, 5), 0.010, 101 + b * 3 + f), (b + f) % 2 ? matFolha : matFolhaEscura);
-                    var aa = ang + (f - 1) * 0.55;
-                    folha.scale.set(1.0, 0.22, 0.55);
-                    folha.position.set(Math.cos(aa) * 0.09, 0.14 + f * 0.015, Math.sin(aa) * 0.09);
-                    folha.rotation.set((Math.random() - 0.5) * 0.4, aa, (Math.random() - 0.5) * 0.4);
+                    var a = aBase + (f - 1) * 0.65;
+                    var folha = new THREE.Mesh(perturbarGeo(new THREE.SphereGeometry(tamanho, 6, 5), 0.008, 101 + n * 3 + f), (n + f) % 2 ? matFolha : matFolhaEscura);
+                    folha.scale.set(1.0, 0.22, 0.65);
+                    folha.position.set(Math.cos(a) * 0.09, y + 0.02, Math.sin(a) * 0.09);
+                    folha.rotation.set((Math.random() - 0.5) * 0.4, a, (Math.random() - 0.5) * 0.4);
                     g.add(folha);
                 }
+                // ramo lateral com vagens nos níveis mais altos
+                if (n >= 2 && n <= 5) {
+                    var aV = aBase + Math.PI;
+                    var ramoV = new THREE.Mesh(new THREE.CylinderGeometry(0.0025, 0.0035, 0.10, 3), matHaste);
+                    ramoV.position.set(Math.cos(aV) * 0.05, y - 0.02, Math.sin(aV) * 0.05);
+                    ramoV.rotation.set(0, aV, Math.PI / 2.2);
+                    g.add(ramoV);
+                    // cacho de vagens verdes
+                    for (var v = 0; v < 3 + (n - 2); v++) {
+                        var vagem = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.006, 0.07, 5), matVagem);
+                        var av = aV + (v - 1.5) * 0.12;
+                        vagem.position.set(Math.cos(av) * 0.08, y - 0.04 - v * 0.025, Math.sin(av) * 0.08);
+                        vagem.rotation.z = 0.25;
+                        vagem.rotation.x = (Math.random() - 0.5) * 0.3;
+                        g.add(vagem);
+                    }
+                }
             }
-            // vagem pequena em alguns ramos
-            var vagem = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.004, 0.045, 5), new THREE.MeshLambertMaterial({ color: 0x8fbc5a }));
-            vagem.position.set(0.05, 0.12, 0.03);
-            vagem.rotation.z = 0.5;
-            g.add(vagem);
             g.updateMatrixWorld(true);
             return mergeGroup(g);
         }
@@ -685,7 +703,7 @@ var Maquete3D = (function () {
         // safra/soja de um lado, safrinha/milho do outro (sucessão real)
         for (var x = T1.x0 + 0.5; x <= T1.x1 - 0.5; x += 0.55) {
             for (var z = T1.z0 + 0.4; z <= meioZ - 0.3; z += 0.42) {
-                sojaItens.push({ p: [x, altura(x, z), z], s: [escSoja, escSoja, escSoja] });
+                sojaItens.push({ p: [x, altura(x, z), z], s: [escSoja, escSoja, escSoja], r: [0, Math.random() * Math.PI, 0] });
             }
             for (var z = meioZ + 0.3; z <= T1.z1 - 0.4; z += 0.45) {
                 milhoItens.push({ p: [x, altura(x, z), z], s: [0.9, escMilho, 0.9], r: [(Math.random() - 0.5) * 0.08, Math.random() * Math.PI, 0] });
@@ -865,7 +883,7 @@ var Maquete3D = (function () {
             var soja = [];
             for (var z1 = T3.z0 + 0.5; z1 <= T3.z1 - 0.5; z1 += 0.8) {
                 for (var x1 = T3.x0 + 0.5; x1 <= T3.x1 - 0.5; x1 += 0.45) {
-                    soja.push({ p: [x1, altura(x1, z1), z1], s: [0.95, 0.95, 0.95] });
+                    soja.push({ p: [x1, altura(x1, z1), z1], s: [1.0, 1.0, 1.0], r: [0, Math.random() * Math.PI, 0] });
                 }
             }
             g.add(instanciar(GE.soja, 0x5fb44f, soja, true));
@@ -891,7 +909,7 @@ var Maquete3D = (function () {
                     } else if (linha % 4 === 2) {
                         milheto.push({ p: [x2, altura(x2, z2), z2], s: [0.85, 1.15, 0.85] });
                     } else {
-                        soja2.push({ p: [x2, altura(x2, z2), z2], s: [0.95, 0.95, 0.95] });
+                        soja2.push({ p: [x2, altura(x2, z2), z2], s: [1.0, 1.0, 1.0], r: [0, Math.random() * Math.PI, 0] });
                     }
                 }
             }

@@ -256,8 +256,8 @@ var Maquete3D = (function () {
     var COR_T2 = [0xa87a55, 0x7aa86a, 0x56a05a];
     var COR_T3 = 0x4f9455;
     var COR_LEITO_ESQ = [0x5a7a62, 0x5c8a6a, 0x5f9f7e];
-    var COR_RIO_ESQ = [0x9c9b6a, 0x8fb080, 0x74b287];
-    var COR_RIO_DIR = 0x5ab4e8;
+    var COR_RIO_ESQ = [0x7ab8a0, 0x6bb89e, 0x5cb89a];
+    var COR_RIO_DIR = 0x4fb0d8;
 
     function corSolo(x, z, ano, h) {
         var dE = distAte(rioAmoEsq, x, z), dD = distAte(rioAmoDir, x, z);
@@ -1179,10 +1179,22 @@ var Maquete3D = (function () {
             geo.setIndex(idx);
             geo.computeVertexNormals();
             var m = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({
-                color: cor, transparent: true, opacity: opac, shininess: 100, specular: 0xbfe8f5
+                color: cor, transparent: true, opacity: opac, shininess: 140,
+                specular: 0xffffff, side: THREE.DoubleSide
             }));
             m.receiveShadow = true;
             aguas.push({ mesh: m, fases: fases });
+
+            // segunda camada mais escura por baixo para dar sensação de volume
+            var fundo = new THREE.Mesh(geo.clone(), new THREE.MeshPhongMaterial({
+                color: cor, transparent: true, opacity: 0.55, shininess: 60,
+                specular: 0x8fc8d8, side: THREE.DoubleSide
+            }));
+            fundo.position.y = -0.12;
+            fundo.receiveShadow = true;
+            fundo.userData.fundo = true;
+            m.add(fundo);
+            aguas.push({ mesh: fundo, fases: fases });
             return m;
         }
         var fitaEsq = fita(rioCurvaEsq, COR_RIO_ESQ[0], 0.95);
@@ -1208,8 +1220,8 @@ var Maquete3D = (function () {
         geoL.setIndex(idxL);
         geoL.computeVertexNormals();
         var lagoa = new THREE.Mesh(geoL, new THREE.MeshPhongMaterial({
-            color: 0x4b9ecb, transparent: true, opacity: 0.88, shininess: 100,
-            specular: 0xbfe8f5, side: THREE.DoubleSide
+            color: 0x4fb0d8, transparent: true, opacity: 0.92, shininess: 140,
+            specular: 0xffffff, side: THREE.DoubleSide
         }));
         lagoa.receiveShadow = true;
         gCena.add(lagoa);
@@ -1225,8 +1237,8 @@ var Maquete3D = (function () {
             }
             return m;
         }
-        espumaMatEsq = espumas(rioCurvaEsq, 0x8f7f52, 12, 0.026);
-        espumas(rioCurvaDir, 0xeaf7fa, 14, 0.032);
+        espumaMatEsq = espumas(rioCurvaEsq, 0xf5f9fa, 16, 0.026);
+        espumas(rioCurvaDir, 0xf5f9fa, 18, 0.032);
 
         // pedras e seixos nas margens usando modelo GLB
         carregarGLB('modelos/rock.glb', function (gltf) {
@@ -1590,8 +1602,9 @@ var Maquete3D = (function () {
         });
         aguas.forEach(function (a) {
             var pos = a.mesh.geometry.attributes.position;
+            var baseY = a.mesh.userData.fundo ? NIVEL_AGUA - 0.12 : NIVEL_AGUA;
             for (var i = 0; i < pos.count; i++) {
-                pos.setY(i, NIVEL_AGUA + Math.sin(tGlobal * 1.8 + a.fases[i]) * 0.02);
+                pos.setY(i, baseY + Math.sin(tGlobal * 2.6 + a.fases[i]) * 0.035);
             }
             pos.needsUpdate = true;
         });

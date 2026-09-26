@@ -44,10 +44,10 @@ var Maquete3D = (function () {
     var RL = { x0: 6.5, z0: -13, x1: 20, z1: -8 };
     var SEDE = { x: 0.6, z: -9.6 };
 
-    /* morros do Talhão 2: crista alongada com sela entre eles */
+    /* morros do Talhão 2: suaves ondulações, não picos altos */
     var MORROS = [
-        { cx: 0.2, cz: 0.8, a: 2.7, sx: 3.3, sz: 2.6 },
-        { cx: 2.2, cz: 4.2, a: 1.75, sx: 2.5, sz: 2.1 }
+        { cx: 0.2, cz: 0.8, a: 1.35, sx: 4.6, sz: 3.6 },
+        { cx: 2.2, cz: 4.2, a: 0.85, sx: 3.4, sz: 2.8 }
     ];
 
     /* vala de drenagem */

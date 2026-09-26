@@ -1460,6 +1460,7 @@ var Maquete3D = (function () {
     return {
         init: init,
         trocarAno: montarAno,
+        redimensionar: aoRedimensionar,
         info: function () {
             return {
                 fixos: gCena.children.length,

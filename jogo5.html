@@ -75,6 +75,9 @@
         #cena3d.panning {
             cursor: move;
         }
+        #cena3d.inspecao {
+            cursor: crosshair;
+        }
         #cena3d.cheia {
             position: fixed;
             inset: 0;
@@ -594,7 +597,7 @@
 
         function atualizarDica() {
             if (modoPan) {
-                dica3d.textContent = "✥ Arraste para mover · 2 dedos para zoom";
+                dica3d.textContent = "✥ Arraste para andar · 2 dedos para zoom · olhe de frente";
             } else {
                 dica3d.textContent = "🖱️ Arraste para girar · roda/pinça para zoom";
             }
@@ -603,23 +606,24 @@
         function alternarModoPan() {
             modoPan = !modoPan;
             btnPan.classList.toggle("ativo", modoPan);
-            if (typeof Maquete3D.setPan === "function") Maquete3D.setPan(modoPan);
+            cena3d.classList.toggle("inspecao", modoPan);
+            if (typeof Maquete3D.setInspecao === "function") Maquete3D.setInspecao(modoPan);
             atualizarDica();
         }
 
         btnPan.addEventListener("click", alternarModoPan);
 
-        // Shift no desktop alterna pan temporariamente
+        // Shift no desktop alterna inspeção temporariamente
         window.addEventListener("keydown", function (e) {
             if (e.key === "Shift" && !modoPan) {
-                cena3d.classList.add("panning");
-                if (typeof Maquete3D.setPan === "function") Maquete3D.setPan(true);
+                cena3d.classList.add("inspecao");
+                if (typeof Maquete3D.setInspecao === "function") Maquete3D.setInspecao(true);
             }
         });
         window.addEventListener("keyup", function (e) {
             if (e.key === "Shift" && !modoPan) {
-                cena3d.classList.remove("panning");
-                if (typeof Maquete3D.setPan === "function") Maquete3D.setPan(false);
+                cena3d.classList.remove("inspecao");
+                if (typeof Maquete3D.setInspecao === "function") Maquete3D.setInspecao(false);
             }
         });
 

@@ -1357,6 +1357,24 @@ var Maquete3D = (function () {
         panAtivo = !!ativo;
         if (controls) controls.enablePan = panAtivo;
     }
+    function setInspecao(ativo) {
+        inspecaoAtiva = !!ativo;
+        var anterior = controls;
+        if (inspecaoAtiva) {
+            if (!mapControls) mapControls = criarMapControls();
+            mapControls.target.copy(orbitControls.target);
+            mapControls.enableDamping = true;
+            controls = mapControls;
+        } else {
+            orbitControls.target.copy(mapControls ? mapControls.target : orbitControls.target);
+            orbitControls.autoRotate = false;
+            controls = orbitControls;
+        }
+        if (anterior && anterior !== controls) {
+            anterior.enabled = false;
+        }
+        if (controls) controls.enabled = true;
+    }
 
     /* ====================== céu e luz ====================== */
     function ceuTextura() {
@@ -1409,18 +1427,39 @@ var Maquete3D = (function () {
         camera = new THREE.PerspectiveCamera(40, 1.55, 0.1, 400);
         camera.position.set(28, 18.5, 34);
 
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.target.set(0, 0.2, 0);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.08;
-        controls.enablePan = true;
-        controls.minDistance = 8;
-        controls.maxDistance = 90;
-        controls.minPolarAngle = 0.10;
-        controls.maxPolarAngle = 1.55;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.45;
-        renderer.domElement.addEventListener("pointerdown", function () { controls.autoRotate = false; });
+        // começa com OrbitControls (girar ao redor), mas pode trocar para inspeção livre
+        var orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+        orbitControls.target.set(0, 0.2, 0);
+        orbitControls.enableDamping = true;
+        orbitControls.dampingFactor = 0.08;
+        orbitControls.enablePan = true;
+        orbitControls.minDistance = 4;
+        orbitControls.maxDistance = 100;
+        orbitControls.minPolarAngle = 0.05;
+        orbitControls.maxPolarAngle = 1.58;
+        orbitControls.autoRotate = true;
+        orbitControls.autoRotateSpeed = 0.45;
+
+        var mapControls = null;
+        function criarMapControls() {
+            var mc = new THREE.MapControls(camera, renderer.domElement);
+            mc.target.set(0, 0.2, 0);
+            mc.enableDamping = true;
+            mc.dampingFactor = 0.08;
+            mc.enablePan = true;
+            mc.minDistance = 2;
+            mc.maxDistance = 100;
+            mc.minPolarAngle = 0.05;
+            mc.maxPolarAngle = 1.58;
+            mc.autoRotate = false;
+            return mc;
+        }
+
+        controls = orbitControls;
+        var inspecaoAtiva = false;
+        renderer.domElement.addEventListener("pointerdown", function () {
+            if (controls) controls.autoRotate = false;
+        });
 
         gCena = new THREE.Group(); gAno = new THREE.Group(); gVida = new THREE.Group();
         scene.add(gCena); scene.add(gAno); scene.add(gVida);
@@ -1467,6 +1506,7 @@ var Maquete3D = (function () {
         trocarAno: montarAno,
         redimensionar: aoRedimensionar,
         setPan: setPan,
+        setInspecao: setInspecao,
         info: function () {
             return {
                 fixos: gCena.children.length,

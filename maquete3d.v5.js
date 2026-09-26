@@ -594,8 +594,8 @@ var Maquete3D = (function () {
             capim: perturbarGeo(new THREE.ConeGeometry(0.09, 0.34, 7), 0.03, 42),
             capimAlto: perturbarGeo(new THREE.ConeGeometry(0.10, 0.62, 8), 0.035, 421),
             palha: perturbarGeo(new THREE.CylinderGeometry(0.016, 0.020, 0.52, 7), 0.02, 43),
-            palhaCurta: perturbarGeo(new THREE.CylinderGeometry(0.014, 0.017, 0.32, 7), 0.02, 44),
-            palhaDeitada: perturbarGeo(new THREE.CylinderGeometry(0.015, 0.019, 0.72, 7), 0.025, 431),
+            palhaCurta: perturbarGeo(new THREE.CylinderGeometry(0.012, 0.015, 0.38, 7), 0.02, 44),
+            palhaDeitada: perturbarGeo(new THREE.CylinderGeometry(0.013, 0.017, 0.85, 7), 0.025, 431),
             flor: perturbarGeo(new THREE.SphereGeometry(0.055, 7, 6), 0.02, 45),
             haste: new THREE.CylinderGeometry(0.018, 0.028, 0.58, 7),
             folhaTrigo: perturbarGeo(new THREE.CylinderGeometry(0.012, 0.018, 0.72, 7), 0.02, 452),
@@ -687,9 +687,9 @@ var Maquete3D = (function () {
             var sy = comprimento ? comprimento * (0.9 + r2() * 0.3) : 1;
             // achata muito no Y para ficar bem deitada e alonga horizontalmente
             itens.push({
-                p: [x, altura(x, z) + 0.008, z],
+                p: [x, altura(x, z) + 0.004, z],
                 r: [ax, ry, az],
-                s: [escala * 1.7, sy * 0.12, escala * 1.7]
+                s: [escala * 1.9, sy * 0.08, escala * 1.9]
             });
         }
         return itens;
@@ -715,12 +715,13 @@ var Maquete3D = (function () {
         g.add(instanciar(GE.milho, 0x7cb342, milhoItens, true));
 
         // palhada progressiva: 0-10% / ~40% / >90% de cobertura
-        var densPalha = [320, 1040, 2600][ano - 1];
+        var densPalha = [480, 1560, 3900][ano - 1];
         var comprPalha = [0.80, 1.05, 1.35][ano - 1];
-        g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T1, densPalha, comprPalha, 11 + ano, 0.7), false));
-        g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T1, Math.floor(densPalha * 0.8), 0.70, 111 + ano, 0.9), false));
+        g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T1, densPalha, comprPalha, 11 + ano, 0.7), false));
+        g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T1, Math.floor(densPalha * 0.9), 0.70, 111 + ano, 0.9), false));
         // palhada extra horizontal para reforçar cobertura
-        g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T1, Math.floor(densPalha * 0.6), comprPalha * 0.85, 311 + ano, 0.6), false));
+        g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T1, Math.floor(densPalha * 0.8), comprPalha * 0.85, 311 + ano, 0.6), false));
+        g.add(instanciar(GE.palhaDeitada, 0xf0d080, palhada(T1, Math.floor(densPalha * 0.5), comprPalha * 0.70, 411 + ano, 0.5), false));
 
         return g;
     }
@@ -810,9 +811,9 @@ var Maquete3D = (function () {
             });
 
             // pouca palhada: 0-10% de cobertura
-            g.add(instanciar(GE.palhaDeitada, 0xcbb26a, palhada(T2, 140, 0.65, 221, 0.7), false));
+            g.add(instanciar(GE.palhaDeitada, 0xe0c070, palhada(T2, 210, 0.70, 221, 0.7), false));
             // palhada de transição bem fina
-            g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T2, 100, 0.45, 1221, 0.8), false));
+            g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T2, 150, 0.50, 1221, 0.8), false));
         } else {
             // contorno: fileiras seguem as curvas de nível dos morros
             // soja (safra) em anéis internos e milho (safrinha) em anéis externos, para não parecer plantio misturado
@@ -848,10 +849,11 @@ var Maquete3D = (function () {
 
             if (ano === 2) {
                 // palhada intermediária (~40%)
-                g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T2, 540, 0.95, 222, 0.8), false));
-                g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T2, 330, 0.6, 1222, 0.9), false));
+                g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T2, 810, 1.00, 222, 0.8), false));
+                g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T2, 495, 0.65, 1222, 0.9), false));
                 // palhada extra deitada
-                g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T2, 360, 0.85, 2222, 0.6), false));
+                g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T2, 540, 0.90, 2222, 0.6), false));
+                g.add(instanciar(GE.palhaDeitada, 0xf0d080, palhada(T2, 400, 0.82, 4222, 0.5), false));
             } else {
                 // ano 3: braquiária densa fora dos morros (mantém separação soja/milho)
                 var braq = [];
@@ -867,10 +869,11 @@ var Maquete3D = (function () {
                 }
                 g.add(instanciar(GE.braquiaria, 0x3a8f3a, braq, true));
                 // palhada densa (>90%)
-                g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T2, 1350, 1.35, 223, 0.9), false));
-                g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T2, 750, 0.70, 1223, 1.0), false));
+                g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T2, 2025, 1.45, 223, 0.9), false));
+                g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T2, 1125, 0.75, 1223, 1.0), false));
                 // camada extra de palhada bem deitada para cobertura total
-                g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T2, 900, 1.20, 3223, 0.6), false));
+                g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T2, 1350, 1.30, 3223, 0.6), false));
+                g.add(instanciar(GE.palhaDeitada, 0xf0d080, palhada(T2, 1010, 1.15, 4223, 0.5), false));
             }
         }
         return g;
@@ -906,9 +909,10 @@ var Maquete3D = (function () {
             }
             g.add(instanciar(GE.crotalaria, 0xf4d03f, flores, true));
             // pouca palhada no primeiro ano de transição
-            g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 300, 0.80, 331, 0.7), false));
+            g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T3, 450, 0.85, 331, 0.7), false));
             // palhada de transição
-            g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T3, 210, 0.55, 1331, 0.8), false));
+            g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T3, 315, 0.60, 1331, 0.8), false));
+            g.add(instanciar(GE.palhaDeitada, 0xf0d080, palhada(T3, 300, 0.72, 4331, 0.5), false));
         } else if (ano === 2) {
             // soja + milheto + trigo em fileiras intercaladas
             var soja2 = [], milheto = [], trigo2 = [];
@@ -929,10 +933,11 @@ var Maquete3D = (function () {
             g.add(instanciar(GE.trigo, 0xd9b64e, trigo2, true));
             g.add(instanciar(GE.milho, 0xc7c46a, milheto, true));
             // palhada intermediária
-            g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 630, 1.10, 332, 0.8), false));
-            g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T3, 390, 0.65, 1332, 0.9), false));
+            g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T3, 945, 1.15, 332, 0.8), false));
+            g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T3, 585, 0.70, 1332, 0.9), false));
             // palhada extra deitada
-            g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 420, 1.0, 2332, 0.6), false));
+            g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T3, 630, 1.05, 2332, 0.6), false));
+            g.add(instanciar(GE.palhaDeitada, 0xf0d080, palhada(T3, 500, 0.92, 4332, 0.5), false));
         } else {
             // consórcio braquiária-milho: milho em fileiras com braquiária entrelinhas
             var milho3 = [];
@@ -943,10 +948,11 @@ var Maquete3D = (function () {
             }
             g.add(instanciar(GE.milho, 0x6a9a3a, milho3, true));
             // palhada densa característica do sistema avançado
-            g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 1200, 1.40, 333, 0.9), false));
-            g.add(instanciar(GE.palhaCurta, 0xcbb26a, palhada(T3, 675, 0.72, 1333, 1.0), false));
+            g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T3, 1800, 1.50, 333, 0.9), false));
+            g.add(instanciar(GE.palhaCurta, 0xe0c070, palhada(T3, 1010, 0.78, 1333, 1.0), false));
             // palhada extra bem horizontal para reforçar cobertura
-            g.add(instanciar(GE.palhaDeitada, 0xd9c27e, palhada(T3, 800, 1.25, 2333, 0.6), false));
+            g.add(instanciar(GE.palhaDeitada, 0xeed090, palhada(T3, 1200, 1.35, 2333, 0.6), false));
+            g.add(instanciar(GE.palhaDeitada, 0xf0d080, palhada(T3, 900, 1.18, 4333, 0.5), false));
         }
         return g;
     }

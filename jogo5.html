@@ -265,6 +265,23 @@
         .ano-btn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
         .ano-btn:disabled:active { transform: none; }
         #btn-visita { margin-top: 12px; }
+        #btn-visita-zero { padding: 8px 12px; font-size: 14px; opacity: 0.8; margin-left: 8px; }
+        .cheia #visita-caixa {
+            position: absolute; top: 112px; left: 50%; transform: translateX(-50%);
+            margin: 0; z-index: 10;
+        }
+        .cheia #btn-visita { margin-top: 0; }
+        #visita-ctrl {
+            display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 12; gap: 8px; align-items: center;
+        }
+        #cena3d.visita #visita-ctrl { display: flex; }
+        .vctrl { padding: 8px 14px; font-size: 14px; }
+        .vctrl-icone { padding: 8px 11px; opacity: 0.85; }
+        .visita-placar {
+            background: rgba(255, 255, 255, 0.92); border-radius: 999px;
+            padding: 5px 10px; font-size: 12px; font-weight: 700; color: #2f4a23;
+        }
         .ficha-corpo h3 { margin: 10px 0 4px; color: var(--verde-escuro); font-size: 1.05em; }
         .ficha-corpo p { margin: 6px 0; }
         .ficha-sbc {
@@ -320,7 +337,10 @@
             <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">🌳 Ano 3<small>Sistema consolidado</small></button>
         </div>
         <p class="dica-hud">💡 Gire a fazenda com o dedo ou o mouse, toque nos pontos e veja o manejo evoluir do Ano 1 ao Ano 3.</p>
-        <button class="botao neutro" id="btn-visita" type="button" onclick="iniciarVisitaGuiada()">🧭 Fazer a visita guiada</button>
+        <div id="visita-caixa">
+            <button class="botao neutro" id="btn-visita" type="button" onclick="iniciarVisitaGuiada()">🧭 Fazer a visita guiada</button>
+            <button class="botao neutro" id="btn-visita-zero" type="button" onclick="visitaDoInicio()" title="Retomar do início" aria-label="Retomar do início" style="display:none">⟲</button>
+        </div>
     </div>
 
     <!-- A super maquete 3D -->
@@ -329,6 +349,13 @@
             <button class="btn-acao btn-pan" id="btn-pan" type="button" title="Mover a maquete" aria-label="Mover a maquete">✥</button>
             <button class="btn-acao btn-cheia" id="btn-cheia" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button>
             <div id="marcadores"></div>
+            <div id="visita-ctrl">
+                <button class="botao neutro vctrl" type="button" onclick="visitaVoltar()" title="Voltar etapa">⏮ Voltar</button>
+                <button class="botao neutro vctrl" type="button" onclick="visitaAdiantar()" title="Continuar a visita">Continuar ▸</button>
+                <button class="botao neutro vctrl vctrl-icone" type="button" onclick="visitaReiniciar()" title="Retomar do início" aria-label="Retomar do início">⟲</button>
+                <button class="botao neutro vctrl vctrl-icone" type="button" onclick="encerrarVisita()" title="Encerrar a visita">✕</button>
+                <span class="visita-placar" id="visita-placar">1/12</span>
+            </div>
             <div class="dica-3d" id="dica-3d">🖱️ Arraste para girar · roda/pinça para zoom</div>
         </div>
     </div>
@@ -677,17 +704,21 @@
             { id: "appd", ano: 3 }, { id: "appp", ano: 3 }, { id: "rl", ano: 3 },
             { id: "vacas", ano: 3 }, { id: "bio", ano: 3 }, { id: "sede", ano: 3 }
         ];
-        var visitaPasso = -1, visitaTimer = null;
+        var VISITA_VOO = 1.4, VISITA_LEITURA = 7000; // voo mais longe e leitura mais calma
+        var visitaPasso = -1, visitaPassoSalvo = -1, visitaTimer = null;
 
         function iniciarVisitaGuiada() {
             if (visitaPasso >= 0) { encerrarVisita(); return; }
             document.getElementById("btn-visita").textContent = "✕ Encerrar a visita";
-            avancarVisita();
+            document.getElementById("btn-visita-zero").style.display = "none";
+            irParaPasso(visitaPassoSalvo >= 0 ? visitaPassoSalvo : 0);
         }
 
-        function avancarVisita() {
-            visitaPasso++;
-            if (visitaPasso >= ROTEIRO.length) { encerrarVisita(); return; }
+        function avancarVisita() { irParaPasso(visitaPasso + 1); }
+
+        function irParaPasso(i) {
+            visitaPasso = i;
+            if (i >= ROTEIRO.length) { encerrarVisita(); return; }
             var passo = ROTEIRO[visitaPasso];
             Maquete3D.travarVisita(true);
             cena3d.classList.add("visita");
@@ -698,21 +729,46 @@
             atualizarHud();
             document.getElementById("barra-rotulo").textContent =
                 "🧭 Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
-            Maquete3D.aproximar(passo.id, 1.1);
+            document.getElementById("visita-placar").textContent = (visitaPasso + 1) + "/" + ROTEIRO.length;
+            Maquete3D.aproximar(passo.id, VISITA_VOO);
             window.clearTimeout(visitaTimer);
             visitaTimer = window.setTimeout(function () {
                 abrirFicha(passo.id);
-                visitaTimer = window.setTimeout(avancarVisita, 4200);
+                visitaTimer = window.setTimeout(avancarVisita, VISITA_LEITURA);
             }, 1150);
+        }
+
+        function visitaVoltar() {
+            if (visitaPasso >= 0) irParaPasso(Math.max(0, visitaPasso - 1));
+        }
+
+        function visitaAdiantar() {
+            if (visitaPasso >= 0) irParaPasso(visitaPasso + 1);
+        }
+
+        function visitaReiniciar() {
+            if (visitaPasso >= 0) irParaPasso(0);
+        }
+
+        function visitaDoInicio() {
+            if (visitaPasso >= 0) { visitaReiniciar(); return; }
+            visitaPassoSalvo = -1;
+            iniciarVisitaGuiada();
         }
 
         function encerrarVisita() {
             window.clearTimeout(visitaTimer);
+            var terminou = visitaPasso >= ROTEIRO.length; // chegou ao fim (via adiantar)?
+            visitaPassoSalvo = terminou ? -1 : visitaPasso;
             visitaPasso = -1;
             Maquete3D.travarVisita(false);
             cena3d.classList.remove("visita");
             [1, 2, 3].forEach(function (n) { document.getElementById("ano-" + n).disabled = false; });
-            document.getElementById("btn-visita").textContent = "🧭 Fazer a visita guiada";
+            document.getElementById("btn-visita").textContent = terminou
+                ? "🧭 Fazer a visita guiada"
+                : "🧭 Continuar a visita";
+            document.getElementById("btn-visita-zero").style.display =
+                terminou ? "none" : "inline-block";
             atualizarHud();
         }
 
@@ -721,12 +777,15 @@
         var anoSeletor = document.getElementById("ano-seletor");
         var ficha = document.getElementById("ficha");
         var fichaPai = ficha.parentNode, fichaProx = ficha.nextSibling;
+        var visitaCaixa = document.getElementById("visita-caixa");
+        var vCaiPai = visitaCaixa.parentNode, vCaiProx = visitaCaixa.nextSibling;
         function aoMudarTela() {
             var ehCheia = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
             cena3d.classList.toggle("cheia", ehCheia);
             // na tela cheia, ano-seletor e ficha precisam morar DENTRO da cena p/ ficarem visíveis
             if (ehCheia) {
                 cena3d.appendChild(anoSeletor);
+                cena3d.appendChild(visitaCaixa); // botões Continuar/retomar tb funcionam em tela cheia
                 if (fichaAberta && ficha.parentNode !== cena3d) cena3d.appendChild(ficha);
                 // tenta travar em paisagem (Android/Chrome; iPad não suporta e fica em retrato sem girar)
                 if (screen.orientation && screen.orientation.lock) {
@@ -738,6 +797,7 @@
             } else {
                 fichaPai.insertBefore(anoSeletor, fichaProx);
                 if (ficha.parentNode === cena3d) fichaPai.insertBefore(ficha, fichaProx);
+                vCaiPai.insertBefore(visitaCaixa, vCaiProx);
             }
             setTimeout(function () {
                 if (typeof Maquete3D.redimensionar === "function") Maquete3D.redimensionar();

@@ -1600,9 +1600,9 @@ var Maquete3D = (function () {
         var dx = p.x / (ILHA_W / 2), dz = p.z / (ILHA_D / 2);
         var afastar = Math.max(1, Math.sqrt(dx * dx + dz * dz));
         var camAte = new THREE.Vector3(
-            p.x + (dx / afastar) * 5.2,
-            altura(p.x, p.z) + p.h * 0.55 + 3.9,
-            p.z + (dz / afastar) * 5.2
+            p.x + (dx / afastar) * 8.6,
+            altura(p.x, p.z) + p.h * 0.55 + 5.2,
+            p.z + (dz / afastar) * 8.6
         );
         voo = {
             t0: tGlobal, dur: dur || 1.1,

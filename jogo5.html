@@ -697,6 +697,21 @@
             }
         });
 
+        /* captura de visao p/ afinar a visita: duplo toque na maquete (ou tecla C)
+           copia "cam: [...], alvo: [...]" — os numeros vao direto pro roteiro */
+        function copiarVisao() {
+            var v = Maquete3D.visao();
+            if (!v) return;
+            var txt = "cam: [" + v.cam.map(function (n) { return Math.round(n * 100) / 100; }).join(", ") +
+                "], alvo: [" + v.alvo.map(function (n) { return Math.round(n * 100) / 100; }).join(", ") + "]";
+            document.getElementById("dica-3d").textContent = "📋 " + txt;
+            try { navigator.clipboard.writeText(txt); } catch (e) {}
+        }
+        cena3d.addEventListener("dblclick", copiarVisao);
+        window.addEventListener("keydown", function (e) {
+            if (e.key === "c" || e.key === "C") copiarVisao();
+        });
+
         /* ---------- visita guiada ---------- */
         // Roteiro: talhões em Anos 1-2-3 (evolucao completa); áreas ambientais/MRV no Ano 3.
         // z = distancia da tomada, y = altura, i = 1 chega pelo lado oposto (usado nos pontos das beiras).
@@ -740,7 +755,11 @@
             document.getElementById("barra-rotulo").textContent =
                 "🧭 Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
             document.getElementById("visita-placar").textContent = (visitaPasso + 1) + "/" + ROTEIRO.length;
-            Maquete3D.aproximar(passo.id, VISITA_VOO, passo.z, passo.i === 1, passo.y);
+            if (passo.cam) {
+                Maquete3D.voarPara(passo.cam, passo.alvo, VISITA_VOO);
+            } else {
+                Maquete3D.aproximar(passo.id, VISITA_VOO, passo.z, passo.i === 1, passo.y);
+            }
             document.body.classList.add("visita");
             visitaPausada = false;
             document.getElementById("visita-continua").textContent = "⏸ Pausar";
@@ -772,6 +791,7 @@
                 window.clearTimeout(visitaTimer);
                 clearInterval(visitaCrono);
                 visitaSobra = Math.max(1500, visitaFim - Date.now());
+                Maquete3D.travarControles(false); // pausado = livre para enquadrar a vista
                 if (visitaFichaPendente) {
                     abrirFicha(ROTEIRO[visitaPasso].id);
                     visitaFichaPendente = false;
@@ -784,6 +804,7 @@
                 visitaFim = Date.now() + visitaSobra;
                 visitaCrono = window.setInterval(visitaCronometro, 250);
                 visitaTimer = window.setTimeout(avancarVisita, visitaSobra);
+                Maquete3D.travarControles(true);
             }
         }
 

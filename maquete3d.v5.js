@@ -1616,6 +1616,28 @@ var Maquete3D = (function () {
         return true;
     }
 
+    /* vaiah direto p/ uma tomada manual (vetores [x,y,z]); usado pela copia de visao */
+    function voarPara(cam, alvo, dur) {
+        if (!camera || !controls) return false;
+        voo = {
+            t0: tGlobal, dur: dur || 1.4,
+            camDe: camera.position.clone(),
+            camAte: new THREE.Vector3(cam[0], cam[1], cam[2]),
+            alvoDe: controls.target.clone(),
+            alvoAte: new THREE.Vector3(alvo[0], alvo[1], alvo[2])
+        };
+        return true;
+    }
+
+    /* devolve a tomada atual (posicao da camera + alvo do giro) */
+    function visao() {
+        if (!camera || !controls) return null;
+        return {
+            cam: [camera.position.x, camera.position.y, camera.position.z],
+            alvo: [controls.target.x, controls.target.y, controls.target.z]
+        };
+    }
+
     function travarControles(travar) {
         if (controls) controls.enabled = !travar;
     }
@@ -1886,6 +1908,8 @@ var Maquete3D = (function () {
         setPan: setPan,
         setInspecao: setInspecao,
         aproximar: aproximar,
+        voarPara: voarPara,
+        visao: visao,
         travarControles: travarControles,
         pausarRotacao: function () { if (pausarRotacao) pausarRotacao(); },
         travarVisita: function (travar) {

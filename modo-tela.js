@@ -34,6 +34,8 @@
 
     var estilo = document.createElement("style");
     estilo.textContent =
+        "body.modo-celular{zoom:1.25;}" +
+        "body.modo-tv{zoom:1.35;}" +
         "#sbc-modos{position:fixed;top:8px;right:8px;z-index:80;display:flex;gap:2px;" +
         "background:rgba(255,255,255,0.9);border:2px solid #bcd9c2;border-radius:999px;" +
         "padding:3px;box-shadow:0 2px 0 rgba(27,77,42,0.18);font-family:inherit;}" +

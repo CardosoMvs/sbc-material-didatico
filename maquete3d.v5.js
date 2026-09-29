@@ -831,20 +831,28 @@ var Maquete3D = (function () {
             // soja (safra) em anéis internos e milho (safrinha) em anéis externos, para não parecer plantio misturado
             MORROS.forEach(function (m, mi) {
                 var aneis = aneisContorno(m, m.sz * (ano === 2 ? 1.6 : 1.55));
-                var soja = [], milho = [];
+                // soja (safra) em anéis internos; Ano 2: trigo + aveia em anéis externos; Ano 3: milho (safrinha) externo
+                var geoCereal = ano === 2 ? GE.trigo : GE.milho;
+                var corCereal = ano === 2 ? 0xd9b64e : 0x7cb342;
+                var soja = [], cereal = [], aveia = [];
                 var raioCorte = m.sz * 0.85;
                 aneis.forEach(function (it) {
                     var dx = it.p[0] - m.cx, dz = it.p[2] - m.cz;
                     var r = Math.sqrt(dx * dx / (m.sx * m.sx) + dz * dz / (m.sz * m.sz));
                     if (r < raioCorte) soja.push({ p: it.p, s: [escSoja2, escSoja2, escSoja2] });
-                    else milho.push({ p: it.p, s: [0.85, escMilho2, 0.85] });
+                    else if (ano === 2) {
+                        // trigo dourado e aveia mais clara em anéis alternados
+                        (Math.floor(r * 2) % 2 ? aveia : cereal).push({ p: it.p, s: [0.85, escMilho2, 0.85] });
+                    }
+                    else cereal.push({ p: it.p, s: [0.85, escMilho2, 0.85] });
                 });
                 g.add(instanciar(GE.soja, 0x5fa84c, soja, true));
-                g.add(instanciar(GE.milho, 0x7cb342, milho, true));
+                g.add(instanciar(geoCereal, corCereal, cereal, true));
+                if (aveia.length) g.add(instanciar(GE.trigo, 0xb7c48a, aveia, true));
             });
-            // fora dos morros: metade do terreno em soja, metade em milho
-            var foraSoja = [], foraMilho = [];
-            for (var z = T2.z0 + 0.4; z <= T2.z1 - 0.4; z += 0.8) {
+            // fora dos morros: metade do terreno em soja, metade em cereais (trigo+aveia no Ano 2, milho no Ano 3)
+            var foraSoja = [], foraTrigo = [], foraAveia = [], foraMilho = [];
+            for (var z = T2.z0 + 0.4, faixa = 0; z <= T2.z1 - 0.4; z += 0.8, faixa++) {
                 for (var x = T2.x0 + 0.4; x <= T2.x1 - 0.4; x += 0.45) {
                     var perto = MORROS.some(function (m2) {
                         var dx = x - m2.cx, dz = z - m2.cz;
@@ -853,11 +861,17 @@ var Maquete3D = (function () {
                     if (perto) continue;
                     var zz = z + Math.sin(x * 0.5 + z) * 0.35;
                     if (z < meioZ2) foraSoja.push({ p: [x, altura(x, zz), zz], s: [escSoja2, escSoja2, escSoja2] });
+                    else if (ano === 2) (faixa % 2 ? foraAveia : foraTrigo).push({ p: [x, altura(x, zz), zz], s: [0.85, 1.0, 0.85] });
                     else foraMilho.push({ p: [x, altura(x, zz), zz], s: [0.85, escMilho2, 0.85] });
                 }
             }
             g.add(instanciar(GE.soja, 0x5fa84c, foraSoja, true));
-            g.add(instanciar(GE.milho, 0x7cb342, foraMilho, true));
+            if (ano === 2) {
+                // Ano 2: trigo dourado e aveia mais clara em faixas alternadas
+                g.add(instanciar(GE.trigo, 0xd9b64e, foraTrigo, true));
+                g.add(instanciar(GE.trigo, 0xb7c48a, foraAveia, true));
+            }
+            else g.add(instanciar(GE.milho, 0x7cb342, foraMilho, true));
 
             if (ano === 2) {
                 // palhada intermediária (~40%)
@@ -1765,9 +1779,19 @@ var Maquete3D = (function () {
 
         controls = orbitControls;
         var inspecaoAtiva = false;
-        renderer.domElement.addEventListener("pointerdown", function () {
-            if (controls) controls.autoRotate = false;
-        });
+        // modo tração (estande): sem interação por ~18s, a maquete volta a girar sozinha
+        var tInativo = null;
+        function pausarRotacao() {
+            orbitControls.autoRotate = false;
+            clearTimeout(tInativo);
+            tInativo = setTimeout(function () {
+                if (!inspecaoAtiva && !document.hidden) orbitControls.autoRotate = true;
+            }, 18000);
+        }
+        pausarRotacao();
+        renderer.domElement.addEventListener("pointerdown", pausarRotacao);
+        renderer.domElement.addEventListener("pointerup", pausarRotacao);
+        renderer.domElement.addEventListener("wheel", pausarRotacao, { passive: true });
 
         gCena = new THREE.Group(); gAno = new THREE.Group(); gVida = new THREE.Group();
         scene.add(gCena); scene.add(gAno); scene.add(gVida);

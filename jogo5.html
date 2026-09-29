@@ -87,11 +87,27 @@
             aspect-ratio: auto;
             border-radius: 0;
         }
-        #cena3d.cheia.paisagem {
-            width: 100vh;
-            height: 100vw;
-            transform: rotate(90deg);
-            transform-origin: center center;
+        /* ---------- overlays funcionais DENTRO da cena na tela cheia ---------- */
+        .cheia .ano-seletor {
+            position: absolute;
+            top: 58px;
+            left: 12px;
+            right: 62px;
+            z-index: 10;
+            margin: 0;
+        }
+        .cheia .ano-btn { padding: 8px 4px 7px; font-size: 0.95em; }
+        .cheia .ano-btn small { display: none; }
+        .cheia .ficha {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            z-index: 20;
+            max-width: none;
+            max-height: 62%;
+            overflow-y: auto;
+            margin: 0;
         }
         #cena3d:active { cursor: grabbing; }
         #cena3d canvas { display: block; }
@@ -276,7 +292,7 @@
             <div class="barra-preenchimento" id="barra-progresso" style="width:0%"></div>
             <div class="barra-rotulo" id="barra-rotulo">Explore a fazenda!</div>
         </div>
-        <div class="ano-seletor">
+        <div class="ano-seletor" id="ano-seletor">
             <button class="ano-btn ativo" id="ano-1" onclick="trocarAno(1)">🌱 Ano 1<small>Solo exposto · sem contorno</small></button>
             <button class="ano-btn" id="ano-2" onclick="trocarAno(2)">🌿 Ano 2<small>Contorno · mais cobertura</small></button>
             <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">🌳 Ano 3<small>Sistema consolidado</small></button>
@@ -545,6 +561,7 @@
                 SBCH.som("clique");
             }
             document.getElementById("ficha").classList.remove("oculto");
+            if (cena3d.classList.contains("cheia") && ficha.parentNode !== cena3d) cena3d.appendChild(ficha);
             renderFicha(anoAtual);
             if (nova) document.getElementById("ficha").scrollIntoView({ behavior: "smooth", block: "nearest" });
             if (descCount === 10 && !finalizado) setTimeout(finalizar, 700);
@@ -629,14 +646,26 @@
 
         /* ---------- tela cheia ---------- */
         var btnCheia = document.getElementById("btn-cheia");
+        var anoSeletor = document.getElementById("ano-seletor");
+        var ficha = document.getElementById("ficha");
+        var fichaPai = ficha.parentNode, fichaProx = ficha.nextSibling;
         function aoMudarTela() {
             var ehCheia = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
             cena3d.classList.toggle("cheia", ehCheia);
-            // em telas estreitas (mobile), gira 90° para aproveitar modo paisagem
-            if (ehCheia && window.innerWidth < window.innerHeight) {
-                cena3d.classList.add("paisagem");
+            // na tela cheia, ano-seletor e ficha precisam morar DENTRO da cena p/ ficarem visíveis
+            if (ehCheia) {
+                cena3d.appendChild(anoSeletor);
+                if (fichaAberta && ficha.parentNode !== cena3d) cena3d.appendChild(ficha);
+                // tenta travar em paisagem (Android/Chrome; iPad não suporta e fica em retrato sem girar)
+                if (screen.orientation && screen.orientation.lock) {
+                    try {
+                        var tq = screen.orientation.lock("landscape");
+                        if (tq && tq["catch"]) tq["catch"](function () {});
+                    } catch (e) {}
+                }
             } else {
-                cena3d.classList.remove("paisagem");
+                fichaPai.insertBefore(anoSeletor, fichaProx);
+                if (ficha.parentNode === cena3d) fichaPai.insertBefore(ficha, fichaProx);
             }
             setTimeout(function () {
                 if (typeof Maquete3D.redimensionar === "function") Maquete3D.redimensionar();

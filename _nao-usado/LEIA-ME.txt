@@ -1,0 +1,22 @@
+NÃO UTILIZADO — ideia do "Sojinho 3D" (mascote) abortada em 29/09/2025
+=====================================================================
+
+Conteúdo:
+- sojinho3d.js       — código que montava o mascote 3D (não é mais chamado
+                       por nenhuma página; as tags <script> foram removidas)
+- sojinho.svg        — mascote 2D que servia de fallback
+- sojinho-teste.html, sojinho-teste2.html — páginas de teste
+- farmer_quaternius.glb — modelo 3D "Farmer" (Quaternius, licença CC0)
+- GLTFLoader.novo.js — loader alternativo da tentativa
+
+Por que foi abortado:
+- No three.js r128 usado pelo site, o modelo carrega e renderiza, mas
+  QUALQUER troca de material nas malhas skinned (necessária para pintar
+  o tema SBC) fazia o personagem sumir — só a sombra desenhava.
+  Sem a pintura ele aparece todo escuro/preto.
+
+Se um dia voltar a ideia: repensar primeiro com three.js em versão
+recente (r150+), testando a troca de material antes de pintar o tema.
+
+Obs.: os arquivos de teste referenciam three.min.js e modelos/GLTFLoader.js
+caminhos acima da pasta — ao executá-los a partir daqui, ajuste os caminhos.

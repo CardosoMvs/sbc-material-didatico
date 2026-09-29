@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Teste 2 Sojinho</title>
+<style>body{margin:0;} #c{position:relative;width:420px;height:460px;border:2px solid blue;} pre{margin:4px;font:12px monospace;}</style>
+</head>
+<body>
+<div id="c"></div>
+<pre id="log"></pre>
+<script>
+var LOG = [];
+function nota(t) { LOG.push(String(t)); document.getElementById("log").textContent = LOG.join("\n"); }
+</script>
+<script src="three.min.js"></script>
+<script src="modelos/GLTFLoader.js"></script>
+<script>
+nota("THREE " + THREE.REVISION);
+var larg = 420, alt = 460;
+var cena = new THREE.Scene();
+var cam = new THREE.PerspectiveCamera(34, larg / alt, 0.1, 300);
+var ren = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+ren.setSize(larg, alt);
+document.getElementById("c").appendChild(ren.domElement);
+
+cena.add(new THREE.HemisphereLight(0xffffff, 0xaabb99, 1.0));
+var dl = new THREE.DirectionalLight(0xffffff, 0.7);
+dl.position.set(2, 3, 2);
+cena.add(dl);
+
+new THREE.GLTFLoader().load("modelos/farmer_quaternius.glb", function (gltf) {
+    var cara = gltf.scene;
+    cara.updateMatrixWorld(true);
+    var pele = [];
+    cara.traverse(function (o) {
+        if (o.isSkinnedMesh) {
+            pele.push(o.name);
+            var mat = new THREE.MeshBasicMaterial({ color: 0xff0000, skinning: true });
+            o.material = mat;
+            o.frustumCulled = false;
+        }
+    });
+    nota("skinned: " + pele.join(", "));
+    var caixa = new THREE.Box3().setFromObject(cara);
+    var h = caixa.max.y - caixa.min.y;
+    var c = caixa.getCenter(new THREE.Vector3());
+    nota("bbox h=" + h.toFixed(2) + " c=" + c.x.toFixed(2) + "," + c.y.toFixed(2) + "," + c.z.toFixed(2));
+    cam.position.set(c.x, c.y, c.z + h * 1.9);
+    cam.lookAt(c);
+    // um "boneco de prova" pra calibrar a tela:
+    var teste = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+    teste.position.set(0, c.y, 0);
+    cena.add(teste);
+    cena.add(cara);
+    ren.render(cena, cam);
+    nota("quadro unico desenhado");
+    // depois de 1s, tenta de novo com animacao
+    if (gltf.animations.length) {
+        var mixer = new THREE.AnimationMixer(cara);
+        var acao = mixer.clipAction(gltf.animations[gltf.animations.length - 1]);
+        acao.play();
+        nota("anims: " + gltf.animations.map(function (a) { return a.name; }).join(" | "));
+        var t0 = Date.now();
+        (function laco() {
+            requestAnimationFrame(laco);
+            mixer.update(0.016);
+            ren.render(cena, cam);
+            if (Date.now() - t0 > 1500) nota("quadros com anim rodando ok");
+        })();
+    }
+}, undefined, function (e) { nota("FALHA CARGA: " + e); });
+</script>
+</body>
+</html>

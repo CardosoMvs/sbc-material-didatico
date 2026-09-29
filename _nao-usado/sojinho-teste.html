@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Teste Sojinho modulo</title>
+<style>body{margin:0;background:repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0/40px 40px;font:14px monospace;} #sojinho-3d{position:relative;width:420px;height:460px;margin:20px;border:2px dashed lime;} pre{position:fixed;top:520px;left:20px;max-width:720px;white-space:pre-wrap;}</style>
+</head>
+<body>
+<div id="sojinho-3d"></div>
+<pre id="log"></pre>
+<script>
+var LOG = [];
+function nota(t) { LOG.push(String(t)); document.getElementById("log").textContent = LOG.join("\n"); }
+window.onerror = function (m, s, l) { nota("ERRO " + m + " @" + l); return false; };
+</script>
+<script src="three.min.js"></script>
+<script src="modelos/GLTFLoader.js"></script>
+<script>nota("THREE " + THREE.REVISION);</script>
+<script src="sojinho3d.js"></script>
+<script>nota("modulo montado");</script>
+</body>
+</html>

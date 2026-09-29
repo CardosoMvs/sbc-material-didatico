@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 470">
+    <!-- sombra no chao -->
+    <ellipse cx="185" cy="446" rx="92" ry="13" fill="rgba(27,74,42,0.14)"/>
+
+    <!-- pernas com remendos de grão de soja -->
+    <rect x="140" y="298" width="80" height="112" rx="20" fill="#275c33"/>
+    <ellipse cx="155" cy="338" rx="8" ry="12" fill="#d9b64e" stroke="#b58f2e" stroke-width="2"/>
+    <ellipse cx="202" cy="360" rx="8" ry="12" fill="#d9b64e" stroke="#b58f2e" stroke-width="2"/>
+    <ellipse cx="199" cy="326" rx="6" ry="9" fill="#e8d48a" stroke="#b58f2e" stroke-width="2"/>
+    <rect x="137" y="392" width="40" height="9" rx="4" fill="#1d4427"/>
+    <rect x="183" y="392" width="40" height="9" rx="4" fill="#1d4427"/>
+    <rect x="136" y="399" width="42" height="30" rx="10" fill="#5d4032"/>
+    <rect x="182" y="399" width="42" height="30" rx="10" fill="#5d4032"/>
+    <rect x="130" y="422" width="50" height="8" rx="4" fill="#3a2a1f"/>
+    <rect x="178" y="422" width="52" height="8" rx="4" fill="#3a2a1f"/>
+
+    <!-- camisa amarela listrada -->
+    <rect x="122" y="200" width="116" height="128" rx="26" fill="#f7e13a"/>
+    <clipPath id="camisa">
+        <rect x="122" y="200" width="116" height="128" rx="26"/>
+    </clipPath>
+    <g clip-path="url(#camisa)" fill="#eed42e">
+        <rect x="118" y="218" width="124" height="7"/>
+        <rect x="118" y="246" width="124" height="7"/>
+        <rect x="118" y="274" width="124" height="7"/>
+        <rect x="118" y="302" width="124" height="7"/>
+    </g>
+
+    <!-- jardineira verde SBC -->
+    <rect x="146" y="238" width="68" height="88" rx="9" fill="#2e7a3a"/>
+    <rect x="158" y="256" width="44" height="30" rx="6" fill="#3f9448"/>
+    <rect x="148" y="212" width="13" height="32" rx="5" fill="#2e7a3a"/>
+    <rect x="199" y="212" width="13" height="32" rx="5" fill="#2e7a3a"/>
+    <circle cx="154.5" cy="242" r="4" fill="#f2c400"/>
+    <circle cx="205.5" cy="242" r="4" fill="#f2c400"/>
+
+    <!-- lenco vermelho -->
+    <path d="M180 208 l-17 20 l34 0 z" fill="#d8452e"/>
+    <circle cx="180" cy="212" r="4" fill="#b83a28"/>
+
+    <!-- braco esquerdo aberto -->
+    <path d="M136 222 L58 224" stroke="#f7e13a" stroke-width="26" stroke-linecap="round" fill="none"/>
+    <circle cx="52" cy="224" r="13" fill="#f5c9a2"/>
+
+    <!-- braco direito levantado segurando ramo de soja -->
+    <path d="M236 218 L316 158" stroke="#f7e13a" stroke-width="26" stroke-linecap="round" fill="none"/>
+    <circle cx="320" cy="154" r="13" fill="#f5c9a2"/>
+    <path d="M320 152 q-4 -28 6 -50" stroke="#2c7a3a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="311" cy="112" rx="7" ry="12" fill="#d9b64e" stroke="#b58f2e" stroke-width="2" transform="rotate(-24 311 112)"/>
+    <ellipse cx="330" cy="134" rx="6.5" ry="11" fill="#d9b64e" stroke="#b58f2e" stroke-width="2" transform="rotate(28 330 134)"/>
+    <ellipse cx="336" cy="104" rx="10" ry="6" fill="#4a9c50" transform="rotate(30 336 104)"/>
+
+    <!-- cabeca -->
+    <ellipse cx="128" cy="150" rx="10" ry="11" fill="#f5c9a2"/>
+    <ellipse cx="232" cy="150" rx="10" ry="11" fill="#f5c9a2"/>
+    <ellipse cx="180" cy="124" rx="60" ry="50" fill="#2b2018"/>
+    <ellipse cx="180" cy="152" rx="52" ry="47" fill="#f5c9a2"/>
+    <path d="M132 128 q48 -34 96 0 q-10 16 -48 13 q-38 3 -48 -13 z" fill="#2b2018"/>
+    <circle cx="159" cy="150" r="12" fill="#fff"/>
+    <circle cx="201" cy="150" r="12" fill="#fff"/>
+    <circle cx="161" cy="152" r="5.5" fill="#241a12"/>
+    <circle cx="199" cy="152" r="5.5" fill="#241a12"/>
+    <path d="M148 130 q10 -9 21 -4" stroke="#2b2018" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M191 126 q10 -5 21 4" stroke="#2b2018" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <circle cx="144" cy="167" r="7" fill="#ef9d7d" opacity="0.55"/>
+    <circle cx="216" cy="167" r="7" fill="#ef9d7d" opacity="0.55"/>
+    <rect x="160" y="168" width="40" height="9" rx="3" fill="#fff"/>
+    <path d="M152 166 q27 16 56 0 q-8 24 -28 24 q-20 0 -28 -24 z" fill="#c0392b"/>
+
+    <!-- chapeu de palha com cracha SBC -->
+    <ellipse cx="180" cy="100" rx="96" ry="24" fill="#e2cc96" stroke="#bda06a" stroke-width="4"/>
+    <path d="M124 100 q4 -50 56 -50 q52 0 56 50 z" fill="#dcc48e" stroke="#bda06a" stroke-width="4"/>
+    <rect x="126" y="86" width="108" height="13" fill="#2e7a3a"/>
+    <circle cx="222" cy="72" r="13" fill="#fff" stroke="#2e7a3a" stroke-width="3"/>
+    <text x="222" y="76" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="900" fill="#1d4427">SBC</text>
+</svg>

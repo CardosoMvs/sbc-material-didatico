@@ -29,7 +29,7 @@
         ".tela-modo.aerto{display:flex;}" +
         ".caixa-modo{display:grid;gap:10px;text-align:center;max-width:330px;width:88%;}" +
         ".caixa-modo .sub{margin:6px 0 0;font-size:0.9em;}" +
-        ".btn-modo-fixo{position:fixed;right:6px;top:50%;transform:translateY(-50%);z-index:80;display:none;padding:5px 9px;font-size:1em;opacity:0.78;}" +
+        ".btn-modo-fixo{position:fixed;right:10px;bottom:10px;z-index:80;display:none;padding:6px 12px;font-size:1em;opacity:0.6;border-radius:999px;}" +
         ".btn-modo-fixo.aerto{display:inline-block;}" +
         "body.modo-celular{zoom:1.25;}" +
         "body.modo-tv{zoom:1.35;}";

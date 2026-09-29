@@ -255,8 +255,8 @@ var Maquete3D = (function () {
     /* Talhão 2: erosão → trigo/aveia → soja+milho+braquiária */
     var COR_T2 = [0xa87a55, 0x7aa86a, 0x56a05a];
     var COR_T3 = 0x4f9455;
-    var COR_LEITO_ESQ = [0x5a7a62, 0x5c8a6a, 0x5f9f7e];
-    var COR_RIO_ESQ = [0x7ab8a0, 0x6bb89e, 0x5cb89a];
+    var COR_LEITO_ESQ = [0x6a5a40, 0x6b5f4a, 0x6d6f52];
+    var COR_RIO_ESQ = [0x9a7a45, 0x8f8a58, 0x7a8f60];
     var COR_RIO_DIR = 0x4fb0d8;
 
     function corSolo(x, z, ano, h) {
@@ -1052,7 +1052,7 @@ var Maquete3D = (function () {
         pintarTerreno(ano);
         montarVida(ano);
         if (aguaMatEsq) aguaMatEsq.color.setHex(COR_RIO_ESQ[ano - 1]);
-        if (espumaMatEsq) espumaMatEsq.color.setHex([0x8f7f52, 0x867f5e, 0x8fae9a][ano - 1]);
+        if (espumaMatEsq) espumaMatEsq.color.setHex([0xc9b98e, 0xbeae8c, 0xaabf9e][ano - 1]);
     }
 
     /* ====================== cenário fixo ====================== */

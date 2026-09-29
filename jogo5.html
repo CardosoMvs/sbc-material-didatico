@@ -229,20 +229,42 @@
             color: var(--tinta-suave);
             cursor: pointer;
         }
-        .ficha-anos { display: flex; gap: 6px; margin: 12px 0 4px; }
-        .ficha-tab {
-            padding: 7px 16px;
-            border-radius: 999px;
+        /* linha do tempo da ficha: os 3 anos visíveis de uma vez — tocar leva o ano à cena */
+        .ficha-linha { display: flex; flex-direction: column; gap: 7px; margin: 12px 0 4px; }
+        .ficha-linha-e {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 12px;
             border: 2px solid #cfdccf;
             background: #fff;
             font-family: inherit;
-            font-size: 0.85em;
-            font-weight: 800;
-            color: var(--tinta-suave);
+            text-align: left;
             cursor: pointer;
-            transition: background 0.15s, color 0.15s, border-color 0.15s;
+            transition: background 0.15s, border-color 0.15s, transform 0.08s;
         }
-        .ficha-tab.ativo { background: var(--azul); border-color: var(--azul); color: #fff; }
+        .ficha-linha-e .tag-ano {
+            flex: none;
+            font-size: 0.8em;
+            font-weight: 900;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: #e7f0e3;
+            color: var(--verde-escuro);
+        }
+        .ficha-linha-e .txt { font-weight: 800; color: var(--tinta-suave); }
+        .ficha-linha-e.ativo { border-color: var(--azul); background: #edf4fb; }
+        .ficha-linha-e.ativo .tag-ano { background: var(--azul); color: #fff; }
+        .ficha-linha-e.ativo .txt { color: var(--tinta); }
+        .ficha-linha-e:active { transform: translateY(2px); }
+
+        /* durante a visita guiada: hotspots e controles da cena ficam travados */
+        #cena3d.visita .marcador { pointer-events: none; cursor: default; }
+        #cena3d.visita .btn-pan { display: none; }
+        .ano-btn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+        .ano-btn:disabled:active { transform: none; }
+        #btn-visita { margin-top: 12px; }
         .ficha-corpo h3 { margin: 10px 0 4px; color: var(--verde-escuro); font-size: 1.05em; }
         .ficha-corpo p { margin: 6px 0; }
         .ficha-sbc {
@@ -298,6 +320,7 @@
             <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">🌳 Ano 3<small>Sistema consolidado</small></button>
         </div>
         <p class="dica-hud">💡 Gire a fazenda com o dedo ou o mouse, toque nos pontos e veja o manejo evoluir do Ano 1 ao Ano 3.</p>
+        <button class="botao neutro" id="btn-visita" type="button" onclick="iniciarVisitaGuiada()">🧭 Fazer a visita guiada</button>
     </div>
 
     <!-- A super maquete 3D -->
@@ -317,11 +340,7 @@
             <h2 id="ficha-nome">Elemento</h2>
             <button class="ficha-fechar" id="ficha-fechar" onclick="fecharFicha()" aria-label="Fechar ficha">✕</button>
         </div>
-        <div class="ficha-anos" id="ficha-anos">
-            <button class="ficha-tab" data-fano="1">Ano 1</button>
-            <button class="ficha-tab" data-fano="2">Ano 2</button>
-            <button class="ficha-tab" data-fano="3">Ano 3</button>
-        </div>
+        <div class="ficha-linha" id="ficha-linha"></div>
         <div class="ficha-corpo">
             <h3 id="ficha-titulo">—</h3>
             <p id="ficha-texto">—</p>
@@ -516,6 +535,7 @@
 
         function trocarAno(n) {
             if (n === anoAtual) return;
+            if (visitaPasso >= 0) return; // durante a visita guiada, quem manda nos anos é o roteiro
             anoAtual = n;
             anosVistos[n] = true;
             SBCH.som("clique");
@@ -541,9 +561,11 @@
             document.getElementById("ficha-titulo").textContent = h.anos[ano][0];
             document.getElementById("ficha-texto").textContent = h.anos[ano][1];
             document.getElementById("ficha-sbc").innerHTML = "<strong>Conexão SBC:</strong> " + h.sbc;
-            Array.prototype.forEach.call(document.querySelectorAll(".ficha-tab"), function (tab) {
-                tab.classList.toggle("ativo", +tab.getAttribute("data-fano") === ano);
-            });
+            document.getElementById("ficha-linha").innerHTML = [1, 2, 3].map(function (n) {
+                return '<button type="button" class="ficha-linha-e' + (n === ano ? " ativo" : "") +
+                    '" data-fano="' + n + '"><span class="tag-ano">Ano ' + n + '</span>' +
+                    '<span class="txt">' + h.anos[n][0] + '</span></button>';
+            }).join("");
         }
 
         function abrirFicha(id) {
@@ -563,7 +585,7 @@
             document.getElementById("ficha").classList.remove("oculto");
             if (cena3d.classList.contains("cheia") && ficha.parentNode !== cena3d) cena3d.appendChild(ficha);
             renderFicha(anoAtual);
-            if (nova) document.getElementById("ficha").scrollIntoView({ behavior: "smooth", block: "nearest" });
+            if (nova && visitaPasso < 0) document.getElementById("ficha").scrollIntoView({ behavior: "smooth", block: "nearest" });
             if (descCount === 10 && !finalizado) setTimeout(finalizar, 700);
         }
 
@@ -572,10 +594,11 @@
             document.getElementById("ficha").classList.add("oculto");
         }
 
-        Array.prototype.forEach.call(document.querySelectorAll(".ficha-tab"), function (tab) {
-            tab.addEventListener("click", function () {
-                renderFicha(+tab.getAttribute("data-fano"));
-            });
+        // linha do tempo da ficha: troca o ano da ficha E da maquete em cena
+        document.getElementById("ficha-linha").addEventListener("click", function (e) {
+            if (visitaPasso >= 0) return; // durante a visita guiada, quem manda é o roteiro
+            var etapa = e.target.closest(".ficha-linha-e");
+            if (etapa) trocarAno(+etapa.getAttribute("data-fano"));
         });
 
         /* ---------- final ---------- */
@@ -643,6 +666,55 @@
                 if (typeof Maquete3D.setInspecao === "function") Maquete3D.setInspecao(false);
             }
         });
+
+        /* ---------- visita guiada ---------- */
+        // Roteiro: cada talhão aparece no início e no fim da própria evolução (Anos 1 e 3);
+        // áreas ambientais e MRV no Ano 3, quando o sistema consolidado "premia" a paisagem.
+        var ROTEIRO = [
+            { id: "t1", ano: 1 }, { id: "t1", ano: 3 },
+            { id: "t2", ano: 1 }, { id: "t2", ano: 3 },
+            { id: "t3", ano: 1 }, { id: "t3", ano: 3 },
+            { id: "appd", ano: 3 }, { id: "appp", ano: 3 }, { id: "rl", ano: 3 },
+            { id: "vacas", ano: 3 }, { id: "bio", ano: 3 }, { id: "sede", ano: 3 }
+        ];
+        var visitaPasso = -1, visitaTimer = null;
+
+        function iniciarVisitaGuiada() {
+            if (visitaPasso >= 0) { encerrarVisita(); return; }
+            document.getElementById("btn-visita").textContent = "✕ Encerrar a visita";
+            avancarVisita();
+        }
+
+        function avancarVisita() {
+            visitaPasso++;
+            if (visitaPasso >= ROTEIRO.length) { encerrarVisita(); return; }
+            var passo = ROTEIRO[visitaPasso];
+            Maquete3D.travarVisita(true);
+            cena3d.classList.add("visita");
+            [1, 2, 3].forEach(function (n) { document.getElementById("ano-" + n).disabled = true; });
+            if (passo.ano !== anoAtual) Maquete3D.trocarAno(passo.ano);
+            anoAtual = passo.ano;
+            anosVistos[passo.ano] = true;
+            atualizarHud();
+            document.getElementById("barra-rotulo").textContent =
+                "🧭 Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
+            Maquete3D.aproximar(passo.id, 1.1);
+            window.clearTimeout(visitaTimer);
+            visitaTimer = window.setTimeout(function () {
+                abrirFicha(passo.id);
+                visitaTimer = window.setTimeout(avancarVisita, 4200);
+            }, 1150);
+        }
+
+        function encerrarVisita() {
+            window.clearTimeout(visitaTimer);
+            visitaPasso = -1;
+            Maquete3D.travarVisita(false);
+            cena3d.classList.remove("visita");
+            [1, 2, 3].forEach(function (n) { document.getElementById("ano-" + n).disabled = false; });
+            document.getElementById("btn-visita").textContent = "🧭 Fazer a visita guiada";
+            atualizarHud();
+        }
 
         /* ---------- tela cheia ---------- */
         var btnCheia = document.getElementById("btn-cheia");

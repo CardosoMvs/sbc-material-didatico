@@ -1587,12 +1587,50 @@ var Maquete3D = (function () {
         opts.aoMarcar(dados);
     }
 
+    /* ====================== visita guiada (voo de câmera) ====================== */
+    var voo = null;
+    var tInativo = null;
+    var pausarRotacao = null; // definida no init (depende do OrbitControls local lá)
+
+    /* voa até um ponto de exploração (id do POS); usado pela visita guiada */
+    function aproximar(id, dur) {
+        var p = POS[id];
+        if (!p || typeof p.x !== "number") return false;
+        var alvoAte = new THREE.Vector3(p.x, altura(p.x, p.z) + p.h * 0.55, p.z);
+        var dx = p.x / (ILHA_W / 2), dz = p.z / (ILHA_D / 2);
+        var afastar = Math.max(1, Math.sqrt(dx * dx + dz * dz));
+        var camAte = new THREE.Vector3(
+            p.x + (dx / afastar) * 5.2,
+            altura(p.x, p.z) + p.h * 0.55 + 3.9,
+            p.z + (dz / afastar) * 5.2
+        );
+        voo = {
+            t0: tGlobal, dur: dur || 1.1,
+            camDe: camera.position.clone(), camAte: camAte,
+            alvoDe: controls.target.clone(), alvoAte: alvoAte
+        };
+        return true;
+    }
+
+    function travarControles(travar) {
+        if (controls) controls.enabled = !travar;
+    }
+
     /* ====================== animação ====================== */
     function animar() {
         requestAnimationFrame(animar);
         var dt = Math.min(relogio.getDelta(), 0.05);
         tGlobal += dt;
         controls.update();
+
+        // voo da visita guiada: interpola câmera e alvo com suavização
+        if (voo) {
+            var k = Math.min(1, (tGlobal - voo.t0) / voo.dur);
+            var suave = k < 1 ? k * k * (3 - 2 * k) : 1;
+            camera.position.copy(voo.camDe).lerp(voo.camAte, suave);
+            controls.target.copy(voo.alvoDe).lerp(voo.alvoAte, suave);
+            if (k === 1) voo = null;
+        }
 
         if (drone) {
             drone.position.x = Math.sin(tGlobal * 0.3) * 6.5 + 1;
@@ -1780,14 +1818,13 @@ var Maquete3D = (function () {
         controls = orbitControls;
         var inspecaoAtiva = false;
         // modo tração (estande): sem interação por ~18s, a maquete volta a girar sozinha
-        var tInativo = null;
-        function pausarRotacao() {
+        pausarRotacao = function () {
             orbitControls.autoRotate = false;
             clearTimeout(tInativo);
             tInativo = setTimeout(function () {
                 if (!inspecaoAtiva && !document.hidden) orbitControls.autoRotate = true;
             }, 18000);
-        }
+        };
         pausarRotacao();
         renderer.domElement.addEventListener("pointerdown", pausarRotacao);
         renderer.domElement.addEventListener("pointerup", pausarRotacao);
@@ -1844,6 +1881,9 @@ var Maquete3D = (function () {
         redimensionar: aoRedimensionar,
         setPan: setPan,
         setInspecao: setInspecao,
+        aproximar: aproximar,
+        travarControles: travarControles,
+        pausarRotacao: function () { if (pausarRotacao) pausarRotacao(); },
         info: function () {
             return {
                 fixos: gCena.children.length,

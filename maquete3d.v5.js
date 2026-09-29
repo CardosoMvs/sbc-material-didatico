@@ -1884,6 +1884,10 @@ var Maquete3D = (function () {
         aproximar: aproximar,
         travarControles: travarControles,
         pausarRotacao: function () { if (pausarRotacao) pausarRotacao(); },
+        travarVisita: function (travar) {
+            travarControles(travar);
+            if (travar && pausarRotacao) pausarRotacao();
+        },
         info: function () {
             return {
                 fixos: gCena.children.length,

@@ -1555,7 +1555,7 @@ var Maquete3D = (function () {
         placa("Talhão 2 · Plantio em contorno", (T2.x0 + T2.x1) / 2, T2.z1 + 1.4, 0, 1.1);
         placa("Talhão 3 · Manejo avançado", (T3.x0 + T3.x1) / 2, T3.z1 + 1.4, 0, 1.1);
         placa("APP degradada", -14.5, 6.5, 0.4, 0.9);
-        placa("APP preservada", 15.8, 7.0, -0.35, 0.9);
+        placa("APP preservada", 12.95, 7.05, -0.35, 0.78);
         placa("RL preservada e excedente", 13.5, -9.5, -0.2, 0.95);
     }
 

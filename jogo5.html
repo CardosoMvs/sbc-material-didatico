@@ -276,6 +276,7 @@
             z-index: 12; gap: 8px; align-items: center;
         }
         #cena3d.visita #visita-ctrl { display: flex; }
+        body.visita #ano-seletor { display: none; } /* durante a visita o seletor sai da frente (a barra usa o topo) */
         .vctrl { padding: 8px 14px; font-size: 14px; }
         .vctrl-icone { padding: 8px 11px; opacity: 0.85; }
         .visita-placar {
@@ -351,7 +352,8 @@
             <div id="marcadores"></div>
             <div id="visita-ctrl">
                 <button class="botao neutro vctrl" type="button" onclick="visitaVoltar()" title="Voltar etapa">⏮ Voltar</button>
-                <button class="botao neutro vctrl" type="button" onclick="visitaAdiantar()" title="Continuar a visita">Continuar ▸</button>
+                <button class="botao neutro vctrl" type="button" onclick="pausarContinuarVisita()" id="visita-continua" title="Pausar / Continuar a visita">⏸ Pausar</button>
+                <button class="botao neutro vctrl vctrl-icone" type="button" onclick="visitaAdiantar()" title="Adiantar" aria-label="Adiantar">⏭</button>
                 <button class="botao neutro vctrl vctrl-icone" type="button" onclick="visitaReiniciar()" title="Retomar do início" aria-label="Retomar do início">⟲</button>
                 <button class="botao neutro vctrl vctrl-icone" type="button" onclick="encerrarVisita()" title="Encerrar a visita">✕</button>
                 <span class="visita-placar" id="visita-placar">1/12</span>
@@ -705,7 +707,10 @@
             { id: "vacas", ano: 3 }, { id: "bio", ano: 3 }, { id: "sede", ano: 3 }
         ];
         var VISITA_VOO = 1.4, VISITA_LEITURA = 7000; // voo mais longe e leitura mais calma
+        var VISITA_CHEGADA = 1150; // tempo de voo ate fixar a parada (ms)
         var visitaPasso = -1, visitaPassoSalvo = -1, visitaTimer = null;
+        var visitaPausada = false, visitaFim = 0, visitaSobra = 0;
+        var visitaCrono = null, visitaFichaPendente = false;
 
         function iniciarVisitaGuiada() {
             if (visitaPasso >= 0) { encerrarVisita(); return; }
@@ -731,11 +736,20 @@
                 "🧭 Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
             document.getElementById("visita-placar").textContent = (visitaPasso + 1) + "/" + ROTEIRO.length;
             Maquete3D.aproximar(passo.id, VISITA_VOO);
+            document.body.classList.add("visita");
+            visitaPausada = false;
+            document.getElementById("visita-continua").textContent = "⏸ Pausar";
+            visitaFim = Date.now() + VISITA_CHEGADA + VISITA_LEITURA;
+            visitaFichaPendente = true;
             window.clearTimeout(visitaTimer);
+            clearInterval(visitaCrono);
+            visitaCrono = window.setInterval(visitaCronometro, 250);
+            visitaCronometro();
             visitaTimer = window.setTimeout(function () {
                 abrirFicha(passo.id);
+                visitaFichaPendente = false;
                 visitaTimer = window.setTimeout(avancarVisita, VISITA_LEITURA);
-            }, 1150);
+            }, VISITA_CHEGADA);
         }
 
         function visitaVoltar() {
@@ -744,6 +758,34 @@
 
         function visitaAdiantar() {
             if (visitaPasso >= 0) irParaPasso(visitaPasso + 1);
+        }
+
+        function pausarContinuarVisita() {
+            if (visitaPasso < 0) return;
+            var b = document.getElementById("visita-continua");
+            if (!visitaPausada) {
+                window.clearTimeout(visitaTimer);
+                clearInterval(visitaCrono);
+                visitaSobra = Math.max(1500, visitaFim - Date.now());
+                if (visitaFichaPendente) {
+                    abrirFicha(ROTEIRO[visitaPasso].id);
+                    visitaFichaPendente = false;
+                }
+                visitaPausada = true;
+                b.textContent = "Continuar ▸";
+            } else {
+                visitaPausada = false;
+                b.textContent = "⏸ Pausar";
+                visitaFim = Date.now() + visitaSobra;
+                visitaCrono = window.setInterval(visitaCronometro, 250);
+                visitaTimer = window.setTimeout(avancarVisita, visitaSobra);
+            }
+        }
+
+        function visitaCronometro() {
+            var resta = Math.max(0, Math.ceil((visitaFim - Date.now()) / 1000));
+            document.getElementById("visita-placar").textContent =
+                (visitaPasso + 1) + "/" + ROTEIRO.length + " · " + resta + "s";
         }
 
         function visitaReiniciar() {
@@ -769,6 +811,10 @@
                 : "🧭 Continuar a visita";
             document.getElementById("btn-visita-zero").style.display =
                 terminou ? "none" : "inline-block";
+            clearInterval(visitaCrono);
+            document.body.classList.remove("visita");
+            visitaPausada = false;
+            visitaFichaPendente = false;
             atualizarHud();
         }
 

@@ -1592,17 +1592,18 @@ var Maquete3D = (function () {
     var tInativo = null;
     var pausarRotacao = null; // definida no init (depende do OrbitControls local lá)
 
-    /* voa até um ponto de exploração (id do POS); usado pela visita guiada */
-    function aproximar(id, dur) {
+    /* voa ate um ponto (id do POS); usado pela visita guiada. fator: zoom por parada (1 = padrao) */
+    function aproximar(id, dur, fator) {
         var p = POS[id];
         if (!p || typeof p.x !== "number") return false;
+        var f = (typeof fator === "number" ? fator : 1);
         var alvoAte = new THREE.Vector3(p.x, altura(p.x, p.z) + p.h * 0.55, p.z);
         var dx = p.x / (ILHA_W / 2), dz = p.z / (ILHA_D / 2);
         var afastar = Math.max(1, Math.sqrt(dx * dx + dz * dz));
         var camAte = new THREE.Vector3(
-            p.x + (dx / afastar) * 13.5,
-            altura(p.x, p.z) + p.h * 0.55 + 7.2,
-            p.z + (dz / afastar) * 13.5
+            p.x + (dx / afastar) * 13.5 * f,
+            altura(p.x, p.z) + p.h * 0.55 + 7.2 * f,
+            p.z + (dz / afastar) * 13.5 * f
         );
         voo = {
             t0: tGlobal, dur: dur || 1.1,

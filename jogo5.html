@@ -698,16 +698,18 @@
         });
 
         /* ---------- visita guiada ---------- */
-        // Roteiro: cada talhão aparece no início e no fim da própria evolução (Anos 1 e 3);
-        // áreas ambientais e MRV no Ano 3, quando o sistema consolidado "premia" a paisagem.
+        // Roteiro: talhões em Anos 1-2-3 (evolucao completa); áreas ambientais/MRV no Ano 3.
+        // z = distancia da tomada, y = altura, i = 1 chega pelo lado oposto (usado nos pontos das beiras).
         var ROTEIRO = [
             { id: "t1", ano: 1 }, { id: "t1", ano: 2 }, { id: "t1", ano: 3 },
-            { id: "t2", ano: 1 }, { id: "t2", ano: 2 }, { id: "t2", ano: 3 },
-            { id: "t3", ano: 1 }, { id: "t3", ano: 2 }, { id: "t3", ano: 3 },
-            { id: "appd", ano: 3, z: 0.45 },
-            { id: "appp", ano: 3, z: 0.5 },
-            { id: "rl", ano: 3, z: 0.5 },
-            { id: "vacas", ano: 3, z: 0.6 }, { id: "bio", ano: 3, z: 0.5 }, { id: "sede", ano: 3, z: 0.75 }
+            { id: "t2", ano: 1, z: 0.85, y: 0.3 },
+            { id: "t2", ano: 2, z: 0.85, y: 0.3 },
+            { id: "t2", ano: 3, z: 0.85, y: 0.3 },
+            { id: "t3", ano: 1, z: 1.25 }, { id: "t3", ano: 2, z: 1.25 }, { id: "t3", ano: 3, z: 1.25 },
+            { id: "appd", ano: 3, z: 0.45, i: 1 },
+            { id: "appp", ano: 3, z: 0.5, i: 1 },
+            { id: "rl", ano: 3, z: 0.5, i: 1 },
+            { id: "vacas", ano: 3, z: 0.6, i: 1 }, { id: "bio", ano: 3, z: 0.5 }, { id: "sede", ano: 3, z: 0.75, i: 1 }
         ];
         var VISITA_VOO = 1.4, VISITA_LEITURA = 7000; // voo mais longe e leitura mais calma
         var VISITA_CHEGADA = 1150; // tempo de voo ate fixar a parada (ms)
@@ -738,7 +740,7 @@
             document.getElementById("barra-rotulo").textContent =
                 "🧭 Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
             document.getElementById("visita-placar").textContent = (visitaPasso + 1) + "/" + ROTEIRO.length;
-            Maquete3D.aproximar(passo.id, VISITA_VOO, passo.z);
+            Maquete3D.aproximar(passo.id, VISITA_VOO, passo.z, passo.i === 1, passo.y);
             document.body.classList.add("visita");
             visitaPausada = false;
             document.getElementById("visita-continua").textContent = "⏸ Pausar";

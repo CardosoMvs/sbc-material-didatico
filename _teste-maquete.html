@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>Ver maquete</title>
+<style>body{margin:0;background:#345;}#cena{position:relative;width:820px;height:680px;}</style></head>
+<body>
+<div id="cena"></div>
+<script src="three.min.js"></script>
+<script src="OrbitControls.js"></script>
+<script src="modelos/GLTFLoader.js"></script>
+<script src="maquete3d.v5.js"></script>
+<script>
+var ok = Maquete3D.init({ container: document.getElementById("cena"), ano: 1 });
+if (!ok) document.title = "FALHA WEBGL";
+</script>
+</body></html>

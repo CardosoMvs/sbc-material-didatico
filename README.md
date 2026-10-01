@@ -8,6 +8,10 @@ Cores e botões seguem o site oficial do Programa SBC (sojabaixocarbono.com.br):
 verde-oliva `#669933`, amarelo `#FFCC33`, azuis-água `#5FB0D1`/`#E7F5FF`. A fonte **Roboto** está
 embutida em `fonte/` (woff2 variável, offline) — carregada por `estilo-sbc.css`; não usar CDN externo.
 
+Os recursos gráficos oficiais (selo branco e colorido, banner do hero, logo Embrapa,
+ícones das práticas SPD/MIP/MID/FBN/ILPF, faixa de apoiadores e favicon) estão em `logos-oficiais/`,
+baixados do site oficial; a capa do menu, o rodapé de todas as páginas e o favicon os usam.
+
 ## Versionamento
 
 O menu (`index.html`) tem um seletor de versão no canto superior esquerdo — ele sempre abre

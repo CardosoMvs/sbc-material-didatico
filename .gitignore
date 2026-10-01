@@ -1,0 +1,5 @@
+
+# arquivos-fonte de design (pesados; só ficam no disco local, não no site)
+logos-oficiais/*.ai
+logos-oficiais/*.pdf
+logos-oficiais/*.tif

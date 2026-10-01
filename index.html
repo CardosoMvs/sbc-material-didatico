@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBC no Estande – Jogos</title>
+    <link rel="icon" type="image/png" href="logos-oficiais/favicon.png">
     <link rel="stylesheet" href="estilo-sbc.css">
     <style>
         /* ---------- Capa: faixa de abertura ---------- */
@@ -13,9 +14,10 @@
             gap: 22px;
             max-width: 1080px;
             margin: 0 auto 22px;
-            padding: 24px 28px;
-            background: var(--verde-escuro);
-            border-left: 6px solid var(--dourado);
+            padding: 26px 28px;
+            background:
+                linear-gradient(95deg, rgba(23, 101, 69, 0.94) 0%, rgba(23, 101, 69, 0.78) 46%, rgba(23, 101, 69, 0) 78%),
+                var(--verde-escuro) url("logos-oficiais/banner-oficial.png") right center / cover no-repeat;
             border-radius: var(--raio);
             box-shadow: var(--sombra);
             color: #fff;
@@ -24,10 +26,8 @@
 
         .capa .capa-logo {
             flex: none;
-            width: 96px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 8px;
+            width: 104px;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
         }
 
         .capa .capa-texto { min-width: 0; }
@@ -113,7 +113,7 @@
             border: 1px solid var(--borda);
             color: var(--tinta-suave);
         }
-        .chip.destaque { background: var(--borda-jogo, var(--verde-escuro)); border-color: transparent; color: #fff; }
+        .chip.destaque { background: var(--dourado); border-color: var(--dourado); color: var(--verde-escuro); }
         .chip.record { background: var(--dourado-claro); border-color: var(--dourado); color: #7c5e09; }
 
         .menu-item .jogar {
@@ -185,6 +185,16 @@
         }
 
         /* ---------- Seletor de versão (canto esquerdo; sempre abre na atual) ---------- */
+        .faixa-apoiadores {
+            display: block;
+            margin: 0 auto 16px;
+            width: 92%;
+            max-width: 620px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 6px 12px;
+        }
+
         .pill-versao {
             position: fixed;
             top: 8px;
@@ -256,7 +266,7 @@
     </details>
 
     <section class="capa">
-        <img class="capa-logo" src="logo-sbc.png" alt="Selo Soja Baixo Carbono">
+        <img class="capa-logo" src="logos-oficiais/logo-sbc-oficial.png" alt="Selo Soja Baixo Carbono">
         <div class="capa-texto">
             <span class="tag">Estande SBC · 5 desafios</span>
             <h1>Programa Soja <span>Baixo Carbono</span></h1>
@@ -364,7 +374,8 @@
     </div>
 
     <footer class="rodape">
-        <img class="logo-rodape" src="logo-embrapa-alfa.png" alt="Embrapa">
+        <img class="faixa-apoiadores" src="apoiadores.png" alt="Apoiadores: Bayer, Bunge, Cargill, Coamo, Cocamar, GDM e UPL">
+        <img class="logo-rodape" src="logos-oficiais/embrapa.png" alt="Embrapa">
         Embrapa Soja · Londrina, PR
     </footer>
 

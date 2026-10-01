@@ -58,20 +58,29 @@
             background:
                 repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0 8px, rgba(255, 255, 255, 0) 8px 16px),
                 linear-gradient(145deg, var(--azul), var(--verde-escuro));
-            color: #fff;
-            font-size: 1.9em;
             border: 1px solid #0a2036;
+        }
+        .carta-verso img {
+            width: 72%;
+            filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35));
         }
         .carta-frente {
             background: #fff;
+            flex-direction: column;
+            gap: 5px;
             transform: rotateY(180deg);
             border: 1px solid #cfdccf;
-            font-size: 1em;
+            font-size: 0.9em;
             line-height: 1.25;
             color: var(--tinta);
         }
-        .modo16 .carta-frente { font-size: 0.82em; }
-        .carta-frente .icone-grande { font-size: 2.4em; line-height: 1; display: block; }
+        .modo16 .carta-frente { font-size: 0.78em; }
+        .carta-frente .icone-carta {
+            flex: none;
+            width: 58%;
+            max-height: 46%;
+            object-fit: contain;
+        }
 
         .carta.virada .carta-verso { transform: rotateY(180deg); }
         .carta.virada .carta-frente { transform: rotateY(0deg); }
@@ -171,37 +180,49 @@
     <script>
         "use strict";
 
+        // Ícones oficiais das práticas (logos-oficiais/, extraídos dos arquivos
+        // do Illustrator e baixados do site oficial) — usados na frente da carta
+        var ICONES = {
+            spd: "logos-oficiais/icone-spd.png",
+            fbn: "logos-oficiais/icone-fbn.png",
+            ilpf: "logos-oficiais/icone-ilpf.png",
+            mip: "logos-oficiais/icone-mip.png",
+            mid: "logos-oficiais/icone-mid.png",
+            mipd: "logos-oficiais/icone-mipd.png"
+        };
+
+        // conceitos sem logo oficial do SBC mantêm um ícone funcional
         var MODOS = {
             icones: {
                 pares: [
-                    ["🚜 SPD", "🚜 SPD"],
-                    ["🦠 FBN", "🦠 FBN"],
-                    ["🌳 ILPF", "🌳 ILPF"],
-                    ["🔬 MIP", "🔬 MIP"]
+                    [{ t: "SPD", ic: "spd" }, { t: "SPD", ic: "spd" }],
+                    [{ t: "FBN", ic: "fbn" }, { t: "FBN", ic: "fbn" }],
+                    [{ t: "ILPF", ic: "ilpf" }, { t: "ILPF", ic: "ilpf" }],
+                    [{ t: "MIP", ic: "mip" }, { t: "MIP", ic: "mip" }]
                 ],
                 msg: "Nível 1 concluído! Tente o Nível 2 e associe cada prática ao seu benefício."
             },
             pares: {
                 pares: [
-                    ["🚜 SPD", "60 t CO₂eq/ha em 20 anos"],
-                    ["🦠 FBN", "Fim da adubação nitrogenada"],
-                    ["🧬 Coinoculação", "Bradyrhizobium + Azospirillum"],
-                    ["🌳 ILPF", "Árvores sequestram CO₂ + renda"],
-                    ["🔬 MIP/MID", "Aplicar só quando necessário"],
-                    ["📈 Produtividade", "Menos CO₂eq por tonelada"]
+                    [{ t: "SPD", ic: "spd" }, { t: "60 t CO₂eq/ha em 20 anos" }],
+                    [{ t: "FBN", ic: "fbn" }, { t: "Fim da adubação nitrogenada" }],
+                    [{ t: "🧬 Coinoculação" }, { t: "Bradyrhizobium + Azospirillum" }],
+                    [{ t: "ILPF", ic: "ilpf" }, { t: "Árvores sequestram CO₂ + renda" }],
+                    [{ t: "MIP/MID", ic: "mip" }, { t: "Aplicar só quando necessário" }],
+                    [{ t: "📈 Produtividade" }, { t: "Menos CO₂eq por tonelada" }]
                 ],
                 msg: "Você associou todas as práticas aos benefícios que o selo SBC mensura."
             },
             expert: {
                 pares: [
-                    ["🚜 SPD", "3 t CO₂eq/ha·ano"],
-                    ["🦠 FBN", "Evita o gás N₂O (265×)"],
-                    ["🤝 Apoiadoras", "7 empresas parceiras do SBC"],
-                    ["🌳 ILPF", "Sequestra CO₂ + renda extra"],
-                    ["🔬 MIP/MID", "Menos trânsito de máquinas"],
-                    ["📉 IEGEE", "kg CO₂eq por tonelada de grãos"],
-                    ["⏱ MRV", "Mensurável · Reportável · Verificável"],
-                    ["🎯 Meta SBC", "Redução de pelo menos 50%"]
+                    [{ t: "SPD", ic: "spd" }, { t: "3 t CO₂eq/ha·ano" }],
+                    [{ t: "FBN", ic: "fbn" }, { t: "Evita o gás N₂O (265×)" }],
+                    [{ t: "🤝 Apoiadoras" }, { t: "7 empresas parceiras do SBC" }],
+                    [{ t: "ILPF", ic: "ilpf" }, { t: "Sequestra CO₂ + renda extra" }],
+                    [{ t: "MIP/MID", ic: "mip" }, { t: "Menos trânsito de máquinas" }],
+                    [{ t: "📉 IEGEE" }, { t: "kg CO₂eq por tonelada de grãos" }],
+                    [{ t: "⏱ MRV" }, { t: "Mensurável · Reportável · Verificável" }],
+                    [{ t: "🎯 Meta SBC" }, { t: "Redução de pelo menos 50%" }]
                 ],
                 msg: "Impressionante! Você domina os números oficiais do Programa SBC."
             }
@@ -227,8 +248,8 @@
 
             cartas = [];
             cfg.pares.forEach(function (par, idPar) {
-                cartas.push({ idPar: idPar, rotulo: par[0] });
-                cartas.push({ idPar: idPar, rotulo: par[1] });
+                cartas.push({ idPar: idPar, rotulo: par[0].t, icone: par[0].ic });
+                cartas.push({ idPar: idPar, rotulo: par[1].t, icone: par[1].ic });
             });
             cartas = SBCH.embaralhar(cartas);
 
@@ -244,7 +265,7 @@
                 var b = document.createElement("button");
                 b.className = "carta";
                 b.dataset.indice = i;
-                b.innerHTML = faceHtml(c.rotulo);
+                b.innerHTML = faceHtml(c);
                 b.onclick = function () { virar(b); };
                 grade.appendChild(b);
             });
@@ -263,16 +284,15 @@
             }, 1000);
         }
 
-        function faceHtml(rotulo) {
-            if (rotulo.length <= 10) {
-                var partes = rotulo.split(" ");
-                var icone = partes[0];
-                var resto = partes.slice(1).join(" ");
-                return '<div class="carta-face carta-verso">SBC</div>' +
-                       '<div class="carta-face carta-frente"><span><span class="icone-grande">' + icone + '</span>' + escapar(resto) + '</span></div>';
-            }
-            return '<div class="carta-face carta-verso">SBC</div>' +
-                   '<div class="carta-face carta-frente">' + escapar(rotulo) + '</div>';
+        // verso: selo branco 2026 por cima do padrão; frente: logo oficial
+        // (quando existe) em vez de emoji + sigla
+        function faceHtml(c) {
+            var verso = '<div class="carta-face carta-verso">' +
+                        '<img src="logos-oficiais/selo-2026-branco.png" alt="SBC"></div>';
+            var frente = '<div class="carta-face carta-frente">' +
+                         (c.icone ? '<img class="icone-carta" src="' + ICONES[c.icone] + '" alt="">' : '') +
+                         '<span>' + escapar(c.rotulo) + '</span></div>';
+            return verso + frente;
         }
 
         function escapar(t) {
@@ -389,6 +409,16 @@
         }
 
         SBCH.desenharRanking(document.getElementById("ranking-inicial"), "memoria_pares", " jogadas");
+
+        // só para teste: ?auto&modo=icones|pares|expert começa direto na grade
+        if (location.search.indexOf("auto") >= 0) {
+            var mm = /modo=([a-z]+)/.exec(location.search);
+            iniciar((mm && mm[1]) || "pares");
+            if (location.search.indexOf("vira") >= 0) {
+                document.querySelectorAll(".carta").forEach(function (b) { b.classList.add("virada"); });
+                bloqueio = true;
+            }
+        }
     </script>
     <script src="three.min.js"></script>
     <script src="modelos/GLTFLoader.js"></script>

@@ -152,6 +152,9 @@ def montar(versao, commit, data, desc):
         # o link "atual" do seletor de versão, copiado da raiz, apontava para
         # ele mesmo — dentro da versão antiga ele volta para a raiz
         texto = texto.replace('href="index.html" class="atual"', 'href="../../index.html" class="atual"')
+        # e os links do seletor para outras versões descerem um nível
+        texto = re.sub(r'(href=")(?:versoes/)', r'\1../../versoes/', texto)
+        texto = re.sub(r"(href=')(?:versoes/)", r"\1../../versoes/", texto)
         rotulo = "%s · %s" % (versao, data)
         texto = texto.replace("</body>", BANNER.replace(u"{rotulo}", rotulo) + u"\n</body>")
         with io.open(os.path.join(pasta, p), "w", encoding="utf-8", newline="\n") as f:

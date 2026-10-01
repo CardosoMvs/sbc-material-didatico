@@ -37,6 +37,7 @@ VERSOES = [
     ("v1", "c5d9eb1", "11 set", "jogos originais"),
     ("v2", "b16e551", "26 set", "chegada da maquete 3D"),
     ("v3", "b170a53", "29 set", "modo TV"),
+    ("v4", "dc9dde6", "1 out", "sem emojis · visual do site oficial"),
 ]
 
 REF_ATRIBUTO = re.compile(r"""(?:src|href)=(["'])([^"']+?)\1""")
@@ -148,6 +149,9 @@ def montar(versao, commit, data, desc):
                 continue
             texto = texto.replace('"%s"' % r, '"../../%s"' % r)
             texto = texto.replace("'%s'" % r, "'../../%s'" % r)
+        # o link "atual" do seletor de versão, copiado da raiz, apontava para
+        # ele mesmo — dentro da versão antiga ele volta para a raiz
+        texto = texto.replace('href="index.html" class="atual"', 'href="../../index.html" class="atual"')
         rotulo = "%s · %s" % (versao, data)
         texto = texto.replace("</body>", BANNER.replace(u"{rotulo}", rotulo) + u"\n</body>")
         with io.open(os.path.join(pasta, p), "w", encoding="utf-8", newline="\n") as f:

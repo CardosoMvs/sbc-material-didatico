@@ -15,6 +15,7 @@ na versão mais atual (a própria raiz do site). As versões antigas ficam conge
 - `versoes/v1/` — 11 set · jogos originais (commit `c5d9eb1`)
 - `versoes/v2/` — 26 set · chegada da maquete 3D (commit `b16e551`)
 - `versoes/v3/` — 29 set · modo TV (commit `b170a53`)
+- `versoes/v4/` — 1 out · sem emojis · visual do site oficial (commit `dc9dde6`)
 
 Recursos pesados idênticos entre as versões (modelos `.glb`, `three.min.js`, logos) não são
 duplicados — as páginas antigas apontam para os da raiz (`../../`).

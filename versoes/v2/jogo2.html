@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decisão Rápida SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        .fase-chip {
+            display: inline-block;
+            background: var(--dourado);
+            color: var(--tinta);
+            font-weight: 900;
+            font-size: 0.8em;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border-radius: 999px;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+            transform: rotate(-2deg);
+        }
+
+        .tempo-barra { height: 10px; background: #dde6dd; border: 2px solid #cfdccf; border-radius: 999px; overflow: hidden; margin: 10px 16px 0; }
+        .tempo-preenchimento {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--verde);
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 8px, rgba(255,255,255,0) 8px 16px);
+            background-size: 22.6px 22.6px;
+            animation: listras 0.7s linear infinite;
+            transition: width 0.3s linear;
+        }
+
+        .resumo-fase { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .resumo-fase td { padding: 8px 10px; border-bottom: 2px solid #dfe8df; font-size: 0.95em; }
+        .resumo-fase td:last-child { text-align: right; font-weight: 900; color: var(--azul); white-space: nowrap; }
+        .pulos { animation: pulsar 0.4s ease; }
+        @keyframes pulsar { 50% { transform: scale(1.25); } }
+    </style>
+</head>
+<body>
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Decisão Rápida</h1>
+        </div>
+    </header>
+
+    <div class="placar">
+        <div class="placar-item">
+            <div class="valor" id="pts">0</div>
+            <div class="nome">Pontos</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="streak">🔥 0</div>
+            <div class="nome">Sequência</div>
+        </div>
+        <div class="placar-item">
+            <div class="valor" id="prog">1/21</div>
+            <div class="nome">Situação</div>
+        </div>
+    </div>
+
+    <main class="cartao" id="carta-area" style="padding:0;overflow:hidden;">
+        <div style="background:linear-gradient(160deg,var(--azul-escuro),#17456f);color:#cfe3f5;padding:12px 18px;font-size:0.85em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="fase-chip" id="fase-chip">Pré-plantio</span>
+            <span style="font-weight:800;">Safra do carbono — cada decisão conta</span>
+        </div>
+        <div class="tempo-barra"><div class="tempo-preenchimento" id="tempo-barra" style="width:100%;"></div></div>
+        <div id="carta-texto" style="padding:24px 22px;min-height:120px;display:flex;align-items:center;font-size:1.12em;font-weight:700;line-height:1.45;border-bottom:2px dashed #dfe8df;">
+            Carregando...
+        </div>
+
+        <div class="feedback" id="feedback" style="margin:0 16px 14px;"></div>
+
+        <div id="acoes" style="display:flex;">
+            <button class="botao neutro" id="btn-nao" onclick="decidir(false)" style="flex:1;min-height:66px;border-radius:0;color:var(--carmim);font-size:1.05em;">✖ Convencional</button>
+            <button class="botao" id="btn-sim" onclick="decidir(true)" style="flex:1;min-height:66px;border-radius:0;font-size:1.05em;">✔ Prática SBC</button>
+        </div>
+        <button class="botao secundario oculto" id="btn-proxima" onclick="proxima()" style="width:100%;min-height:60px;border-radius:0;">Próxima situação ➜</button>
+    </main>
+
+    <main class="cartao tela-final oculto" id="tela-final">
+        <div class="trofeu" id="trofeu">🌱</div>
+        <h2 id="final-titulo">Fim de jogo</h2>
+        <span class="classe-sbc bronze" id="final-classe">Bronze SBC</span>
+        <p id="final-msg" style="font-size:1.05em;"></p>
+        <p class="sub" id="final-detalhe"></p>
+        <div style="text-align:left;margin-top:10px;">
+            <h2 style="font-size:1em;">Desempenho por fase da safra</h2>
+            <table class="resumo-fase" id="tabela-fases"></table>
+        </div>
+        <section style="margin-top:16px;text-align:left;">
+            <h2 style="font-size:1em;">🏅 Top decisões do estande</h2>
+            <ul class="lista-ranking" id="ranking"></ul>
+        </section>
+        <button class="botao" onclick="location.reload()">Jogar de novo</button>
+        <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
+    </main>
+
+    <footer class="rodape">
+        <img class="logo-rodape" src="../../logo-embrapa-alfa.png" alt="Embrapa">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+
+        var FASES = ["Pré-plantio", "Plantio", "Condução da lavoura", "Colheita"];
+        var TEMPO_CARTA = 15; // segundos
+
+        var CARTAS = [
+            // Pré-plantio
+            { fase: 0, texto: "Fazer análise de solo antes de calibrar a adubação da safra.", sbc: true,
+              exp: "Adubação e correção de solo bem planejadas melhoram o carbono orgânico do solo e o balanço de GEEs do sistema." },
+            { fase: 0, texto: "Manter a palha da safra anterior sobre o solo e semear direto na palha, sem arar.", sbc: true,
+              exp: "É o coração do Sistema Plantio Direto: revolvimento mínimo. Em 20 anos, o SPD imobiliza 60 t de CO₂eq/ha — 3 t por ano." },
+            { fase: 0, texto: "Arar e gradear o solo a cada safra, como sempre foi feito.", sbc: false,
+              exp: "O preparo convencional expõe a matéria orgânica e libera CO₂. Converter para o SPD é o primeiro degrau da escada SBC." },
+            { fase: 0, texto: "Rodar o mesmo cultivo todos os anos, sem rotação de culturas.", sbc: false,
+              exp: "Rotação e diversificação de culturas são premissas do SPD pleno — sem elas, o sistema perde capacidade de imobilizar carbono." },
+            { fase: 0, texto: "Planejar a safra com análise de solo e cultivar indicada para a sua macrorregião.", sbc: true,
+              exp: "Cultivar indicada por macrorregião (ensaios de VCU) + adubação conforme análise: menos insumo desperdiçado, mais grãos e melhor balanço de GEEs." },
+            { fase: 0, texto: "Abrir área nova em vegetação nativa em vez de intensificar a área já aberta.", sbc: false,
+              exp: "O SBC valoriza a intensificação sustentável: mais grãos na mesma área reduz as emissões por tonelada e diminui a pressão de expansão sobre novas áreas." },
+            // Plantio
+            { fase: 1, texto: "Eliminar a adubação nitrogenada química da soja e usar inoculantes.", sbc: true,
+              exp: "Com a Fixação Biológica do Nitrogênio, a soja tira o N do ar. Evita-se N₂O — 265× mais potente que o CO₂ (IPCC 2006) — e adubo derivado de petróleo." },
+            { fase: 1, texto: "Aplicar ureia pesada na soja 'para garantir', sem recomendação técnica.", sbc: false,
+              exp: "Nitrogênio químico em excesso emite N₂O e aumenta custo sem retorno. O caminho SBC é a FBN com coinoculação." },
+            { fase: 1, texto: "Semear com coinoculação: Bradyrhizobium + Azospirillum.", sbc: true,
+              exp: "A coinoculação aumenta a eficiência da fixação de nitrogênio, a produtividade e ainda reduz custos." },
+            { fase: 1, texto: "Plantar em solo compactado, sem correção, 'para não atrasar'.", sbc: false,
+              exp: "Solo mal preparado derruba a produtividade — e o IEGEE é por tonelada: menos grãos dividindo as emissões deixa o índice alto." },
+            { fase: 1, texto: "Reusar o inoculante que sobrou da safra passada 'para economizar'.", sbc: false,
+              exp: "Inoculante fora da validade perde viabilidade: menos nodulação, menos nitrogênio fixado pela FBN — e o prejuízo na lavoura é maior que a economia." },
+            // Condução
+            { fase: 2, texto: "Monitorar pragas e doenças semanalmente e aplicar produto só quando necessário.", sbc: true,
+              exp: "Manejo Integrado: menos aplicações = menos trânsito de máquinas, menos combustível fóssil queimado e economia na fazenda." },
+            { fase: 2, texto: "Aplicar defensivos preventivamente em calendário fixo, sem monitorar a lavoura.", sbc: false,
+              exp: "Sem monitoramento, você gasta, emite e ainda seleciona resistência. Os manejos integrados pedem: aplicar só quando necessário." },
+            { fase: 2, texto: "Integrar lavoura, pecuária e árvores na propriedade (ILPF).", sbc: true,
+              exp: "As árvores aumentam o sequestro de CO₂, diversificam a produção e ainda geram renda extra (madeira, erva, lenha)." },
+            { fase: 2, texto: "Corrigir a acidez do solo e ajustar a adubação conforme a análise.", sbc: true,
+              exp: "A adubação e correção de solo bem feitas impactam o teor de carbono orgânico — pilar do balanço de GEEs com soja." },
+            { fase: 2, texto: "Planejar o tráfego das máquinas para reduzir passadas na lavoura.", sbc: true,
+              exp: "Menos passadas = menos diesel, menos compactação e mais eficiência operacional — emissões menores por tonelada." },
+            { fase: 2, texto: "Monitorar a ferrugem-asiática e aplicar fungicida só quando atingir o nível de dano.", sbc: true,
+              exp: "Monitorar a Phakopsora pachyrhizi orienta a decisão de controle: menos aplicações, menos custo e menos diesel de máquina na lavoura." },
+            // Colheita
+            { fase: 3, texto: "Regular a plataforma de corte da colhedora para reduzir perdas de grãos.", sbc: true,
+              exp: "O IEGEE é por tonelada de grãos: menos perdas e mais produtividade dividem as emissões por mais produto — o índice cai." },
+            { fase: 3, texto: "Deixar grãos no campo: 'perda pequena não faz diferença'.", sbc: false,
+              exp: "Faz! Cada saca perdida é emissão diluída por menos produto. Reduzir perdas é um degrau da escada SBC." },
+            { fase: 3, texto: "Queimar a palha e os restos de colheita para 'limpar' a área rapidamente.", sbc: false,
+              exp: "A queima devolve à atmosfera o carbono que o SPD imobilizou e destrói a palha — insumo essencial do plantio direto e da matéria orgânica do solo." },
+            { fase: 3, texto: "Anotar os dados da safra (produtividade, insumos, operações) para o relatório SBC.", sbc: true,
+              exp: "O selo SBC exige controle MRV — Mensurável, Reportável e Verificável. Dados organizados são a porta de entrada da certificação." }
+        ];
+
+        var ordem = [];          // índices das cartas na ordem do jogo
+        var posicao = 0;
+        var pontos = 0;
+        var sequencia = 0;
+        var melhorSequencia = 0;
+        var acertosPorFase = [0, 0, 0, 0];
+        var totalPorFase = [0, 0, 0, 0];
+        var tempoRestante = TEMPO_CARTA;
+        var intervalo = null;
+        var respondida = false;
+
+        function atualizarPlacar() {
+            document.getElementById("pts").textContent = pontos;
+            document.getElementById("streak").textContent = "🔥 " + sequencia;
+            document.getElementById("prog").textContent = (posicao + 1) + "/" + ordem.length;
+        }
+
+        function carregarCarta() {
+            respondida = false;
+            var carta = CARTAS[ordem[posicao]];
+            atualizarPlacar();
+            document.getElementById("fase-chip").textContent = FASES[carta.fase];
+            document.getElementById("carta-texto").textContent = carta.texto;
+            document.getElementById("feedback").className = "feedback";
+            document.getElementById("feedback").style.display = "none";
+            document.getElementById("acoes").style.display = "flex";
+            document.getElementById("btn-proxima").classList.add("oculto");
+            iniciarTempo();
+        }
+
+        function iniciarTempo() {
+            clearInterval(intervalo);
+            tempoRestante = TEMPO_CARTA;
+            var barra = document.getElementById("tempo-barra");
+            barra.style.width = "100%";
+            barra.style.background = "var(--verde)";
+            intervalo = setInterval(function () {
+                tempoRestante--;
+                var f = tempoRestante / TEMPO_CARTA;
+                barra.style.width = (f * 100) + "%";
+                barra.style.background = f > 0.4 ? "var(--verde)" : (f > 0.2 ? "var(--dourado)" : "var(--carmim)");
+                if (tempoRestante <= 0) {
+                    clearInterval(intervalo);
+                    decidir(null); // tempo esgotado
+                }
+            }, 1000);
+        }
+
+        function decidir(escolheuSBC) {
+            if (respondida) return;
+            respondida = true;
+            clearInterval(intervalo);
+
+            var carta = CARTAS[ordem[posicao]];
+            var acertou = escolheuSBC !== null && escolheuSBC === carta.sbc;
+            var fb = document.getElementById("feedback");
+
+            if (acertou) {
+                sequencia++;
+                melhorSequencia = Math.max(melhorSequencia, sequencia);
+                acertosPorFase[carta.fase]++;
+                var ganho = 10 + (sequencia - 1) * 5;
+                pontos += ganho;
+                SBCH.popupPontos(document.getElementById("pts"), "+" + ganho);
+                fb.className = "feedback ok";
+                fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" + (sequencia > 1 ? " (sequência 🔥" + sequencia + ")" : "") + "</strong><br>" + carta.exp;
+                SBCH.som("acerto");
+                if (sequencia >= 3) SBCH.confete();
+            } else {
+                sequencia = 0;
+                fb.className = "feedback erro";
+                var cab = escolheuSBC === null ? "⏰ Tempo esgotado!" :
+                    (escolheuSBC ? "Essa não é uma prática SBC." : "Essa é justamente uma prática SBC!");
+                fb.innerHTML = "<strong>" + cab + "</strong><br>" + carta.exp;
+                SBCH.som("erro");
+            }
+
+            document.getElementById("acoes").style.display = "none";
+            var prox = document.getElementById("btn-proxima");
+            prox.classList.remove("oculto");
+            prox.textContent = posicao < ordem.length - 1 ? "Próxima situação ➜" : "Ver relatório da safra 🏁";
+            atualizarPlacar();
+        }
+
+        function proxima() {
+            posicao++;
+            if (posicao < ordem.length) carregarCarta();
+            else finalizar();
+        }
+
+        function finalizar() {
+            var acertos = acertosPorFase.reduce(function (a, b) { return a + b; }, 0);
+            var classe, titulo, icone;
+            if (pontos >= 320) { classe = "Ouro SBC"; titulo = "Safra de elite SBC!"; icone = "🏆"; }
+            else if (pontos >= 240) { classe = "Prata SBC"; titulo = "Grande safra — sua fazenda pensa em carbono"; icone = "🥈"; }
+            else if (pontos >= 150) { classe = "Bronze SBC"; titulo = "Boa safra — dá para afinar o manejo"; icone = "🥉"; }
+            else { classe = "Em transição"; titulo = "Safra em transição — vale uma conversa no estande"; icone = "🌱"; }
+
+            var cEl = document.getElementById("final-classe");
+            cEl.className = "classe-sbc " + (classe === "Ouro SBC" ? "ouro" : classe === "Prata SBC" ? "prata" : classe === "Bronze SBC" ? "bronze" : "");
+            document.getElementById("trofeu").textContent = icone;
+            document.getElementById("final-titulo").textContent = titulo;
+            document.getElementById("final-classe").textContent = classe;
+            document.getElementById("final-msg").textContent =
+                "Você acertou " + acertos + " de " + ordem.length + " decisões.";
+            document.getElementById("final-detalhe").textContent =
+                "Maior sequência: 🔥" + melhorSequencia + " · Fases percorridas: pré-plantio → plantio → condução → colheita.";
+
+            var tabela = document.getElementById("tabela-fases");
+            tabela.innerHTML = "";
+            FASES.forEach(function (f, i) {
+                var tr = document.createElement("tr");
+                var pct = Math.round(acertosPorFase[i] / totalPorFase[i] * 100);
+                tr.innerHTML = "<td>" + f + "</td><td>" + acertosPorFase[i] + "/" + totalPorFase[i] + " (" + pct + "%)</td>";
+                tabela.appendChild(tr);
+            });
+
+            SBCH.desenharRanking(document.getElementById("ranking"), "decisao", " pts");
+            document.getElementById("carta-area").classList.add("oculto");
+            document.querySelector(".placar").classList.add("oculto");
+            document.getElementById("tela-final").classList.remove("oculto");
+
+            SBCH.pedirNomeESalvar("decisao", pontos, true, function () {
+                SBCH.desenharRanking(document.getElementById("ranking"), "decisao", " pts");
+            });
+            SBCH.confete();
+            SBCH.som("vitoria");
+        }
+
+        // Monta a ordem: cartas por fase (embaralhadas dentro de cada fase), fases em sequência narrativa.
+        CARTAS.forEach(function (c) { totalPorFase[c.fase]++; });
+        for (var f = 0; f < FASES.length; f++) {
+            var daFase = CARTAS.map(function (c, i) { return c.fase === f ? i : -1; })
+                               .filter(function (i) { return i >= 0; });
+            ordem = ordem.concat(SBCH.embaralhar(daFase));
+        }
+        carregarCarta();
+    </script>
+
+    <style>
+        #sbc-versao{position:fixed;top:8px;left:8px;z-index:81;display:flex;align-items:center;gap:9px;
+            background:rgba(255,255,255,0.93);border:2px solid #bcd9c2;border-radius:999px;padding:5px 12px;
+            box-shadow:0 2px 0 rgba(27,77,42,0.18);font-family:inherit;font-size:0.72em;line-height:1.2;}
+        #sbc-versao b{font-weight:900;color:#14522e;white-space:nowrap;}
+        #sbc-versao span{color:#5c6b60;white-space:nowrap;}
+        #sbc-versao a{color:#123a5f;font-weight:800;white-space:nowrap;text-decoration:underline;}
+    </style>
+    <div id="sbc-versao">
+        <b>v2 · 26 set</b><span>versão antiga</span>
+        <a href="../../index.html">abrir a versão atual</a>
+    </div>
+
+</body>
+</html>

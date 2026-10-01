@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro do Produtor SBC</title>
+    <link rel="stylesheet" href="estilo-sbc.css">
+    <style>
+        .campo { margin-bottom: 14px; }
+        .campo label {
+            display: block;
+            font-size: 0.8em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--azul);
+            margin-bottom: 4px;
+        }
+        .campo label .opcional { color: var(--tinta-suave); font-weight: 600; text-transform: none; letter-spacing: 0; }
+        .campo input, .campo select {
+            width: 100%;
+            padding: 13px 14px;
+            font-size: 1.05em;
+            font-family: inherit;
+            font-weight: 600;
+            color: var(--tinta);
+            background: #fff;
+            border: 2px solid #cfdccf;
+            border-radius: 12px;
+            box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.10);
+            transition: border-color 0.15s;
+        }
+        .campo input:focus, .campo select:focus {
+            outline: none;
+            border-color: var(--verde);
+        }
+        .linha-duo { display: flex; gap: 10px; }
+        .linha-duo .campo { flex: 1; }
+        .linha-duo .campo.uf { flex: none; width: 110px; }
+
+        .aviso-privacidade {
+            margin-top: 12px;
+            font-size: 0.8em;
+            color: var(--tinta-suave);
+            text-align: center;
+        }
+
+        .link-equipe {
+            font-size: 0.75em;
+            color: #9db3a0;
+            text-decoration: none;
+        }
+        .link-equipe:hover { color: var(--verde-escuro); text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <header class="topo">
+        <a href="index.html" class="voltar" aria-label="Voltar ao menu">←</a>
+        <div class="titulo-bloco">
+            <span class="selo">SBC · Soja Baixo Carbono</span>
+            <h1 class="titulo">Registro do Produtor</h1>
+        </div>
+    </header>
+
+    <main class="cartao">
+        <h2>📋 Passou pelo estande? Deixe seu registro</h2>
+        <p class="sub">A equipe do Programa SBC usa esta lista para acompanhar quem visitou o estande
+        e poder retornar o contato com informações do selo.</p>
+
+        <form id="form-registro" style="margin-top:14px;" autocomplete="off">
+            <div class="campo">
+                <label for="r-nome">Seu nome</label>
+                <input id="r-nome" maxlength="60" placeholder="Nome completo" required>
+            </div>
+            <div class="campo">
+                <label for="r-fazenda">Nome da fazenda <span class="opcional">(opcional)</span></label>
+                <input id="r-fazenda" maxlength="60" placeholder="Ex.: Fazenda Boa Safra">
+            </div>
+            <div class="linha-duo">
+                <div class="campo">
+                    <label for="r-cidade">Cidade</label>
+                    <input id="r-cidade" maxlength="40" placeholder="Cidade" required>
+                </div>
+                <div class="campo uf">
+                    <label for="r-uf">Estado</label>
+                    <select id="r-uf" required>
+                        <option value="" selected>UF</option>
+                    </select>
+                </div>
+            </div>
+            <div class="campo">
+                <label for="r-contato">Contato <span class="opcional">(WhatsApp ou e-mail · opcional)</span></label>
+                <input id="r-contato" maxlength="60" placeholder="(43) 99999-0000 ou@email.com" inputmode="tel">
+            </div>
+            <div class="campo">
+                <label for="r-genero">Você é <span class="opcional">(opcional)</span></label>
+                <select id="r-genero">
+                    <option value="" selected>Prefiro não informar</option>
+                    <option value="Homem">Homem</option>
+                    <option value="Mulher">Mulher</option>
+                </select>
+            </div>
+            <button type="submit" class="botao">✅ Registrar visita</button>
+            <p class="aviso-privacidade">🔒 Os dados ficam somente neste tablet e são exportados pela equipe do estande.</p>
+        </form>
+    </main>
+
+    <main class="cartao">
+        <h2>Visitas ao estande</h2>
+        <div class="placar">
+            <div class="placar-item">
+                <div class="valor" id="total-geral">0</div>
+                <div class="nome">Total</div>
+            </div>
+            <div class="placar-item">
+                <div class="valor" id="total-hoje">0</div>
+                <div class="nome">Hoje</div>
+            </div>
+        </div>
+        <p class="sub" style="text-align:center;">Obrigado! Seu registro ajuda o programa a levar o selo até a sua região. 🌱</p>
+        <p style="text-align:center;margin:10px 0 0;">
+            <a href="painel.html" class="link-equipe" title="Acesso restrito à equipe">🔒 Área da equipe</a>
+        </p>
+    </main>
+
+    <footer class="rodape">
+        <img class="logo-rodape" src="../../logo-embrapa-alfa.png" alt="Embrapa">
+        Programa SBC – Soja Baixo Carbono · Embrapa Soja
+    </footer>
+
+    <script src="jogos-sbc.js"></script>
+    <script>
+        "use strict";
+
+        var UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+        var CHAVE = "sbc_registros";
+        var memoria = []; // fallback se o tablet bloquear o storage
+
+        var selUf = document.getElementById("r-uf");
+        UFS.forEach(function (uf) {
+            var op = document.createElement("option");
+            op.value = uf; op.textContent = uf;
+            selUf.appendChild(op);
+        });
+
+        function carregar() {
+            try {
+                return JSON.parse(localStorage.getItem(CHAVE)) || [];
+            } catch (e) {
+                return memoria;
+            }
+        }
+
+        function gravar(lista) {
+            memoria = lista;
+            try {
+                localStorage.setItem(CHAVE, JSON.stringify(lista));
+            } catch (e) { /* tablet sem storage: mantém só na sessão */ }
+        }
+
+        function desenhar() {
+            var lista = carregar();
+            var hoje = new Date().toDateString();
+            var hojeQtd = lista.filter(function (r) {
+                return new Date(r.ts).toDateString() === hoje;
+            }).length;
+
+            document.getElementById("total-geral").textContent = lista.length;
+            document.getElementById("total-hoje").textContent = hojeQtd;
+        }
+
+        document.getElementById("form-registro").addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            var agora = new Date();
+            var registro = {
+                nome: document.getElementById("r-nome").value.trim(),
+                fazenda: document.getElementById("r-fazenda").value.trim(),
+                cidade: document.getElementById("r-cidade").value.trim(),
+                uf: document.getElementById("r-uf").value,
+                genero: document.getElementById("r-genero").value,
+                contato: document.getElementById("r-contato").value.trim(),
+                quando: agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+                ts: agora.getTime()
+            };
+            var lista = carregar();
+            lista.push(registro);
+            gravar(lista);
+            desenhar();
+            this.reset();
+            SBCH.popupPontos(document.getElementById("total-geral"), "✅ Registrado!");
+            SBCH.confete();
+            SBCH.som("vitoria");
+        });
+
+        desenhar();
+    </script>
+    <script src="modo-tela.js"></script>
+
+    <style>
+        #sbc-versao{position:fixed;top:8px;left:8px;z-index:81;display:flex;align-items:center;gap:9px;
+            background:rgba(255,255,255,0.93);border:2px solid #bcd9c2;border-radius:999px;padding:5px 12px;
+            box-shadow:0 2px 0 rgba(27,77,42,0.18);font-family:inherit;font-size:0.72em;line-height:1.2;}
+        #sbc-versao b{font-weight:900;color:#14522e;white-space:nowrap;}
+        #sbc-versao span{color:#5c6b60;white-space:nowrap;}
+        #sbc-versao a{color:#123a5f;font-weight:800;white-space:nowrap;text-decoration:underline;}
+    </style>
+    <div id="sbc-versao">
+        <b>v3 · 29 set</b><span>versão antiga</span>
+        <a href="../../index.html">abrir a versão atual</a>
+    </div>
+
+</body>
+</html>

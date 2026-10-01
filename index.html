@@ -26,7 +26,7 @@
 
         .capa .capa-logo {
             flex: none;
-            width: 116px;
+            width: clamp(150px, 17vw, 210px);
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
         }
 
@@ -43,14 +43,6 @@
             padding: 3px 12px;
             border-radius: 999px;
         }
-
-        .capa h1 {
-            margin: 8px 0 6px;
-            font-size: clamp(1.6em, 3.4vw, 2.1em);
-            font-weight: 800;
-            line-height: 1.1;
-        }
-        .capa h1 span { color: var(--dourado); }
 
         .capa .capa-sub {
             margin: 0;
@@ -264,7 +256,6 @@
         <img class="capa-logo" src="logos-oficiais/selo-2026-branco.png" alt="Selo Soja Baixo Carbono">
         <div class="capa-texto">
             <span class="tag">Estande SBC · 5 desafios</span>
-            <h1>Programa Soja <span>Baixo Carbono</span></h1>
             <p class="capa-sub">Produza mais, emita menos e suba no ranking: cinco desafios rápidos para conhecer o Programa SBC. Escolha um para começar.</p>
         </div>
     </section>

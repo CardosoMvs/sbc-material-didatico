@@ -20,41 +20,39 @@
         .dificuldade {
             display: inline-block;
             font-size: 0.72em;
-            font-weight: 900;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             padding: 3px 12px;
             border-radius: 999px;
             margin-bottom: 10px;
-            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
-            transform: rotate(-2deg);
         }
         .dificuldade.f { background: var(--verde-claro); color: var(--verde-escuro); border: 2px solid var(--verde); }
-        .dificuldade.m { background: var(--dourado-claro); color: #8a6d0b; border: 2px solid var(--dourado); }
+        .dificuldade.m { background: var(--dourado-claro); color: #7c5e09; border: 2px solid var(--dourado); }
         .dificuldade.d { background: var(--carmim-claro); color: var(--carmim); border: 2px solid var(--carmim); }
 
         .barra-ajuda { display: flex; justify-content: center; margin: 4px 0 10px; }
         .btn-5050 {
             background: var(--dourado-claro);
             border: 2px solid var(--dourado);
-            color: #8a6d0b;
-            font-weight: 900;
+            color: #7c5e09;
+            font-weight: 800;
             border-radius: 999px;
             padding: 8px 20px;
             font-family: inherit;
             font-size: 0.95em;
             cursor: pointer;
-            box-shadow: 0 4px 0 #b3820a;
-            transition: transform 0.08s, box-shadow 0.08s;
+            transition: background 0.15s, transform 0.08s;
         }
-        .btn-5050:active { transform: translateY(4px); box-shadow: 0 0 0 #b3820a; }
-        .btn-5050:disabled { opacity: 0.35; cursor: default; box-shadow: 0 4px 0 #d8c58f; }
+        .btn-5050:hover { background: #f3ecd0; }
+        .btn-5050:active { transform: translateY(1px); }
+        .btn-5050:disabled { opacity: 0.35; cursor: default; }
 
         .resumo-dif { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .resumo-dif td { padding: 8px 10px; border-bottom: 2px solid #dfe8df; font-size: 0.95em; }
-        .resumo-dif td:last-child { text-align: right; font-weight: 900; color: var(--azul); white-space: nowrap; }
+        .resumo-dif td:last-child { text-align: right; font-weight: 800; color: var(--azul); white-space: nowrap; }
         .pulos { animation: pulsar 0.4s ease; }
-        @keyframes pulsar { 50% { transform: scale(1.3); } }
+        @keyframes pulsar { 50% { transform: scale(1.12); } }
     </style>
 </head>
 <body>
@@ -73,7 +71,7 @@
             <div class="nome">Pontos</div>
         </div>
         <div class="placar-item">
-            <div class="valor" id="streak">🔥 ×1</div>
+            <div class="valor" id="streak">×1</div>
             <div class="nome">Multiplicador</div>
         </div>
         <div class="placar-item">
@@ -86,14 +84,13 @@
         <span class="dificuldade f" id="dif-chip">Fácil · 100 pts</span>
         <div class="tempo-barra"><div class="tempo-preenchimento" id="tempo-barra" style="width:100%;"></div></div>
         <div id="pergunta-texto" style="font-size:1.12em;font-weight:700;line-height:1.4;margin-bottom:14px;">Carregando...</div>
-        <div class="barra-ajuda"><button class="btn-5050" id="btn-5050" onclick="usar5050()">💡 Ajuda 50/50</button></div>
+        <div class="barra-ajuda"><button class="btn-5050" id="btn-5050" onclick="usar5050()">Ajuda 50/50</button></div>
         <div id="opcoes"></div>
         <div class="feedback" id="feedback"></div>
         <button class="botao secundario oculto" id="btn-proxima" onclick="proxima()" style="margin-top:12px;">Próxima pergunta ➜</button>
     </main>
 
     <main class="cartao tela-final oculto" id="area-final">
-        <div class="trofeu" id="trofeu">🏆</div>
         <h2 id="final-titulo">Fim de jogo!</h2>
         <p style="font-size:1.1em;">Sua pontuação: <strong id="final-pontos" style="color:var(--azul)">0</strong></p>
         <p class="sub" id="final-msg"></p>
@@ -102,7 +99,7 @@
             <table class="resumo-dif" id="tabela-dif"></table>
         </div>
         <section style="margin-top:14px;text-align:left;">
-            <h2 style="font-size:1em;">🏅 Top produtores do estande</h2>
+            <h2 style="font-size:1em;">Top produtores do estande</h2>
             <ul class="lista-ranking" id="ranking"></ul>
         </section>
         <button class="botao" onclick="location.reload()">Jogar de novo</button>
@@ -205,7 +202,7 @@
         function atualizarPlacar() {
             document.getElementById("pontos").textContent = pontos;
             var mult = multiplicador();
-            document.getElementById("streak").textContent = "🔥 ×" + mult;
+            document.getElementById("streak").textContent = "×" + mult;
         }
 
         function multiplicador() {
@@ -240,7 +237,7 @@
             document.getElementById("btn-proxima").classList.add("oculto");
             var btnAjuda = document.getElementById("btn-5050");
             btnAjuda.disabled = ajudaRestante <= 0;
-            btnAjuda.textContent = ajudaRestante > 0 ? "💡 Ajuda 50/50" : "💡 Ajuda usada";
+            btnAjuda.textContent = ajudaRestante > 0 ? "Ajuda 50/50" : "Ajuda usada";
 
             var area = document.getElementById("opcoes");
             area.innerHTML = "";
@@ -292,7 +289,7 @@
             });
             var btn = document.getElementById("btn-5050");
             btn.disabled = true;
-            btn.textContent = "💡 Ajuda usada";
+            btn.textContent = "Ajuda usada";
             SBCH.som("acerto");
         }
 
@@ -321,7 +318,7 @@
                 SBCH.popupPontos(document.getElementById("pontos"), "+" + ganho);
                 fb.className = "feedback ok";
                 fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" +
-                    (multiplicador() > 1 ? " (🔥 ×" + multiplicador() + ")" : "") + "</strong><br>" + p.exp;
+                    (multiplicador() > 1 ? " (×" + multiplicador() + ")" : "") + "</strong><br>" + p.exp;
                 SBCH.som("acerto");
                 var st = document.getElementById("streak");
                 st.classList.remove("pulos"); void st.offsetWidth; st.classList.add("pulos");
@@ -329,14 +326,14 @@
             } else {
                 sequencia = 0;
                 fb.className = "feedback erro";
-                fb.innerHTML = "<strong>" + (escolha === -1 ? "⏰ Tempo esgotado!" : "✖ Resposta errada.") + "</strong><br>" + p.exp;
+                fb.innerHTML = "<strong>" + (escolha === -1 ? "Tempo esgotado!" : "Resposta errada.") + "</strong><br>" + p.exp;
                 SBCH.som("erro");
             }
 
             atualizarPlacar();
             var prox = document.getElementById("btn-proxima");
             prox.classList.remove("oculto");
-            prox.textContent = indice < TOTAL - 1 ? "Próxima pergunta ➜" : "Ver resultado 🏁";
+            prox.textContent = indice < TOTAL - 1 ? "Próxima pergunta ➜" : "Ver resultado";
         }
 
         function proxima() {
@@ -352,9 +349,9 @@
             document.getElementById("final-pontos").textContent = pontos;
 
             var totalAcertos = acertosPorDif.f + acertosPorDif.m + acertosPorDif.d;
-            if (pontos >= 1500) { document.getElementById("trofeu").textContent = "🏆"; document.getElementById("final-titulo").textContent = "Nível consultor Embrapa!"; }
-            else if (pontos >= 1000) { document.getElementById("trofeu").textContent = "🥈"; document.getElementById("final-titulo").textContent = "Nível produtor SBC!"; }
-            else { document.getElementById("trofeu").textContent = "🌱"; document.getElementById("final-titulo").textContent = "Bom começo!"; }
+            if (pontos >= 1500) { document.getElementById("final-titulo").textContent = "Nível consultor Embrapa!"; }
+            else if (pontos >= 1000) { document.getElementById("final-titulo").textContent = "Nível produtor SBC!"; }
+            else { document.getElementById("final-titulo").textContent = "Bom começo!"; }
             document.getElementById("final-msg").textContent =
                 "Você acertou " + totalAcertos + " de " + TOTAL + " perguntas. O quiz sorteia 8 de um banco de " + PERGUNTAS.length + " — jogue de novo e venha perguntas novas!";
 

@@ -46,7 +46,7 @@ var SBCH = (function () {
             return;
         }
         el.innerHTML = "";
-        var medalhas = ["🥇", "🥈", "🥉", "4º", "5º"];
+        var medalhas = ["1º", "2º", "3º", "4º", "5º"];
         lista.forEach(function (item, i) {
             var li = document.createElement("li");
             if (i === 0) li.className = "primeiro";
@@ -69,7 +69,7 @@ var SBCH = (function () {
         fundo.className = "modal-fundo";
         fundo.innerHTML =
             '<div class="modal-caixa">' +
-            "<h3>🏅 Registrado no ranking!</h3>" +
+            "<h3>Registrado no ranking!</h3>" +
             '<p class="sub">Deixe seu nome ou o nome da fazenda:</p>' +
             '<input id="sbc-nome" maxlength="22" placeholder="Seu nome / fazenda">' +
             '<button class="botao" id="sbc-nome-ok">Salvar</button>' +
@@ -92,8 +92,7 @@ var SBCH = (function () {
     /* ---------- Efeitos ---------- */
 
     function confete(cores) {
-        cores = cores || ["#2e7d32", "#e5a812", "#43a047", "#123a5f"];
-        var dourado = ["🎉", "🌱", "⭐", "🍃", "🌟"];
+        cores = cores || ["#176545", "#ffcc33", "#669933", "#5fb0d1"];
         for (var i = 0; i < 40; i++) {
             var p = document.createElement("div");
             p.className = "confete";
@@ -101,11 +100,6 @@ var SBCH = (function () {
             p.style.background = cores[i % cores.length];
             p.style.animationDelay = (Math.random() * 0.5) + "s";
             p.style.animationDuration = (1.5 + Math.random() * 0.9) + "s";
-            if (i % 6 === 0) {
-                p.style.background = "transparent";
-                p.textContent = dourado[i % dourado.length];
-                p.style.fontSize = "1.3em";
-            }
             document.body.appendChild(p);
             setTimeout(function (n) { return function () { n.remove(); }; }(p), 2600);
         }

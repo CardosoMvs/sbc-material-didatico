@@ -9,15 +9,13 @@
         .fase-chip {
             display: inline-block;
             background: var(--dourado);
-            color: var(--tinta);
-            font-weight: 900;
+            color: #fff;
+            font-weight: 800;
             font-size: 0.8em;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
             padding: 3px 12px;
             border-radius: 999px;
-            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
-            transform: rotate(-2deg);
         }
 
         .tempo-barra { height: 10px; background: #dde6dd; border: 2px solid #cfdccf; border-radius: 999px; overflow: hidden; margin: 10px 16px 0; }
@@ -33,9 +31,9 @@
 
         .resumo-fase { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .resumo-fase td { padding: 8px 10px; border-bottom: 2px solid #dfe8df; font-size: 0.95em; }
-        .resumo-fase td:last-child { text-align: right; font-weight: 900; color: var(--azul); white-space: nowrap; }
+        .resumo-fase td:last-child { text-align: right; font-weight: 800; color: var(--azul); white-space: nowrap; }
         .pulos { animation: pulsar 0.4s ease; }
-        @keyframes pulsar { 50% { transform: scale(1.25); } }
+        @keyframes pulsar { 50% { transform: scale(1.12); } }
     </style>
 </head>
 <body>
@@ -54,7 +52,7 @@
             <div class="nome">Pontos</div>
         </div>
         <div class="placar-item">
-            <div class="valor" id="streak">🔥 0</div>
+            <div class="valor" id="streak">0</div>
             <div class="nome">Sequência</div>
         </div>
         <div class="placar-item">
@@ -64,7 +62,7 @@
     </div>
 
     <main class="cartao" id="carta-area" style="padding:0;overflow:hidden;">
-        <div style="background:linear-gradient(160deg,var(--azul-escuro),#17456f);color:#cfe3f5;padding:12px 18px;font-size:0.85em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="background:linear-gradient(160deg,var(--verde-escuro),#669933);color:#e6f2e6;padding:12px 18px;font-size:0.85em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <span class="fase-chip" id="fase-chip">Pré-plantio</span>
             <span style="font-weight:800;">Safra do carbono — cada decisão conta</span>
         </div>
@@ -83,7 +81,6 @@
     </main>
 
     <main class="cartao tela-final oculto" id="tela-final">
-        <div class="trofeu" id="trofeu">🌱</div>
         <h2 id="final-titulo">Fim de jogo</h2>
         <span class="classe-sbc bronze" id="final-classe">Bronze SBC</span>
         <p id="final-msg" style="font-size:1.05em;"></p>
@@ -93,7 +90,7 @@
             <table class="resumo-fase" id="tabela-fases"></table>
         </div>
         <section style="margin-top:16px;text-align:left;">
-            <h2 style="font-size:1em;">🏅 Top decisões do estande</h2>
+            <h2 style="font-size:1em;">Top decisões do estande</h2>
             <ul class="lista-ranking" id="ranking"></ul>
         </section>
         <button class="botao" onclick="location.reload()">Jogar de novo</button>
@@ -174,7 +171,7 @@
 
         function atualizarPlacar() {
             document.getElementById("pts").textContent = pontos;
-            document.getElementById("streak").textContent = "🔥 " + sequencia;
+            document.getElementById("streak").textContent = sequencia;
             document.getElementById("prog").textContent = (posicao + 1) + "/" + ordem.length;
         }
 
@@ -226,13 +223,13 @@
                 pontos += ganho;
                 SBCH.popupPontos(document.getElementById("pts"), "+" + ganho);
                 fb.className = "feedback ok";
-                fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" + (sequencia > 1 ? " (sequência 🔥" + sequencia + ")" : "") + "</strong><br>" + carta.exp;
+                fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" + (sequencia > 1 ? " (sequência de " + sequencia + ")" : "") + "</strong><br>" + carta.exp;
                 SBCH.som("acerto");
                 if (sequencia >= 3) SBCH.confete();
             } else {
                 sequencia = 0;
                 fb.className = "feedback erro";
-                var cab = escolheuSBC === null ? "⏰ Tempo esgotado!" :
+                var cab = escolheuSBC === null ? "Tempo esgotado!" :
                     (escolheuSBC ? "Essa não é uma prática SBC." : "Essa é justamente uma prática SBC!");
                 fb.innerHTML = "<strong>" + cab + "</strong><br>" + carta.exp;
                 SBCH.som("erro");
@@ -241,7 +238,7 @@
             document.getElementById("acoes").style.display = "none";
             var prox = document.getElementById("btn-proxima");
             prox.classList.remove("oculto");
-            prox.textContent = posicao < ordem.length - 1 ? "Próxima situação ➜" : "Ver relatório da safra 🏁";
+            prox.textContent = posicao < ordem.length - 1 ? "Próxima situação ➜" : "Ver relatório da safra";
             atualizarPlacar();
         }
 
@@ -253,21 +250,20 @@
 
         function finalizar() {
             var acertos = acertosPorFase.reduce(function (a, b) { return a + b; }, 0);
-            var classe, titulo, icone;
-            if (pontos >= 320) { classe = "Ouro SBC"; titulo = "Safra de elite SBC!"; icone = "🏆"; }
-            else if (pontos >= 240) { classe = "Prata SBC"; titulo = "Grande safra — sua fazenda pensa em carbono"; icone = "🥈"; }
-            else if (pontos >= 150) { classe = "Bronze SBC"; titulo = "Boa safra — dá para afinar o manejo"; icone = "🥉"; }
-            else { classe = "Em transição"; titulo = "Safra em transição — vale uma conversa no estande"; icone = "🌱"; }
+            var classe, titulo;
+            if (pontos >= 320) { classe = "Ouro SBC"; titulo = "Safra de elite SBC!"; }
+            else if (pontos >= 240) { classe = "Prata SBC"; titulo = "Grande safra — sua fazenda pensa em carbono"; }
+            else if (pontos >= 150) { classe = "Bronze SBC"; titulo = "Boa safra — dá para afinar o manejo"; }
+            else { classe = "Em transição"; titulo = "Safra em transição — vale uma conversa no estande"; }
 
             var cEl = document.getElementById("final-classe");
             cEl.className = "classe-sbc " + (classe === "Ouro SBC" ? "ouro" : classe === "Prata SBC" ? "prata" : classe === "Bronze SBC" ? "bronze" : "");
-            document.getElementById("trofeu").textContent = icone;
             document.getElementById("final-titulo").textContent = titulo;
             document.getElementById("final-classe").textContent = classe;
             document.getElementById("final-msg").textContent =
                 "Você acertou " + acertos + " de " + ordem.length + " decisões.";
             document.getElementById("final-detalhe").textContent =
-                "Maior sequência: 🔥" + melhorSequencia + " · Fases percorridas: pré-plantio → plantio → condução → colheita.";
+                "Maior sequência: " + melhorSequencia + " · Fases percorridas: pré-plantio → plantio → condução → colheita.";
 
             var tabela = document.getElementById("tabela-fases");
             tabela.innerHTML = "";

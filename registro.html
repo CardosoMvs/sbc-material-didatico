@@ -10,7 +10,7 @@
         .campo label {
             display: block;
             font-size: 0.8em;
-            font-weight: 900;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--azul);
@@ -25,9 +25,8 @@
             font-weight: 600;
             color: var(--tinta);
             background: #fff;
-            border: 2px solid #cfdccf;
-            border-radius: 12px;
-            box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.10);
+            border: 1px solid var(--borda);
+            border-radius: 10px;
             transition: border-color 0.15s;
         }
         .campo input:focus, .campo select:focus {
@@ -64,7 +63,7 @@
     </header>
 
     <main class="cartao">
-        <h2>📋 Passou pelo estande? Deixe seu registro</h2>
+        <h2>Passou pelo estande? Deixe seu registro</h2>
         <p class="sub">A equipe do Programa SBC usa esta lista para acompanhar quem visitou o estande
         e poder retornar o contato com informações do selo.</p>
 
@@ -101,8 +100,8 @@
                     <option value="Mulher">Mulher</option>
                 </select>
             </div>
-            <button type="submit" class="botao">✅ Registrar visita</button>
-            <p class="aviso-privacidade">🔒 Os dados ficam somente neste tablet e são exportados pela equipe do estande.</p>
+            <button type="submit" class="botao">Registrar visita</button>
+            <p class="aviso-privacidade">Os dados ficam somente neste tablet e são exportados pela equipe do estande.</p>
         </form>
     </main>
 
@@ -118,9 +117,9 @@
                 <div class="nome">Hoje</div>
             </div>
         </div>
-        <p class="sub" style="text-align:center;">Obrigado! Seu registro ajuda o programa a levar o selo até a sua região. 🌱</p>
+        <p class="sub" style="text-align:center;">Obrigado! Seu registro ajuda o programa a levar o selo até a sua região.</p>
         <p style="text-align:center;margin:10px 0 0;">
-            <a href="painel.html" class="link-equipe" title="Acesso restrito à equipe">🔒 Área da equipe</a>
+            <a href="painel.html" class="link-equipe" title="Acesso restrito à equipe">Área da equipe</a>
         </p>
     </main>
 
@@ -188,7 +187,7 @@
             gravar(lista);
             desenhar();
             this.reset();
-            SBCH.popupPontos(document.getElementById("total-geral"), "✅ Registrado!");
+            SBCH.popupPontos(document.getElementById("total-geral"), "Registrado!");
             SBCH.confete();
             SBCH.som("vitoria");
         });

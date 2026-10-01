@@ -12,7 +12,6 @@
             margin: 40px auto;
             text-align: center;
         }
-        .porta .cadeado { font-size: 3em; display: block; margin-bottom: 6px; animation: quicar 0.6s ease; }
         .porta input {
             width: 100%;
             padding: 13px 14px;
@@ -23,15 +22,15 @@
             font-weight: 700;
             color: var(--tinta);
             background: #fff;
-            border: 2px solid #cfdccf;
-            border-radius: 12px;
-            box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.10);
+            border: 1px solid var(--borda);
+            border-radius: 10px;
             margin-bottom: 12px;
         }
         .porta input:focus { outline: none; border-color: var(--verde); }
         .porta .erro-senha { color: var(--carmim); font-weight: 800; min-height: 1.4em; font-size: 0.9em; }
         .porta .nota { font-size: 0.75em; color: var(--tinta-suave); margin-top: 14px; }
         .porta.tremer { animation: tremer 0.4s ease; }
+
 
         /* ---------- Gráficos (dataviz: rótulos diretos, uma cor por função) ---------- */
         .linha-barra {
@@ -67,7 +66,7 @@
             font-variant-numeric: tabular-nums;
         }
         .linha-barra.genero-h .preenchimento { background: #123a5f; }
-        .linha-barra.genero-m .preenchimento { background: #b3820a; }
+        .linha-barra.genero-m .preenchimento { background: #c79a00; }
         .linha-barra.genero-n .preenchimento { background: #9aa5a0; }
         .linha-barra:hover .trilho { background: #e2ece2; }
         .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.78em; color: var(--tinta-suave); margin: 4px 0 10px; }
@@ -98,7 +97,7 @@
             min-width: 640px;
         }
         .tabela th {
-            background: var(--azul-escuro);
+            background: var(--verde-escuro);
             color: #fff;
             font-size: 0.85em;
             text-transform: uppercase;
@@ -133,7 +132,6 @@
 
     <!-- Porta com senha -->
     <main class="cartao porta" id="tela-senha">
-        <span class="cadeado">🔒</span>
         <h2>Área da equipe</h2>
         <p class="sub">Digite a senha do estande para ver os registros dos produtores.</p>
         <form id="form-senha" autocomplete="off">
@@ -163,28 +161,28 @@
         </div>
 
         <main class="cartao">
-            <h2>🧑‍🌾 Quem visitou</h2>
+            <h2>Quem visitou</h2>
             <div class="legenda">
                 <span><i style="background:#123a5f;"></i>Homem</span>
-                <span><i style="background:#b3820a;"></i>Mulher</span>
+                <span><i style="background:#c79a00;"></i>Mulher</span>
                 <span><i style="background:#9aa5a0;"></i>Não informou</span>
             </div>
             <div id="graf-genero"></div>
         </main>
 
         <main class="cartao">
-            <h2>🗺️ Estados</h2>
+            <h2>Estados</h2>
             <div id="graf-estados"></div>
         </main>
 
         <main class="cartao">
-            <h2>🏙️ Cidades</h2>
+            <h2>Cidades</h2>
             <div id="graf-cidades"></div>
         </main>
 
         <main class="cartao">
-            <h2>📋 Registros</h2>
-            <input type="search" class="busca" id="busca" placeholder="🔎 Buscar por nome, fazenda, cidade, UF ou contato…">
+            <h2>Registros</h2>
+            <input type="search" class="busca" id="busca" placeholder="Buscar por nome, fazenda, cidade, UF ou contato…">
             <div class="tabela-wrap">
                 <table class="tabela">
                     <thead>
@@ -196,10 +194,10 @@
                 </table>
             </div>
             <div class="acoes-painel">
-                <button class="botao secundario" id="btn-exportar">📥 Exportar planilha (CSV)</button>
-                <button class="botao neutro" id="btn-limpar">🗑️ Limpar registros</button>
+                <button class="botao secundario" id="btn-exportar">Exportar planilha (CSV)</button>
+                <button class="botao neutro" id="btn-limpar">Limpar registros</button>
             </div>
-            <p class="sair"><a href="#" id="sair">🔒 Sair do painel</a></p>
+            <p class="sair"><a href="#" id="sair">Sair do painel</a></p>
         </main>
 
     </div>

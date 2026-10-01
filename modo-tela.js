@@ -7,9 +7,9 @@
 
     var SALVA = "sbc-modo-tela";
     var MODOS = [
-        { id: "celular", icone: "📱", nome: "Celular" },
-        { id: "tablet", icone: "📲", nome: "Tablet" },
-        { id: "tv", icone: "📺", nome: "TV" }
+        { id: "celular", nome: "Celular" },
+        { id: "tablet", nome: "Tablet" },
+        { id: "tv", nome: "TV" }
     ];
 
     function ler() {
@@ -37,14 +37,13 @@
         "body.modo-celular{zoom:1.25;}" +
         "body.modo-tv{zoom:1.35;}" +
         "#sbc-modos{position:fixed;top:8px;right:8px;z-index:80;display:flex;gap:2px;" +
-        "background:rgba(255,255,255,0.9);border:2px solid #bcd9c2;border-radius:999px;" +
-        "padding:3px;box-shadow:0 2px 0 rgba(27,77,42,0.18);font-family:inherit;}" +
-        "#sbc-modos button{border:0;background:transparent;border-radius:999px;" +
-        "padding:6px 12px;font:inherit;font-size:0.75em;font-weight:800;color:#2f4a23;" +
+        "background:rgba(255,255,255,0.95);border:1px solid #dfe5e1;border-radius:9px;" +
+        "padding:3px;box-shadow:0 1px 4px rgba(18,38,28,0.14);font-family:inherit;}" +
+        "#sbc-modos button{border:0;background:transparent;border-radius:7px;" +
+        "padding:6px 12px;font:inherit;font-size:0.75em;font-weight:700;color:#54635a;" +
         "line-height:1.2;cursor:pointer;-webkit-appearance:none;}" +
-        "#sbc-modos button.ativo{background:#2e7a3a;color:#fff;}" +
-        "@media (max-width:620px),(max-height:480px){#sbc-modos .rot{display:none;}" +
-        "#sbc-modos button{padding:6px 8px;}}";
+        "#sbc-modos button.ativo{background:#176545;color:#fff;}" +
+        "@media (max-width:620px),(max-height:480px){#sbc-modos button{padding:6px 9px;font-size:0.7em;}}";
     document.head.appendChild(estilo);
 
     var barra = document.createElement("div");
@@ -54,10 +53,9 @@
         var b = document.createElement("button");
         b.type = "button";
         b.title = "Ver como " + m.nome.toLowerCase();
-        b.appendChild(document.createTextNode(m.icone));
         var rot = document.createElement("span");
         rot.className = "rot";
-        rot.textContent = " " + m.nome;
+        rot.textContent = m.nome;
         b.appendChild(rot);
         b.addEventListener("click", function () { guardar(m.id); });
         barra.appendChild(b);

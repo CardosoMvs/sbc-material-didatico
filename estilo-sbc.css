@@ -1,27 +1,49 @@
 /* ============================================================
    Identidade visual SBC – Soja Baixo Carbono (Embrapa Soja)
    Design system compartilhado pelos jogos do estande.
-   Estilo "arcade na fazenda": botões 3D, HUD, juice e cenário.
-   100% offline: nenhuma fonte ou recurso externo.
+   Cores e botões derivados do site oficial do programa
+   (sbc.cnpso.embrapa.br) · fonte Roboto embutida (offline).
    ============================================================ */
 
+/* ---------- Roboto (arquivo local, offline) ---------- */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("fonte/roboto-var-latinext.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("fonte/roboto-var-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
-    --verde-escuro: #1b4d2a;
-    --verde: #2e7d32;
-    --verde-vivo: #43a047;
-    --verde-claro: #e7f3e9;
-    --azul: #123a5f;
-    --azul-escuro: #0d2a45;
-    --dourado: #e5a812;
-    --dourado-claro: #fdf3d7;
-    --carmim: #c62828;
+    /* Paleta oficial do site SBC (elementor-kit-6) */
+    --verde-escuro: #176545;  /* primary: títulos, HUD, faixa de capa */
+    --verde: #669933;         /* accent: hovers, verde-oliva */
+    --verde-vivo: #7ABB1F;
+    --verde-claro: #e9f2eb;
+    --dourado: #ffcc33;       /* secondary: botões e destaques */
+    --dourado-claro: #fff6db;
+    --carmim: #b03a2e;
     --carmim-claro: #fdecea;
-    --tinta: #1f2d24;
-    --tinta-suave: #5c6b60;
-    --fundo: #eef3ee;
+    --azul: #2a6e8e;          /* azul-água da marca (escurecido p/ contraste) */
+    --agua: #5fb0d1;
+    --agua-claro: #e7f5ff;
+    --tinta: #1c1c1c;
+    --tinta-suave: #55605a;
+    --fundo: #f2f5f3;
     --cartao: #ffffff;
-    --sombra: 6px 6px 0 rgba(27, 77, 42, 0.16);
-    --raio: 18px;
+    --borda: #dfe5e1;
+    --sombra: 0 1px 3px rgba(18, 38, 28, 0.08), 0 10px 28px rgba(18, 38, 28, 0.06);
+    --raio: 12px;
 }
 
 * { box-sizing: border-box; }
@@ -30,71 +52,29 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
     margin: 0;
-    padding: 16px;
+    padding: 24px 32px 40px;
     min-height: 100vh;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     font-size: 17px;
-    line-height: 1.5;
+    line-height: 1.55;
     color: var(--tinta);
-    background:
-        radial-gradient(rgba(27, 77, 42, 0.05) 1px, transparent 1.4px),
-        linear-gradient(180deg, #cfe6f7 0%, #e9f3e2 42%, #dcecda 100%);
-    background-size: 24px 24px, 100% 100%;
-    background-attachment: fixed;
-    -webkit-tap-highlight-color: rgba(46, 125, 50, 0.15);
+    background: linear-gradient(180deg, #f4f6f5 0%, #eef2ef 100%);
+    -webkit-tap-highlight-color: rgba(102, 153, 51, 0.12);
 }
 
-/* Céu vivo: nuvens atravessando e folha caindo (puro CSS, decorativo) */
-body::before {
-    content: "☁️☁️☁️☁️";
-    position: fixed;
-    top: 8px;
-    left: 0;
-    font-size: 44px;
-    line-height: 1;
-    letter-spacing: 24vw;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: -1;
-    opacity: 0.85;
-    animation: nuvens 80s linear infinite;
-}
-
-body::after {
-    content: "🍃";
-    position: fixed;
-    top: -8vh;
-    right: 12vw;
-    font-size: 26px;
-    pointer-events: none;
-    z-index: -1;
-    animation: folha 9s linear infinite;
-}
-
-@keyframes nuvens {
-    from { transform: translateX(-35vw); }
-    to   { transform: translateX(165vw); }
-}
-
-@keyframes folha {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-    8%   { opacity: 0.9; }
-    100% { transform: translate(-16vw, 114vh) rotate(780deg); opacity: 0.45; }
-}
-
-/* ---------- Cabeçalho padrão dos jogos (banner de tela) ---------- */
+/* ---------- Cabeçalho padrão dos jogos ---------- */
 .topo {
     display: flex;
     align-items: center;
     gap: 14px;
-    max-width: 640px;
+    max-width: 1140px;
     margin: 0 auto 18px;
-    padding: 12px 16px;
-    background: linear-gradient(160deg, var(--azul-escuro) 0%, #11426a 45%, #14522e 100%);
-    border: 3px solid #081e33;
+    padding: 14px 18px;
+    background: var(--cartao);
+    border-left: 5px solid var(--dourado);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
-    animation: entrar 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    animation: entrar 0.35s ease-out backwards;
 }
 
 .voltar {
@@ -102,125 +82,101 @@ body::after {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: var(--cartao);
-    border: 2.5px solid var(--verde-escuro);
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid var(--verde);
     color: var(--verde-escuro);
-    font-size: 24px;
-    font-weight: 900;
+    font-size: 20px;
+    font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 4px 0 var(--verde-escuro);
-    transition: transform 0.08s, box-shadow 0.08s;
+    transition: background 0.15s, color 0.15s;
 }
-
-.voltar:active { transform: translateY(4px); box-shadow: 0 0 0 var(--verde-escuro); }
+.voltar:hover { background: var(--verde-claro); }
+.voltar:active { transform: translateY(1px); }
 
 .titulo-bloco { min-width: 0; }
 
 .selo {
     display: inline-block;
     font-size: 0.72em;
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #8a6d0b;
-    background: var(--dourado-claro);
-    border: 1.5px solid var(--dourado);
+    color: var(--verde-escuro);
+    background: var(--dourado);
     border-radius: 999px;
     padding: 2px 12px;
 }
 
 .titulo {
     margin: 4px 0 0;
-    font-size: 1.35em;
+    font-size: 1.32em;
     font-weight: 900;
-    color: var(--azul);
-    text-transform: uppercase;
-    letter-spacing: 0.01em;
+    color: var(--verde-escuro);
     line-height: 1.2;
-}
-
-.topo .selo {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffd54d;
-    border-color: rgba(255, 213, 77, 0.45);
-}
-
-.topo .titulo {
-    color: #fff;
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ---------- Cartão ---------- */
 .cartao {
-    max-width: 640px;
+    max-width: 1140px;
     margin: 0 auto 16px;
     background: var(--cartao);
-    border: 2px solid #dfe8df;
+    border: 1px solid var(--borda);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
-    padding: 20px;
-    animation: entrar 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    padding: 22px 26px;
+    animation: entrar 0.35s ease-out backwards;
 }
 
-.cartao h2 { margin: 0 0 6px; color: var(--azul); font-size: 1.15em; font-weight: 900; }
+.cartao h2 { margin: 0 0 6px; color: var(--verde-escuro); font-size: 1.1em; font-weight: 900; }
 .cartao p { margin: 6px 0; }
 .sub { color: var(--tinta-suave); font-size: 0.95em; }
 
-/* ---------- Botões 3D (afundam ao apertar) ---------- */
+/* ---------- Botões (padrão do site oficial: amarelo + verde) ---------- */
 .botao {
     display: block;
     width: 100%;
-    min-height: 60px;
+    min-height: 54px;
     padding: 12px 18px;
-    border: none;
-    border-radius: 14px;
-    background: var(--verde);
-    color: #fff;
+    border: 2px solid var(--dourado);
+    border-radius: 10px;
+    background: var(--dourado);
+    color: var(--verde-escuro);
     font-family: inherit;
-    font-size: 1.05em;
-    font-weight: 800;
+    font-size: 1em;
+    font-weight: 700;
     letter-spacing: 0.01em;
     cursor: pointer;
-    box-shadow: 0 5px 0 var(--verde-escuro), 0 7px 12px rgba(13, 42, 69, 0.15);
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    transition: background 0.15s, color 0.15s, transform 0.08s;
 }
 
-.botao:active {
-    transform: translateY(5px);
-    box-shadow: 0 0 0 var(--verde-escuro), 0 2px 6px rgba(13, 42, 69, 0.15);
-}
+.botao:hover { background: var(--verde); border-color: var(--verde); color: var(--dourado); }
+.botao:active { transform: translateY(1px); }
 
-.botao.secundario { background: var(--azul); box-shadow: 0 5px 0 #071a2d, 0 7px 12px rgba(13, 42, 69, 0.15); }
-.botao.secundario:active { box-shadow: 0 0 0 #071a2d, 0 2px 6px rgba(13, 42, 69, 0.15); }
-.botao.neutro { background: #e2e8e2; color: var(--tinta); box-shadow: 0 5px 0 #b6c2b6, 0 7px 12px rgba(13, 42, 69, 0.10); }
-.botao.neutro:active { box-shadow: 0 0 0 #b6c2b6, 0 2px 6px rgba(13, 42, 69, 0.10); }
+.botao.secundario { background: var(--verde-escuro); border-color: var(--verde-escuro); color: #fff; }
+.botao.secundario:hover { background: var(--verde); border-color: var(--verde); color: var(--dourado); }
+.botao.neutro { background: #e6eae7; border-color: #e6eae7; color: var(--tinta); }
+.botao.neutro:hover { background: #dce1dd; border-color: #dce1dd; color: var(--tinta); }
 .botao + .botao { margin-top: 10px; }
 
-/* ---------- Barra de progresso (listras em movimento) ---------- */
+/* ---------- Barra de progresso ---------- */
 .barra {
     position: relative;
-    height: 34px;
-    background: #dde6dd;
-    border: 2px solid #cfdccf;
-    border-radius: 12px;
+    height: 30px;
+    background: #e4eae6;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
     overflow: hidden;
 }
 
 .barra-preenchimento {
     height: 100%;
-    border-radius: 10px;
+    border-radius: 7px;
     background: var(--verde);
-    background-image: repeating-linear-gradient(45deg,
-        rgba(255, 255, 255, 0.25) 0 10px, rgba(255, 255, 255, 0) 10px 20px);
-    background-size: 28.3px 28.3px;
-    animation: listras 0.7s linear infinite;
-    transition: width 0.5s ease, background-color 0.5s ease;
+    transition: width 0.5s ease;
 }
-
-@keyframes listras { to { background-position: 28.3px 0; } }
 
 .barra-rotulo {
     position: absolute;
@@ -228,7 +184,8 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: 700;
+    font-size: 0.9em;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
@@ -237,32 +194,30 @@ body::after {
 .opcao {
     display: block;
     width: 100%;
-    min-height: 60px;
+    min-height: 56px;
     padding: 12px 16px;
     margin-bottom: 10px;
-    border: 2px solid #cfdccf;
-    border-radius: 14px;
+    border: 1px solid var(--borda);
+    border-radius: 9px;
     background: #fff;
     color: var(--tinta);
     font-family: inherit;
-    font-size: 1.02em;
-    font-weight: 700;
+    font-size: 1em;
+    font-weight: 600;
     text-align: left;
     cursor: pointer;
-    box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.14);
-    transition: border-color 0.15s, background 0.15s, transform 0.08s, box-shadow 0.08s;
+    transition: border-color 0.15s, background 0.15s;
 }
+.opcao:hover:not(:disabled) { border-color: var(--verde); background: var(--verde-claro); }
+.opcao.certa { border-color: var(--verde); background: var(--verde-claro); }
+.opcao.errada { border-color: var(--carmim); background: var(--carmim-claro); }
+.opcao:disabled { cursor: default; opacity: 0.75; }
 
-.opcao:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(27, 77, 42, 0.14); }
-.opcao.certa { border-color: var(--verde); background: var(--verde-claro); animation: pular 0.35s ease; }
-.opcao.errada { border-color: var(--carmim); background: var(--carmim-claro); animation: tremer 0.4s ease; }
-.opcao:disabled { cursor: default; }
-
-/* ---------- Feedback (tremida no erro, pulo no acerto) ---------- */
+/* ---------- Feedback ---------- */
 .feedback {
     margin-top: 12px;
     padding: 14px 16px;
-    border-radius: 12px;
+    border-radius: 9px;
     font-size: 0.98em;
     display: none;
 }
@@ -270,17 +225,15 @@ body::after {
 .feedback.ok {
     display: block;
     background: var(--verde-claro);
-    border: 2px solid var(--verde);
-    border-left-width: 8px;
-    animation: pular 0.35s ease;
+    border: 1px solid var(--verde);
+    border-left-width: 4px;
 }
 
 .feedback.erro {
     display: block;
     background: var(--carmim-claro);
-    border: 2px solid var(--carmim);
-    border-left-width: 8px;
-    animation: tremer 0.45s ease;
+    border: 1px solid var(--carmim);
+    border-left-width: 4px;
 }
 
 /* ---------- Placar / HUD ---------- */
@@ -288,32 +241,33 @@ body::after {
     display: flex;
     gap: 10px;
     justify-content: space-between;
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
     margin-bottom: 16px;
 }
 
 .placar-item {
     flex: 1;
-    background: linear-gradient(180deg, #17456f 0%, var(--azul-escuro) 100%);
-    border: 2px solid #0a2036;
-    border-radius: 14px;
-    box-shadow: 0 4px 0 rgba(10, 32, 54, 0.5);
-    padding: 10px 8px;
+    background: var(--verde-escuro);
+    border-radius: 10px;
+    padding: 12px 10px;
     text-align: center;
 }
 
 .placar-item .valor {
-    font-size: 1.3em;
-    font-weight: 900;
-    color: #ffd54d;
+    font-size: 1.25em;
+    font-weight: 800;
+    color: var(--dourado);
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 .placar-item .nome {
-    font-size: 0.78em;
-    color: #9fc3e8;
+    font-size: 0.75em;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
 }
 
 /* Pontos que sobem flutuando ("+45") */
@@ -321,16 +275,16 @@ body::after {
     position: fixed;
     z-index: 60;
     pointer-events: none;
-    font-size: 1.4em;
-    font-weight: 900;
-    color: var(--verde);
-    text-shadow: -2px 0 #fff, 2px 0 #fff, 0 -2px #fff, 0 2px #fff, 0 3px 0 rgba(0, 0, 0, 0.2);
+    font-size: 1.3em;
+    font-weight: 800;
+    color: var(--verde-escuro);
+    text-shadow: -2px 0 #fff, 2px 0 #fff, 0 -2px #fff, 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.15);
     animation: subirPontos 1s ease-out forwards;
 }
 
 @keyframes subirPontos {
-    from { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
-    to   { transform: translate(-50%, -170%) scale(1.15); opacity: 0; }
+    from { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
+    to   { transform: translate(-50%, -170%) scale(1.05); opacity: 0; }
 }
 
 /* ---------- Ranking ---------- */
@@ -340,29 +294,27 @@ body::after {
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    border: 2px solid #dfe8df;
-    border-radius: 12px;
-    background: #f2f6f2;
-    box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.08);
+    padding: 11px 14px;
+    margin-bottom: 7px;
+    border: 1px solid var(--borda);
+    border-radius: 9px;
+    background: #fafbfa;
 }
 
 .lista-ranking li.primeiro {
     background: var(--dourado-claro);
     border-color: var(--dourado);
-    transform: rotate(-1deg);
 }
 
 .lista-ranking li .nome-rank { font-weight: 600; overflow-wrap: anywhere; }
-.lista-ranking li .valor-rank { font-weight: 900; color: var(--azul); white-space: nowrap; }
+.lista-ranking li .valor-rank { font-weight: 800; color: var(--azul); white-space: nowrap; }
 .vazio-rank { color: var(--tinta-suave); font-style: italic; }
 
 /* ---------- Modal (entrada de nome no touch) ---------- */
 .modal-fundo {
     position: fixed;
     inset: 0;
-    background: rgba(13, 42, 69, 0.6);
+    background: rgba(23, 101, 69, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -374,49 +326,41 @@ body::after {
     width: 100%;
     max-width: 420px;
     background: var(--cartao);
-    border: 3px solid var(--verde-escuro);
+    border: 1px solid var(--borda);
     border-radius: var(--raio);
     padding: 22px;
-    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12px 40px rgba(23, 101, 69, 0.35);
     text-align: center;
-    animation: entrar 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: entrar 0.25s ease-out;
 }
 
-.modal-caixa h3 { margin: 0 0 6px; color: var(--azul); font-weight: 900; }
+.modal-caixa h3 { margin: 0 0 6px; color: var(--verde-escuro); font-weight: 800; }
 .modal-caixa input {
     width: 100%;
     margin: 12px 0;
     padding: 14px;
     font-size: 1.1em;
     font-family: inherit;
-    border: 2px solid #cfdccf;
-    border-radius: 10px;
+    border: 2px solid var(--borda);
+    border-radius: 9px;
 }
 
 /* ---------- Tela final ---------- */
 .tela-final { text-align: center; }
-.tela-final .trofeu {
-    font-size: 3em;
-    line-height: 1;
-    display: inline-block;
-    animation: quicar 1.6s ease-in-out infinite;
-}
-.tela-final h2 { font-size: 1.5em; font-weight: 900; }
+.tela-final h2 { font-size: 1.4em; font-weight: 800; }
 
 .classe-sbc {
     display: inline-block;
-    margin: 10px 0;
-    padding: 8px 22px;
+    margin: 8px 0;
+    padding: 7px 20px;
     border-radius: 999px;
-    font-weight: 900;
-    letter-spacing: 0.04em;
+    font-weight: 700;
+    letter-spacing: 0.03em;
     color: #fff;
     background: var(--verde);
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
-    transform: rotate(-2deg);
 }
 
-.classe-sbc.ouro { background: var(--dourado); color: var(--tinta); }
+.classe-sbc.ouro { background: var(--dourado); color: var(--verde-escuro); }
 .classe-sbc.prata { background: #8a9aa8; }
 .classe-sbc.bronze { background: #a05a2c; }
 
@@ -424,31 +368,33 @@ body::after {
 .confete {
     position: fixed;
     top: -12px;
-    width: 10px;
-    height: 16px;
-    border-radius: 3px;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
     z-index: 40;
     pointer-events: none;
     animation: cair 1.8s ease-in forwards;
 }
 
 @keyframes cair {
-    to { transform: translateY(105vh) rotate(540deg); opacity: 0.7; }
+    to { transform: translateY(105vh) rotate(420deg); opacity: 0.6; }
 }
 
 /* ---------- Rodapé ---------- */
 .rodape {
-    max-width: 640px;
-    margin: 24px auto 8px;
+    max-width: 1140px;
+    margin: 28px auto 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--borda);
     text-align: center;
-    font-size: 0.85em;
+    font-size: 0.82em;
     color: var(--tinta-suave);
 }
 
 .rodape .logo-rodape {
     display: block;
     margin: 0 auto 6px;
-    height: 36px;
+    height: 34px;
 }
 
 /* ---------- Telas alternáveis ---------- */
@@ -456,40 +402,13 @@ body::after {
 
 /* ---------- Animações compartilhadas ---------- */
 @keyframes entrar {
-    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    from { opacity: 0; transform: translateY(10px); }
 }
 
-@keyframes pular {
-    0% { transform: scale(0.92); }
-    55% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
+@keyframes pulsar { 50% { transform: scale(1.08); } }
+@keyframes tremer { 0% { transform: translateX(-2px); } 100% { transform: translateX(2px); } }
 
-@keyframes tremer {
-    10%, 90% { transform: translateX(-2px); }
-    20%, 80% { transform: translateX(3px); }
-    30%, 50%, 70% { transform: translateX(-5px); }
-    40%, 60% { transform: translateX(5px); }
-}
-
-@keyframes quicar {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-9px); }
-}
-
-@keyframes piscar {
-    50% { opacity: 0.25; }
-}
-
-/* ---------- Responsivo ---------- */
-@media (max-width: 420px) {
-    body { padding: 12px; font-size: 16px; }
-    .cartao { padding: 16px; }
-    .titulo { font-size: 1.2em; }
-}
-
-/* ---------- Acessibilidade: menos movimento ---------- */
 @media (prefers-reduced-motion: reduce) {
-    body::before, body::after, .confete, .barra-preenchimento { animation: none !important; }
+    .confete { animation: none !important; }
     * { animation-duration: 0.01s !important; animation-iteration-count: 1 !important; }
 }

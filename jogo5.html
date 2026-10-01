@@ -9,7 +9,7 @@
         /* Jogo 5: diorama 3D explorável (Three.js) dentro da moldura
            de madeira — a maquete digital do estande, girável e viva. impor */
 
-        .topo, .hud-maquete { max-width: 1080px; }
+        .topo, .hud-maquete { max-width: 1140px; }
 
         /* ---------- HUD do explorador ---------- */
         .hud-maquete { margin-bottom: 14px; }
@@ -23,19 +23,19 @@
         .ano-seletor { display: flex; gap: 8px; margin-top: 14px; }
         .ano-btn {
             flex: 1;
-            padding: 10px 6px 8px;
-            border: 2.5px solid #cfdccf;
-            border-radius: 14px;
+            padding: 10px 6px 9px;
+            border: 1px solid var(--borda);
+            border-radius: 10px;
             background: #fff;
             font-family: inherit;
             font-size: 1em;
-            font-weight: 900;
+            font-weight: 700;
             color: var(--tinta);
             cursor: pointer;
-            box-shadow: 0 4px 0 rgba(27, 77, 42, 0.14);
-            transition: transform 0.08s, box-shadow 0.08s, background 0.15s, border-color 0.15s, color 0.15s;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
-        .ano-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(27, 77, 42, 0.14); }
+        .ano-btn:active { transform: translateY(1px); }
+        .ano-btn:hover:not(.ativo) { border-color: var(--verde); background: var(--verde-claro); }
         .ano-btn small {
             display: block;
             font-size: 0.72em;
@@ -43,30 +43,30 @@
             opacity: 0.75;
             margin-top: 2px;
         }
-        .ano-btn.ativo { background: var(--verde); border-color: var(--verde-escuro); color: #fff; box-shadow: 0 4px 0 var(--verde-escuro); }
+        .ano-btn.ativo { background: var(--verde); border-color: var(--verde); color: #fff; }
         .ano-btn.ativo small { opacity: 0.9; }
 
         .barra-maquete { margin-top: 14px; }
 
         /* ---------- Caixa da maquete (moldura de madeira + cena 3D) ---------- */
         .maquete-box {
-            max-width: 1080px;
+            max-width: 1140px;
             margin: 0 auto 16px;
             padding: 10px;
             background: #6b4a2b;
             background-image:
                 repeating-linear-gradient(93deg, rgba(0,0,0,0.13) 0 2px, rgba(255,255,255,0.04) 2px 4px, transparent 4px 11px),
                 linear-gradient(180deg, #7a5533 0%, #5d3f24 100%);
-            border: 3px solid #3f2a13;
-            border-radius: 22px;
-            box-shadow: var(--sombra), inset 0 0 26px rgba(0, 0, 0, 0.4), inset 0 3px 0 rgba(255,255,255,0.16), inset 0 -3px 0 rgba(0,0,0,0.3);
-            animation: entrar 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards;
+            border: 2px solid #3f2a13;
+            border-radius: 14px;
+            box-shadow: var(--sombra), inset 0 0 18px rgba(0, 0, 0, 0.3);
+            animation: entrar 0.35s ease-out 0.1s backwards;
         }
         #cena3d {
             position: relative;
             width: 100%;
             aspect-ratio: 31 / 20;
-            border-radius: 14px;
+            border-radius: 9px;
             overflow: hidden;
             background: #a5d4f2;
             cursor: grab;
@@ -123,7 +123,7 @@
             border: none;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.92);
-            color: #1b4d2a;
+            color: var(--verde-escuro);
             font-size: 1.25em;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
@@ -148,7 +148,7 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            border: 3px solid #1b4d2a;
+            border: 3px solid var(--verde-escuro);
             background: rgba(255, 255, 255, 0.96);
             font-size: 18px;
             line-height: 1;
@@ -168,7 +168,7 @@
             100% { box-shadow: 0 0 0 15px rgba(255, 213, 77, 0), 0 3px 8px rgba(0, 0, 0, 0.35); }
         }
         .marcador.feito {
-            background: #1b4d2a;
+            background: var(--verde-escuro);
             color: #fff;
             border-color: #fff;
             animation: none;
@@ -211,21 +211,20 @@
             justify-content: center;
             font-size: 1.7em;
             background: #f3ead9;
-            border: 2.5px solid #7a5b36;
-            border-radius: 14px;
-            transform: rotate(-3deg);
+            border: 2px solid #7a5b36;
+            border-radius: 12px;
         }
         .ficha-cabeca h2 { margin: 0; flex: 1; font-size: 1.1em; color: var(--verde-escuro); }
         .ficha-fechar {
             flex: none;
             width: 42px;
             height: 42px;
-            border-radius: 12px;
-            border: 2.5px solid #cfdccf;
+            border-radius: 10px;
+            border: 1px solid var(--borda);
             background: #fff;
             font-family: inherit;
             font-size: 1.05em;
-            font-weight: 900;
+            font-weight: 800;
             color: var(--tinta-suave);
             cursor: pointer;
         }
@@ -236,8 +235,8 @@
             align-items: center;
             gap: 10px;
             padding: 9px 12px;
-            border-radius: 12px;
-            border: 2px solid #cfdccf;
+            border-radius: 10px;
+            border: 1px solid var(--borda);
             background: #fff;
             font-family: inherit;
             text-align: left;
@@ -247,7 +246,7 @@
         .ficha-linha-e .tag-ano {
             flex: none;
             font-size: 0.8em;
-            font-weight: 900;
+            font-weight: 800;
             padding: 3px 10px;
             border-radius: 999px;
             background: #e7f0e3;
@@ -290,13 +289,13 @@
             margin-top: 12px;
             padding: 11px 14px;
             background: var(--dourado-claro);
-            border: 2px solid var(--dourado);
-            border-left-width: 8px;
-            border-radius: 12px;
+            border: 1px solid var(--dourado);
+            border-left-width: 4px;
+            border-radius: 10px;
             font-size: 0.93em;
         }
-        .ficha-sbc strong { color: #8a6d0b; }
-        .ficha-nova { display: inline-block; margin-left: 8px; font-size: 0.7em; vertical-align: middle; padding: 3px 10px; border-radius: 999px; background: var(--verde); color: #fff; font-weight: 900; letter-spacing: 0.04em; }
+        .ficha-sbc strong { color: #7c5e09; }
+        .ficha-nova { display: inline-block; margin-left: 8px; font-size: 0.7em; vertical-align: middle; padding: 3px 10px; border-radius: 999px; background: var(--verde); color: #fff; font-weight: 700; letter-spacing: 0.04em; }
     </style>
 </head>
 <body>
@@ -334,13 +333,13 @@
             <div class="barra-rotulo" id="barra-rotulo">Explore a fazenda!</div>
         </div>
         <div class="ano-seletor" id="ano-seletor">
-            <button class="ano-btn ativo" id="ano-1" onclick="trocarAno(1)">🌱 Ano 1<small>Solo exposto · sem contorno</small></button>
-            <button class="ano-btn" id="ano-2" onclick="trocarAno(2)">🌿 Ano 2<small>Contorno · mais cobertura</small></button>
-            <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">🌳 Ano 3<small>Sistema consolidado</small></button>
+            <button class="ano-btn ativo" id="ano-1" onclick="trocarAno(1)">Ano 1<small>Solo exposto · sem contorno</small></button>
+            <button class="ano-btn" id="ano-2" onclick="trocarAno(2)">Ano 2<small>Contorno · mais cobertura</small></button>
+            <button class="ano-btn" id="ano-3" onclick="trocarAno(3)">Ano 3<small>Sistema consolidado</small></button>
         </div>
-        <p class="dica-hud">💡 Gire a fazenda com o dedo ou o mouse, toque nos pontos e veja o manejo evoluir do Ano 1 ao Ano 3.</p>
+        <p class="dica-hud">Gire a fazenda com o dedo ou o mouse, toque nos pontos e veja o manejo evoluir do Ano 1 ao Ano 3.</p>
         <div id="visita-caixa">
-            <button class="botao neutro" id="btn-visita" type="button" onclick="iniciarVisitaGuiada()">🧭 Fazer a visita guiada</button>
+            <button class="botao" id="btn-visita" type="button" onclick="iniciarVisitaGuiada()">Fazer a visita guiada</button>
             <button class="botao neutro" id="btn-visita-zero" type="button" onclick="visitaDoInicio()" title="Retomar do início" aria-label="Retomar do início" style="display:none">⟲</button>
         </div>
     </div>
@@ -359,7 +358,7 @@
                 <button class="botao neutro vctrl vctrl-icone" type="button" onclick="encerrarVisita()" title="Encerrar a visita">✕</button>
                 <span class="visita-placar" id="visita-placar">1/12</span>
             </div>
-            <div class="dica-3d" id="dica-3d">🖱️ Arraste para girar · roda/pinça para zoom</div>
+            <div class="dica-3d" id="dica-3d">Arraste para girar · roda/pinça para zoom</div>
         </div>
     </div>
 
@@ -380,13 +379,12 @@
 
     <!-- Fim da exploração -->
     <main class="cartao tela-final oculto" id="tela-final">
-        <div class="trofeu">🏞️</div>
         <h2>Fazenda 100% explorada!</h2>
         <p style="font-size:1.1em;">Você fez <strong id="final-pontos" style="color:var(--azul)">0</strong> pontos percorrendo a evolução do manejo.</p>
         <span class="classe-sbc" id="final-classe">—</span>
         <p class="sub" id="final-msg"></p>
         <section style="margin-top:14px;text-align:left;">
-            <h2 style="font-size:1em;">🏅 Melhores exploradores do estande</h2>
+            <h2 style="font-size:1em;">Melhores exploradores do estande</h2>
             <ul class="lista-ranking" id="ranking"></ul>
         </section>
         <button class="botao" onclick="location.reload()">Explorar de novo</button>
@@ -395,7 +393,7 @@
 
     <!-- Recordes enquanto explora -->
     <main class="cartao" id="cartao-recordes">
-        <h2 style="font-size:1em;">🏅 Exploradores do estande</h2>
+        <h2 style="font-size:1em;">Exploradores do estande</h2>
         <ul class="lista-ranking" id="ranking-inicial"></ul>
     </main>
 
@@ -557,7 +555,7 @@
             var pct = descCount * 10;
             document.getElementById("barra-progresso").style.width = pct + "%";
             document.getElementById("barra-rotulo").textContent =
-                descCount === 10 ? "🏆 Fazenda 100% explorada!" : "Descobertas: " + descCount + " de 10";
+                descCount === 10 ? "Fazenda 100% explorada!" : "Descobertas: " + descCount + " de 10";
             [1, 2, 3].forEach(function (n) {
                 document.getElementById("ano-" + n).classList.toggle("ativo", n === anoAtual);
             });
@@ -645,12 +643,12 @@
                 "Você percorreu a evolução do manejo: mais palhada, plantio em contorno, diversidade de coberturas " +
                 "e natureza protegida — a receita do Soja Baixo Carbono: produzir mais, emitindo menos.";
             var classe = document.getElementById("final-classe");
-            if (pontos >= 150) classe.className = "classe-sbc ouro", classe.textContent = "🏅 OURO · Guardião do Carbono";
-            else if (pontos >= 120) classe.className = "classe-sbc prata", classe.textContent = "🥈 PRATA · Produtor de Baixo Carbono";
-            else classe.className = "classe-sbc bronze", classe.textContent = "🥉 BRONZE · Aprendiz do Campo";
+            if (pontos >= 150) classe.className = "classe-sbc ouro", classe.textContent = "OURO · Guardião do Carbono";
+            else if (pontos >= 120) classe.className = "classe-sbc prata", classe.textContent = "PRATA · Produtor de Baixo Carbono";
+            else classe.className = "classe-sbc bronze", classe.textContent = "BRONZE · Aprendiz do Campo";
 
             SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
-            SBCH.confete(["#2e7d32", "#e5a812", "#123a5f", "#43a047", "#8a5a33"]);
+            SBCH.confete(["#176545", "#ffcc33", "#669933", "#5fb0d1", "#8a5a33"]);
             SBCH.som("vitoria");
             SBCH.pedirNomeESalvar("maquete", pontos, true, function () {
                 SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
@@ -669,7 +667,7 @@
             if (modoPan) {
                 dica3d.textContent = "✥ Arraste para andar · 2 dedos para zoom · olhe de frente";
             } else {
-                dica3d.textContent = "🖱️ Arraste para girar · roda/pinça para zoom";
+                dica3d.textContent = "Arraste para girar · roda/pinça para zoom";
             }
         }
 
@@ -704,7 +702,7 @@
             if (!v) return;
             var txt = "cam: [" + v.cam.map(function (n) { return Math.round(n * 100) / 100; }).join(", ") +
                 "], alvo: [" + v.alvo.map(function (n) { return Math.round(n * 100) / 100; }).join(", ") + "]";
-            document.getElementById("dica-3d").textContent = "📋 " + txt;
+            document.getElementById("dica-3d").textContent = txt;
             try { navigator.clipboard.writeText(txt); } catch (e) {}
         }
         cena3d.addEventListener("dblclick", copiarVisao);
@@ -759,7 +757,7 @@
             anosVistos[passo.ano] = true;
             atualizarHud();
             document.getElementById("barra-rotulo").textContent =
-                "🧭 Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
+                "Visita guiada · " + (visitaPasso + 1) + " de " + ROTEIRO.length;
             document.getElementById("visita-placar").textContent = (visitaPasso + 1) + "/" + ROTEIRO.length;
             if (passo.cam) {
                 Maquete3D.voarPara(passo.cam, passo.alvo, VISITA_VOO);
@@ -839,8 +837,8 @@
             cena3d.classList.remove("visita");
             [1, 2, 3].forEach(function (n) { document.getElementById("ano-" + n).disabled = false; });
             document.getElementById("btn-visita").textContent = terminou
-                ? "🧭 Fazer a visita guiada"
-                : "🧭 Continuar a visita";
+                ? "Fazer a visita guiada"
+                : "Continuar a visita";
             document.getElementById("btn-visita-zero").style.display =
                 terminou ? "none" : "inline-block";
             clearInterval(visitaCrono);
@@ -902,7 +900,7 @@
         });
         if (!ok3d) {
             cena3d.innerHTML =
-                '<div class="aviso-webgl">⚠️ Este jogo precisa de WebGL (3D) ativado no navegador.<br>Tente abrir no Chrome ou Edge atualizado.</div>';
+                '<div class="aviso-webgl">Este jogo precisa de WebGL (3D) ativado no navegador.<br>Tente abrir no Chrome ou Edge atualizado.</div>';
         }
         montarHotspots();
         atualizarHud();

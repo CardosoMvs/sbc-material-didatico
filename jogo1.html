@@ -15,12 +15,11 @@
             gap: 10px;
             padding: 9px 12px;
             margin-bottom: 6px;
-            border-radius: 12px;
+            border-radius: 10px;
             background: #f2f6f2;
-            border: 2px solid #dfe8df;
-            box-shadow: 3px 3px 0 rgba(27, 77, 42, 0.10);
+            border: 1px solid var(--borda);
             font-size: 0.92em;
-            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+            transition: background 0.3s, border-color 0.3s;
         }
         .degrau .num {
             flex: none;
@@ -28,9 +27,9 @@
             height: 26px;
             border-radius: 9px;
             background: #e2e8e2;
-            border: 2px solid #cfdccf;
+            border: 1px solid #cfdccf;
             color: var(--tinta-suave);
-            font-weight: 900;
+            font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -39,9 +38,8 @@
         .degrau.ativo {
             background: var(--verde-claro);
             border-color: var(--verde);
-            box-shadow: 3px 3px 0 rgba(46, 125, 50, 0.3);
         }
-        .degrau.ativo .num { background: var(--verde); border-color: var(--verde-escuro); color: #fff; }
+        .degrau.ativo .num { background: var(--verde); border-color: var(--verde); color: #fff; }
         .degrau .estado { margin-left: auto; font-size: 1.1em; opacity: 0.35; }
         .degrau.ativo .estado { opacity: 1; }
 
@@ -62,7 +60,7 @@
             color: var(--verde-escuro);
             border-radius: 999px;
             font-size: 0.75em;
-            font-weight: 900;
+            font-weight: 800;
             padding: 1px 10px;
             margin-top: 4px;
         }
@@ -71,13 +69,12 @@
         .slider-linha input { width: 100%; accent-color: var(--verde); height: 36px; }
         .slider-valor {
             display: inline-block;
-            background: var(--azul-escuro);
-            color: #ffd54d;
-            font-weight: 900;
+            background: var(--verde-escuro);
+            color: var(--dourado);
+            font-weight: 800;
             font-variant-numeric: tabular-nums;
             padding: 1px 10px;
             border-radius: 8px;
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
         }
 
         .equiv { display: flex; gap: 10px; margin-top: 12px; }
@@ -124,7 +121,7 @@
         </section>
 
         <section class="cartao">
-            <h2>🪜 Escada da redução</h2>
+            <h2>Escada da redução</h2>
             <p class="sub">Os degraus do modelo SBC (Figura 1 do Comunicado Técnico 100) — adote cada grupo de práticas para descer.</p>
             <div class="degraus" id="degraus"></div>
         </section>
@@ -152,11 +149,11 @@
             </div>
             <div class="equiv">
                 <div class="placar-item" style="flex:1;">
-                    <div class="valor" id="res-carros">🚗 0</div>
+                    <div class="valor" id="res-carros">0</div>
                     <div class="nome">Carros fora da estrada/ano</div>
                 </div>
                 <div class="placar-item" style="flex:1;">
-                    <div class="valor" id="res-arvores">🌳 0</div>
+                    <div class="valor" id="res-arvores">0</div>
                     <div class="nome">Árvores plantadas/ano</div>
                 </div>
             </div>
@@ -168,7 +165,6 @@
 
     <main id="tela-final" class="oculto">
         <section class="cartao tela-final">
-            <div class="trofeu" id="final-icone">🌱</div>
             <h2 id="final-titulo">Sistema em transição</h2>
             <span class="classe-sbc bronze" id="final-classe">Em transição</span>
             <p id="final-resumo" style="font-size:1.05em;"></p>
@@ -185,7 +181,7 @@
             <a href="index.html" class="botao neutro" style="text-decoration:none;text-align:center;">Voltar ao menu</a>
         </section>
         <section class="cartao">
-            <h2>🏅 Melhores sistemas do estande (hoje)</h2>
+            <h2>Melhores sistemas do estande (hoje)</h2>
             <ul class="lista-ranking" id="ranking"></ul>
         </section>
     </main>
@@ -201,31 +197,31 @@
         "use strict";
 
         var PRATICAS = [
-            { id: "spd", icone: "🚜", nome: "Sistema Plantio Direto (SPD)",
+            { id: "spd", nome: "Sistema Plantio Direto (SPD)",
               desc: "Revololvimento mínimo + rotação e diversificação de culturas.",
               peso: 35, degrau: 1,
               fonte: "Imobiliza 3 t CO₂eq/ha·ano (60 t em 20 anos)." },
-            { id: "fbn", icone: "🦠", nome: "Fixação Biológica do Nitrogênio",
+            { id: "fbn", nome: "Fixação Biológica do Nitrogênio",
               desc: "Fim da adubação nitrogenada química + inoculantes.",
               peso: 20, degrau: 2,
               fonte: "Evita N₂O, gás com potencial de aquecimento 265× maior que o CO₂ (IPCC 2006)." },
-            { id: "coinoculacao", icone: "🧬", nome: "Coinoculação (Bradyrhizobium + Azospirillum)",
+            { id: "coinoculacao", nome: "Coinoculação (Bradyrhizobium + Azospirillum)",
               desc: "Aumenta a eficiência da fixação de nitrogênio.",
               peso: 10, degrau: 2,
               fonte: "Mais eficiência da FBN, mais produtividade, menos custo." },
-            { id: "adubacao", icone: "🧪", nome: "Adubação e correção de solo",
+            { id: "adubacao", nome: "Adubação e correção de solo",
               desc: "Análise de solo, calagem e adubação conforme recomendação técnica.",
               peso: 10, degrau: 2,
               fonte: "Boas práticas de adubação melhoram o carbono orgânico do solo e o balanço de GEEs." },
-            { id: "manejos", icone: "🔬", nome: "Manejos Integrados (pragas, doenças e daninhas)",
+            { id: "manejos", nome: "Manejos Integrados (pragas, doenças e daninhas)",
               desc: "Monitorar e aplicar produto químico só quando necessário.",
               peso: 15, degrau: 3,
               fonte: "Menos trânsito de máquinas = menos queima de combustível fóssil." },
-            { id: "ilpf", icone: "🌳", nome: "Integração Lavoura-Pecuária-Floresta",
+            { id: "ilpf", nome: "Integração Lavoura-Pecuária-Floresta",
               desc: "Diversifica o sistema; o componente arbóreo sequestra CO₂.",
               peso: 15, degrau: 5,
               fonte: "Aumenta o sequestro de carbono e gera renda extra." },
-            { id: "produtividade", icone: "📈", nome: "Aumentar produtividade e reduzir perdas",
+            { id: "produtividade", nome: "Aumentar produtividade e reduzir perdas",
               desc: "Menos emissões por tonelada produzida.",
               peso: 15, degrau: 4,
               fonte: "Dividir por mais grãos reduz o kg CO₂eq/t — o coração do IEGEE." }
@@ -261,7 +257,7 @@
                 item.className = "pratica-item";
                 item.innerHTML =
                     '<input type="checkbox" id="chk-' + p.id + '" onchange="recalcular()">' +
-                    "<span><strong>" + p.icone + " " + p.nome + "</strong><br>" +
+                    "<span><strong>" + p.nome + "</strong><br>" +
                     '<span class="sub">' + p.desc + " " + p.fonte + '</span><br>' +
                     '<span class="peso-badge">-' + p.peso + " no índice</span></span>";
                 cont.appendChild(item);
@@ -291,7 +287,7 @@
             texto.textContent = indice;
             texto.style.color = indice <= 50 ? "var(--verde)" : (indice <= 75 ? "var(--dourado)" : "#b0503f");
 
-            var status = indice <= 50 ? "Nível SBC 🌱 — redução de " + e.reducao + "%"
+            var status = indice <= 50 ? "Nível SBC — redução de " + e.reducao + "%"
                        : (indice <= 75 ? "Em transição — redução de " + e.reducao + "%"
                        : "Baseline convencional");
             document.getElementById("status-texto").textContent = status;
@@ -326,14 +322,13 @@
         function finalizar() {
             var e = estado();
             var indice = Math.max(20, 100 - e.reducao);
-            var classe, titulo, icone, cls;
+            var classe, titulo, cls;
 
-            if (indice <= 40) { classe = "Ouro SBC"; titulo = "Sistema pronto para o selo SBC!"; icone = "🏆"; cls = "classe-sbc ouro"; }
-            else if (indice <= 50) { classe = "Prata SBC"; titulo = "Padrão SBC alcançado"; icone = "🥈"; cls = "classe-sbc prata"; }
-            else if (indice <= 75) { classe = "Bronze SBC"; titulo = "Sistema em transição"; icone = "🥉"; cls = "classe-sbc bronze"; }
-            else { classe = "Baseline"; titulo = "Sistema convencional"; icone = "🚜"; cls = "classe-sbc"; }
+            if (indice <= 40) { classe = "Ouro SBC"; titulo = "Sistema pronto para o selo SBC!"; cls = "classe-sbc ouro"; }
+            else if (indice <= 50) { classe = "Prata SBC"; titulo = "Padrão SBC alcançado"; cls = "classe-sbc prata"; }
+            else if (indice <= 75) { classe = "Bronze SBC"; titulo = "Sistema em transição"; cls = "classe-sbc bronze"; }
+            else { classe = "Baseline"; titulo = "Sistema convencional"; cls = "classe-sbc"; }
 
-            document.getElementById("final-icone").textContent = icone;
             document.getElementById("final-titulo").textContent = titulo;
             var cEl = document.getElementById("final-classe");
             cEl.className = cls; cEl.textContent = classe;
@@ -343,7 +338,7 @@
             dicasEl.innerHTML = faltantes.length
                 ? "<strong>Para reduzir ainda mais o IEGEE:</strong><ul style='margin:6px 0 0;padding-left:20px;'>" +
                   faltantes.map(function (p) { return "<li>" + p.nome + "</li>"; }).join("") + "</ul>"
-                : "<p>✅ Você adotou <strong>todo o conjunto integrado de tecnologias SBC</strong> — é assim que se alcança redução de pelo menos 50% nas emissões.</p>";
+                : "<p>Você adotou <strong>todo o conjunto integrado de tecnologias SBC</strong> — é assim que se alcança redução de pelo menos 50% nas emissões.</p>";
 
             document.getElementById("tela-calculo").classList.add("oculto");
             document.getElementById("tela-final").classList.remove("oculto");

@@ -92,7 +92,7 @@ var Maquete3D = (function () {
     var rioCurvaEsq, rioCurvaDir;
     var rioAmoEsq = [], rioAmoDir = [], caminhoAmo = [], valeAmo = [];
     var ravinasT2Ano1 = [];
-    var drone, rotores = [], vacas = [], aves = [], borboletas = [], abelhas = [], nuvens = [];
+    var drone, rotores = [], vacas = [], aves = [], borboletas = [], abelhas = [];
     var espuma = [];
     var aguaMatEsq = null, espumaMatEsq = null;
     var aguas = [];
@@ -100,6 +100,7 @@ var Maquete3D = (function () {
     var posFixas = {};
     var MAT = {};
     var anoAtual = 1;
+    var oOrbita = null, oMapa = null, inspecaoAtiva = false;
 
     function mat(cor, transparente) {
         var chave = (transparente ? "t" : "") + cor;
@@ -1478,23 +1479,6 @@ var Maquete3D = (function () {
             aves.push(g);
             gCena.add(g);
         }
-        var matNuvem = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x8a95a0, flatShading: false, shininess: 0 });
-        var geoNuvem = new THREE.SphereGeometry(1, 10, 8);
-        [[-14, 13, -6, 2.2], [4, 15.5, -9, 1.6], [16, 12.5, -3, 1.9], [-2, 14, 8, 1.4], [10, 16, -12, 1.2]].forEach(function (n, k) {
-            var g = new THREE.Group();
-            for (var j = 0; j < 6; j++) {
-                var m = new THREE.Mesh(geoNuvem, matNuvem);
-                var sx = 1.2 + j * 0.22 + Math.random() * 0.2;
-                m.scale.set(sx, 0.45 + (j % 2) * 0.18, 0.75 + j * 0.1);
-                m.position.set(j * 1.0 - 2.5, (j % 2) * 0.4 + Math.random() * 0.15, (j % 2) * 0.5);
-                g.add(m);
-            }
-            g.position.set(n[0], n[1], n[2]);
-            g.scale.setScalar(n[3]);
-            g.userData.vel = 0.25 + k * 0.07;
-            nuvens.push(g);
-            gCena.add(g);
-        });
         var sol = new THREE.Mesh(new THREE.SphereGeometry(1.7, 20, 14),
             new THREE.MeshBasicMaterial({ color: 0xfff3c4 }));
         sol.position.set(22, 17, -26);
@@ -1638,8 +1622,79 @@ var Maquete3D = (function () {
         };
     }
 
+    /* ====================== vista fixa de cima ====================== */
+    /* travamento: sobe liso até uma tomada em cima do diorama e fica lá —
+       sem giro nem orbital; a leitura dos detalhes fica para a lente (abaixo) */
+    var visaoTopo = { ativo: false, camSalva: null, alvoSalva: null };
+    var zoomLupa = 12; // altura da lente do zoom (roda ajusta enquanto no modo topo)
+    function setVisaoTopo(ativo, instant) {
+        if (!camera || !controls) return false;
+        var quer = !!ativo;
+        function tomadaTopo() {
+            var dC = Math.min(ILHA_W / 2, 20);
+            return {
+                cam: new THREE.Vector3(0, dC / Math.tan(20 * Math.PI / 180) + 1.2, 0.004),
+                alvo: new THREE.Vector3(0, 0.4, 0)
+            };
+        }
+        if (quer === visaoTopo.ativo) {
+            if (instant && quer) { // já está no modo: só garante a tomada
+                var t2 = tomadaTopo();
+                camera.position.copy(t2.cam);
+                controls.target.copy(t2.alvo);
+            }
+            return true;
+        }
+        if (quer) {
+            visaoTopo.camSalva = camera.position.clone();
+            visaoTopo.alvoSalva = controls.target.clone();
+            if (oOrbita) oOrbita.autoRotate = false;
+            controls.enabled = false;
+            camera.up.set(0, 0, -1); // norte para cima (olhar reto p/ baixo degeneraria)
+            var tt = tomadaTopo();
+            if (instant) {
+                camera.position.copy(tt.cam);
+                controls.target.copy(tt.alvo);
+            } else {
+                voo = {
+                    t0: tGlobal, dur: 1.1,
+                    camDe: camera.position.clone(), camAte: tt.cam,
+                    alvoDe: controls.target.clone(), alvoAte: tt.alvo
+                };
+            }
+        } else {
+            controls.enabled = true;
+            camera.up.set(0, 1, 0); // volta ao degradê padrão do orbitar
+            if (visaoTopo.camSalva) {
+                if (instant) {
+                    camera.position.copy(visaoTopo.camSalva);
+                    controls.target.copy(visaoTopo.alvoSalva);
+                } else {
+                    voo = {
+                        t0: tGlobal, dur: 1.1,
+                        camDe: camera.position.clone(), camAte: visaoTopo.camSalva,
+                        alvoDe: controls.target.clone(), alvoAte: visaoTopo.alvoSalva
+                    };
+                }
+            }
+            if (pausarRotacao) pausarRotacao(); // retoma o giro sozinho após 18s
+        }
+        visaoTopo.ativo = quer;
+        return true;
+    }
+
+    function topoAtivo() { return visaoTopo.ativo; }
+
     function travarControles(travar) {
         if (controls) controls.enabled = !travar;
+    }
+
+    /* desenha um quadro na hora — chamar quando algo externo mexer na câmera
+       (fullscreen, troca de ano) sem precisar do rAF */
+    function renderUmaVez() {
+        if (!renderer || !scene) return;
+        renderer.render(scene, camera);
+        desenharLupa();
     }
 
     /* ====================== animação ====================== */
@@ -1706,10 +1761,6 @@ var Maquete3D = (function () {
             a.userData.asa1.rotation.z = 0.25 + flap;
             a.userData.asa2.rotation.z = -0.25 - flap;
         });
-        nuvens.forEach(function (n) {
-            n.position.x += n.userData.vel * dt;
-            if (n.position.x > 34) n.position.x = -34;
-        });
         borboletas.forEach(function (b) {
             var f = tGlobal * 0.9 + b.userData.f;
             var x = b.userData.cx + Math.sin(f) * 1.2;
@@ -1728,10 +1779,71 @@ var Maquete3D = (function () {
         });
 
         renderer.render(scene, camera);
+        desenharLupa();
         atualizarMarcadores();
     }
 
     var panAtivo = false;
+
+    /* ====================== lupa (aumento no ponteiro) ====================== */
+    /* mini-janela circular que segue o cursor e renderiza a MESMA cena de
+       perto do chão — leia placas, palhada e contorno sem tirar a vista de cima */
+    var lupa = null;
+    var cursor = { x: 0, y: 0, dentro: false };
+    function garantirLupa() {
+        if (lupa) return;
+        var d = document.createElement("div");
+        d.className = "sbc-lente";
+        d.style.cssText = "position:fixed;z-index:86;width:250px;height:250px;border-radius:50%;" +
+            "border:4px solid #ffcc31;box-shadow:0 12px 30px rgba(0,0,0,0.4), inset 0 0 22px rgba(0,0,0,0.22);" +
+            "overflow:hidden;pointer-events:none;display:none;";
+        document.body.appendChild(d);
+        var r2;
+        try { r2 = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { d.remove(); return; }
+        r2.setPixelRatio(1);
+        r2.shadowMap.enabled = false; // dentro da lente vai sem sombra: barato e estável
+        r2.setClearColor(0x87c3e4);
+        r2.setSize(250, 250);
+        d.appendChild(r2.domElement);
+        var c2 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
+        lupa = { div: d, r2: r2, c2: c2 };
+    }
+    function encaixarLupaTelaCheia() {
+        var fs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+        if (lupa && lupa.div.parentNode !== (fs || document.body)) {
+            (fs || document.body).appendChild(lupa.div);
+        }
+    }
+    function desenharLupa() {
+        if (cursor.dentro && visaoTopo.ativo && renderer.domElement) {
+            garantirLupa();
+            if (lupa) {
+                if (!raioCursor) {
+                    raioCursor = new THREE.Raycaster();
+                    planoCursor = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.8);
+                    pontoCursor = new THREE.Vector3();
+                    ndcCursor = new THREE.Vector2();
+                }
+                var b = renderer.domElement.getBoundingClientRect();
+                ndcCursor.set((cursor.x / b.width) * 2 - 1, -((cursor.y / b.height) * 2 - 1));
+                raioCursor.setFromCamera(ndcCursor, camera);
+                if (raioCursor.ray.intersectPlane(planoCursor, pontoCursor)) {
+                    var L = lupa.div.offsetWidth;
+                    lupa.div.style.left = Math.round(b.left + cursor.x - (L / 2 + 18)) + "px";
+                    lupa.div.style.top = Math.round(b.top + cursor.y - (L / 2 + 18)) + "px";
+                    lupa.div.style.display = "block";
+                    lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
+                    lupa.c2.up.set(0, 0, -1);
+                    lupa.c2.lookAt(pontoCursor.x, 0, pontoCursor.z);
+                    lupa.r2.render(scene, lupa.c2);
+                    return;
+                }
+            }
+        }
+        if (lupa) lupa.div.style.display = "none";
+    }
+    var planoCursor = null, raioCursor = null, pontoCursor = null, ndcCursor = null;
+
     function aoRedimensionar() {
         var w = container.clientWidth, h = container.clientHeight;
         if (!w || !h) return;
@@ -1747,14 +1859,13 @@ var Maquete3D = (function () {
         inspecaoAtiva = !!ativo;
         var anterior = controls;
         if (inspecaoAtiva) {
-            if (!mapControls) mapControls = criarMapControls();
-            mapControls.target.copy(orbitControls.target);
-            mapControls.enableDamping = true;
-            controls = mapControls;
+            oMapa.target.copy(oOrbita.target);
+            oMapa.enableDamping = true;
+            controls = oMapa;
         } else {
-            orbitControls.target.copy(mapControls ? mapControls.target : orbitControls.target);
-            orbitControls.autoRotate = false;
-            controls = orbitControls;
+            oOrbita.target.copy(oMapa ? oMapa.target : oOrbita.target);
+            oOrbita.autoRotate = false;
+            controls = oOrbita;
         }
         if (anterior && anterior !== controls) {
             anterior.enabled = false;
@@ -1814,19 +1925,18 @@ var Maquete3D = (function () {
         camera.position.set(28, 18.5, 34);
 
         // começa com OrbitControls (girar ao redor), mas pode trocar para inspeção livre
-        var orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-        orbitControls.target.set(0, 0.2, 0);
-        orbitControls.enableDamping = true;
-        orbitControls.dampingFactor = 0.08;
-        orbitControls.enablePan = true;
-        orbitControls.minDistance = 4;
-        orbitControls.maxDistance = 100;
-        orbitControls.minPolarAngle = 0.05;
-        orbitControls.maxPolarAngle = 1.58;
-        orbitControls.autoRotate = true;
-        orbitControls.autoRotateSpeed = 0.45;
+        oOrbita = new THREE.OrbitControls(camera, renderer.domElement);
+        oOrbita.target.set(0, 0.2, 0);
+        oOrbita.enableDamping = true;
+        oOrbita.dampingFactor = 0.08;
+        oOrbita.enablePan = true;
+        oOrbita.minDistance = 4;
+        oOrbita.maxDistance = 100;
+        oOrbita.minPolarAngle = 0.05;
+        oOrbita.maxPolarAngle = 1.58;
+        oOrbita.autoRotate = true;
+        oOrbita.autoRotateSpeed = 0.45;
 
-        var mapControls = null;
         function criarMapControls() {
             var mc = new THREE.MapControls(camera, renderer.domElement);
             mc.target.set(0, 0.2, 0);
@@ -1841,20 +1951,36 @@ var Maquete3D = (function () {
             return mc;
         }
 
-        controls = orbitControls;
-        var inspecaoAtiva = false;
+        controls = oOrbita;
+        oMapa = criarMapControls(); // criado junto: troca de modo é só trocar de objeto
+        inspecaoAtiva = false;
         // modo tração (estande): sem interação por ~18s, a maquete volta a girar sozinha
         pausarRotacao = function () {
-            orbitControls.autoRotate = false;
+            oOrbita.autoRotate = false;
             clearTimeout(tInativo);
             tInativo = setTimeout(function () {
-                if (!inspecaoAtiva && !document.hidden) orbitControls.autoRotate = true;
+                if (!inspecaoAtiva && !document.hidden) oOrbita.autoRotate = true;
             }, 18000);
         };
         pausarRotacao();
         renderer.domElement.addEventListener("pointerdown", pausarRotacao);
         renderer.domElement.addEventListener("pointerup", pausarRotacao);
         renderer.domElement.addEventListener("wheel", pausarRotacao, { passive: true });
+        // rastro do ponteiro (a lente segue); roda ajusta o zoom da lente no modo topo
+        renderer.domElement.addEventListener("pointermove", function (e) {
+            var b = renderer.domElement.getBoundingClientRect();
+            cursor.x = e.clientX - b.left;
+            cursor.y = e.clientY - b.top;
+            cursor.dentro = true;
+        }, { passive: true });
+        renderer.domElement.addEventListener("pointerleave", function () { cursor.dentro = false; });
+        renderer.domElement.addEventListener("wheel", function (e) {
+            if (!visaoTopo.ativo) return;
+            e.preventDefault();
+            zoomLupa = Math.min(20, Math.max(6, zoomLupa + (e.deltaY > 0 ? 1.1 : -1.1)));
+        }, { passive: false });
+        document.addEventListener("fullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });
+        document.addEventListener("webkitfullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });
 
         gCena = new THREE.Group(); gAno = new THREE.Group(); gVida = new THREE.Group();
         scene.add(gCena); scene.add(gAno); scene.add(gVida);
@@ -1907,6 +2033,10 @@ var Maquete3D = (function () {
         redimensionar: aoRedimensionar,
         setPan: setPan,
         setInspecao: setInspecao,
+        setVisaoTopo: setVisaoTopo,
+        topoAtivo: topoAtivo,
+        /* desenha um quadro na hora (para fullscreen/troca de ano e diagnóstico) */
+        renderUmaVez: renderUmaVez,
         aproximar: aproximar,
         voarPara: voarPara,
         visao: visao,

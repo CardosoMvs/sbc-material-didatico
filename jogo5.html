@@ -138,6 +138,8 @@
         #cena3d.cheia .btn-cheia { right: 14px; }
         .btn-pan { right: 54px; }
         #cena3d.cheia .btn-pan { right: 58px; }
+        .btn-decima { right: 98px; }
+        #cena3d.cheia .btn-decima { right: 102px; }
         @media (pointer: fine) {
             .btn-pan { display: none; }
         }
@@ -262,6 +264,7 @@
         /* durante a visita guiada: hotspots e controles da cena ficam travados */
         #cena3d.visita .marcador { pointer-events: none; cursor: default; }
         #cena3d.visita .btn-pan { display: none; }
+        #cena3d.visita .btn-decima { display: none; }
         .ano-btn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
         .ano-btn:disabled:active { transform: none; }
         #btn-visita { margin-top: 12px; }
@@ -350,6 +353,7 @@
     <div class="maquete-box">
         <div id="cena3d">
             <button class="btn-acao btn-pan" id="btn-pan" type="button" title="Mover a maquete" aria-label="Mover a maquete">✥</button>
+            <button class="btn-acao btn-decima" id="btn-decima" type="button" title="Visão fixa de cima (com lente no ponteiro)" aria-label="Visão fixa de cima">⌖</button>
             <button class="btn-acao btn-cheia" id="btn-cheia" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button>
             <div id="marcadores"></div>
             <div id="visita-ctrl">
@@ -681,11 +685,14 @@
         /* ---------- controles extras: pan com Shift + botão mobile ---------- */
         var cena3d = document.getElementById("cena3d");
         var btnPan = document.getElementById("btn-pan");
+        var btnDecima = document.getElementById("btn-decima");
         var dica3d = document.getElementById("dica-3d");
         var modoPan = false;
 
         function atualizarDica() {
-            if (modoPan) {
+            if (Maquete3D.topoAtivo && Maquete3D.topoAtivo()) {
+                dica3d.textContent = "Vista fixa de cima — a lente segue o ponteiro · roda dá zoom na lente";
+            } else if (modoPan) {
                 dica3d.textContent = "✥ Arraste para andar · 2 dedos para zoom · olhe de frente";
             } else {
                 dica3d.textContent = "Arraste para girar · roda/pinça para zoom";
@@ -702,15 +709,29 @@
 
         btnPan.addEventListener("click", alternarModoPan);
 
-        // Shift no desktop alterna inspeção temporariamente
+        function alternarVisaoTopo() {
+            var ativo = typeof Maquete3D.topoAtivo === "function" && Maquete3D.topoAtivo();
+            if (typeof Maquete3D.setVisaoTopo === "function") Maquete3D.setVisaoTopo(!ativo);
+            btnDecima.classList.toggle("ativo", !ativo);
+            cena3d.classList.toggle("inspecao", !ativo);
+            atualizarDica();
+        }
+        btnDecima.addEventListener("click", function () {
+            if (cena3d.classList.contains("visita")) return; // visita usa a cena inteira
+            alternarVisaoTopo();
+        });
+
+        // Shift no desktop alterna inspeção temporariamente (menos na vista de cima / visita)
         window.addEventListener("keydown", function (e) {
-            if (e.key === "Shift" && !modoPan) {
+            if (e.key === "Shift" && !modoPan && !cena3d.classList.contains("inspecao")
+                && !(Maquete3D.topoAtivo && Maquete3D.topoAtivo())) {
                 cena3d.classList.add("inspecao");
                 if (typeof Maquete3D.setInspecao === "function") Maquete3D.setInspecao(true);
             }
         });
         window.addEventListener("keyup", function (e) {
-            if (e.key === "Shift" && !modoPan) {
+            if (e.key === "Shift" && !modoPan && cena3d.classList.contains("inspecao")
+                && !(Maquete3D.topoAtivo && Maquete3D.topoAtivo())) {
                 cena3d.classList.remove("inspecao");
                 if (typeof Maquete3D.setInspecao === "function") Maquete3D.setInspecao(false);
             }
@@ -759,6 +780,11 @@
 
         function iniciarVisitaGuiada() {
             if (visitaPasso >= 0) { encerrarVisita(); return; }
+            // a visita troca de tomada sozinha: sai da vista de cima se estiver nela
+            if (Maquete3D.topoAtivo && Maquete3D.topoAtivo()) {
+                typeof Maquete3D.setVisaoTopo === "function" && Maquete3D.setVisaoTopo(false);
+                btnDecima.classList.remove("ativo");
+            }
             document.getElementById("btn-visita").textContent = "✕ Encerrar a visita";
             document.getElementById("btn-visita-zero").style.display = "none";
             irParaPasso(visitaPassoSalvo >= 0 ? visitaPassoSalvo : 0);

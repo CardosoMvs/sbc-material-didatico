@@ -1499,6 +1499,7 @@ var Maquete3D = (function () {
         scene.add(halo);
     }
 
+    var placasFeitas = []; // para deitá-las p/ cima na vista superior
     function montarPlacas() {
         function placa(texto, x, z, rot, esc) {
             var g = new THREE.Group();
@@ -1533,6 +1534,7 @@ var Maquete3D = (function () {
             g.position.set(x, h, z);
             g.rotation.y = rot || 0;
             g.scale.setScalar(esc || 1);
+            placasFeitas.push(g);
             gCena.add(g);
         }
         placa("Talhão 1 · Evolução da palhada", (T1.x0 + T1.x1) / 2, T1.z1 + 1.4, 0, 1.1);
@@ -1631,11 +1633,18 @@ var Maquete3D = (function () {
         if (!camera || !controls) return false;
         var quer = !!ativo;
         function tomadaTopo() {
-            var dC = Math.min(ILHA_W / 2, 20);
+            /* mais perto que a vista orbital vertical: as placas ficam legíveis */
             return {
-                cam: new THREE.Vector3(0, dC / Math.tan(20 * Math.PI / 180) + 1.2, 0.004),
+                cam: new THREE.Vector3(1.96, 46.71, 2.1),
                 alvo: new THREE.Vector3(0, 0.4, 0)
             };
+        }
+        function deitarPlacas(deitadas) {
+            placasFeitas.forEach(function (g) {
+                var m = g.children[1], verso = g.children[2]; // as duas telas do poste
+                if (m) m.rotation.x = deitadas ? -Math.PI / 2 : 0; // viradas p/ cima
+                if (verso) verso.rotation.x = deitadas ? Math.PI / 2 : 0;
+            });
         }
         if (quer === visaoTopo.ativo) {
             if (instant && quer) { // já está no modo: só garante a tomada
@@ -1651,6 +1660,7 @@ var Maquete3D = (function () {
             if (oOrbita) oOrbita.autoRotate = false;
             controls.enabled = false;
             camera.up.set(0, 0, -1); // norte para cima (olhar reto p/ baixo degeneraria)
+            deitarPlacas(true); // as telas do poste ficam deitadas: visiveis de cima
             var tt = tomadaTopo();
             if (instant) {
                 camera.position.copy(tt.cam);
@@ -1665,6 +1675,7 @@ var Maquete3D = (function () {
         } else {
             controls.enabled = true;
             camera.up.set(0, 1, 0); // volta ao degradê padrão do orbitar
+            deitarPlacas(false); // telas de pé de novo
             if (visaoTopo.camSalva) {
                 if (instant) {
                     camera.position.copy(visaoTopo.camSalva);

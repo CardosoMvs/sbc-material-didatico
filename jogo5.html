@@ -268,6 +268,8 @@
         .ano-btn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
         .ano-btn:disabled:active { transform: none; }
         #btn-visita { margin-top: 12px; }
+        /* na tela cheia com a visão superior ativa, o botão da visita sai da frente */
+        #cena3d.topo-vista #btn-visita { display: none; }
         #btn-visita-zero { padding: 8px 12px; font-size: 14px; opacity: 0.8; margin-left: 8px; }
         .cheia #visita-caixa {
             position: absolute; top: 112px; left: 50%; transform: translateX(-50%);
@@ -344,6 +346,7 @@
         </div>
         <p class="dica-hud">Gire a fazenda com o dedo ou o mouse, toque nos pontos e veja o manejo evoluir do Ano 1 ao Ano 3.</p>
         <div id="visita-caixa">
+            <button class="botao" id="btn-visao-topo" type="button" title="Ver a fazenda de cima, com a lente no ponteiro">Visão superior</button>
             <button class="botao" id="btn-visita" type="button" onclick="iniciarVisitaGuiada()">Fazer a visita guiada</button>
             <button class="botao neutro" id="btn-visita-zero" type="button" onclick="visitaDoInicio()" title="Retomar do início" aria-label="Retomar do início" style="display:none">⟲</button>
         </div>
@@ -713,11 +716,18 @@
             var ativo = typeof Maquete3D.topoAtivo === "function" && Maquete3D.topoAtivo();
             if (typeof Maquete3D.setVisaoTopo === "function") Maquete3D.setVisaoTopo(!ativo);
             btnDecima.classList.toggle("ativo", !ativo);
+            var alvoTopoBtn = document.getElementById("btn-visao-topo");
+            if (alvoTopoBtn) alvoTopoBtn.classList.toggle("ativo", !ativo);
             cena3d.classList.toggle("inspecao", !ativo);
+            cena3d.classList.toggle("topo-vista", !ativo);
             atualizarDica();
         }
         btnDecima.addEventListener("click", function () {
             if (cena3d.classList.contains("visita")) return; // visita usa a cena inteira
+            alternarVisaoTopo();
+        });
+        document.getElementById("btn-visao-topo").addEventListener("click", function () {
+            if (cena3d.classList.contains("visita")) return;
             alternarVisaoTopo();
         });
 
@@ -784,6 +794,7 @@
             if (Maquete3D.topoAtivo && Maquete3D.topoAtivo()) {
                 typeof Maquete3D.setVisaoTopo === "function" && Maquete3D.setVisaoTopo(false);
                 btnDecima.classList.remove("ativo");
+                cena3d.classList.remove("topo-vista");
             }
             document.getElementById("btn-visita").textContent = "✕ Encerrar a visita";
             document.getElementById("btn-visita-zero").style.display = "none";

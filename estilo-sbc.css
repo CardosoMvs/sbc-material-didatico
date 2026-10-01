@@ -436,8 +436,8 @@ body {
 
 .rodape-lockup {
     flex: none;
-    max-height: 300px;
-    width: auto;
+    width: min(100%, 560px);
+    height: auto;
 }
 
 .rodape-nav { min-width: 0; }
@@ -495,8 +495,8 @@ body {
 }
 
 @media (max-width: 620px) {
-    .rodape-linha { flex-direction: column; }
-    .rodape-lockup { max-height: 240px; }
+    .rodape-linha { flex-direction: column; gap: 22px; }
+    .rodape-lockup { width: 100%; }
 }
 
 /* ---------- Telas alternáveis ---------- */

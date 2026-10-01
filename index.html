@@ -137,11 +137,24 @@
         }
         .grade-baixo > * { min-width: 0; }
 
+        /* no celular a capa empilha: selo / etiqueta / texto, todos sobre o degradê */
         @media (max-width: 620px) {
-            body { padding: 14px 14px 30px; }
-            .capa { padding: 18px; gap: 14px; }
-            .capa .capa-logo { width: 96px; }
-            .capa .tag { font-size: 0.8em; }
+            .capa {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                /* degradê vertical cobre a largura toda: o texto não despenca sobre a folhagem */
+                background:
+                    linear-gradient(180deg, rgba(0, 60, 23, 0.96) 0%, rgba(0, 60, 23, 0.9) 62%, rgba(0, 60, 23, 0.6) 100%),
+                    var(--verde-escuro) url("logos-oficiais/banner-oficial.png") center / cover no-repeat;
+            }
+        }
+
+        @media (max-width: 620px) {
+            body { padding: 44px 14px 30px; }
+            .capa { padding: 18px; }
+            .capa .capa-logo { width: 104px; }
+            .capa .tag { font-size: 0.8em; white-space: nowrap; }
             .capa .capa-sub { font-size: 1em; }
         }
 

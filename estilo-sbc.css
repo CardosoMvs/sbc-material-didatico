@@ -413,23 +413,90 @@ body {
     to { transform: translateY(105vh) rotate(420deg); opacity: 0.6; }
 }
 
-/* ---------- Rodapé (faixa verde-escura, como o site oficial) ---------- */
+/* ---------- Rodapé (modelo do site oficial: card de apoiadoras + navegação) ---------- */
 .rodape {
     max-width: 1140px;
     margin: 28px auto 8px;
-    padding: 22px 26px 16px;
-    background: var(--verde-escuro);
+    padding: 26px 28px 0;
+    background: #fff;
+    border: 1px solid var(--borda);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
-    text-align: center;
-    font-size: 0.82em;
-    color: #cfe0d2;
+    text-align: left;
+    font-size: 0.9em;
+    color: var(--tinta);
 }
 
-.rodape .logo-rodape {
+.rodape-linha {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.rodape-lockup {
+    flex: none;
+    max-height: 300px;
+    width: auto;
+}
+
+.rodape-nav { min-width: 0; }
+
+.rodape-nav h3 {
+    margin: 0 0 4px;
+    font-size: 1.05em;
+    font-weight: 900;
+    color: var(--verde-escuro);
+}
+
+.rodape-nav > a {
     display: block;
-    margin: 0 auto 10px;
-    height: 38px;
+    padding: 3px 0;
+    color: var(--tinta);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.rodape-nav > a:hover { color: var(--verde); }
+
+.rodape-sociais {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 0;
+}
+
+.rodape-sociais a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    background: var(--verde-escuro);
+    transition: background 0.15s;
+}
+
+.rodape-sociais a:hover { background: var(--verde); }
+
+.rodape-sociais svg {
+    width: 17px;
+    height: 17px;
+    fill: #fff;
+}
+
+.rodape-base {
+    margin-top: 24px;
+    padding: 14px 0 16px;
+    border-top: 1px solid var(--borda);
+    text-align: center;
+    font-size: 0.84em;
+    color: var(--tinta-suave);
+}
+
+@media (max-width: 620px) {
+    .rodape-linha { flex-direction: column; }
+    .rodape-lockup { max-height: 240px; }
 }
 
 /* ---------- Telas alternáveis ---------- */

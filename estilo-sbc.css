@@ -102,8 +102,8 @@ body {
 /* ícone: a seta circular do selo SBC — verde no fundo branco,
    branca quando o botão fica verde no hover */
 .voltar img {
-    width: 30px;
-    height: 30px;
+    width: 37px;
+    height: 37px;
     object-fit: contain;
     transition: opacity 0.15s;
 }

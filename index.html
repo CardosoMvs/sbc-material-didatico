@@ -16,7 +16,7 @@
             margin: 0 auto 22px;
             padding: 26px 28px;
             background:
-                linear-gradient(95deg, rgba(23, 101, 69, 0.94) 0%, rgba(23, 101, 69, 0.78) 46%, rgba(23, 101, 69, 0) 78%),
+                linear-gradient(95deg, rgba(0, 60, 23, 0.94) 0%, rgba(0, 60, 23, 0.78) 46%, rgba(0, 60, 23, 0) 78%),
                 var(--verde-escuro) url("logos-oficiais/banner-oficial.png") right center / cover no-repeat;
             border-radius: var(--raio);
             box-shadow: var(--sombra);
@@ -70,6 +70,7 @@
 
         @media (min-width: 960px) {
             .grade { grid-template-columns: 1fr 1fr; }
+            .grade > .menu-item:last-child { grid-column: span 2; }
         }
         .grade > * { min-width: 0; }
 
@@ -114,7 +115,7 @@
             color: var(--tinta-suave);
         }
         .chip.destaque { background: var(--dourado); border-color: var(--dourado); color: var(--verde-escuro); }
-        .chip.record { background: var(--dourado-claro); border-color: var(--dourado); color: #7c5e09; }
+        .chip.record { background: var(--dourado-claro); border-color: var(--dourado); color: #8a4d1f; }
 
         .menu-item .jogar {
             flex: none;
@@ -123,16 +124,10 @@
             font-size: 0.82em;
             letter-spacing: 0.04em;
             color: #fff;
-            background: var(--borda-jogo, var(--verde-escuro));
+            background: var(--verde-escuro);
             padding: 9px 16px;
             border-radius: 8px;
         }
-
-        .menu-item.azul { --borda-jogo: var(--azul); --fundo-jogo: #e9f0f7; }
-        .menu-item.dourado { --borda-jogo: var(--dourado); --fundo-jogo: var(--dourado-claro); }
-        .menu-item.terracota { --borda-jogo: #a05a2c; --fundo-jogo: #f8efe6; }
-        .menu-item.maquete { --borda-jogo: #7a5b36; --fundo-jogo: #f4eee3; }
-        .menu-item.registro { --borda-jogo: #1f6b8f; --fundo-jogo: #e5f2f6; }
 
         /* ---------- Campeões do estande ---------- */
         .grade-baixo {
@@ -145,7 +140,7 @@
 
         @media (min-width: 960px) {
             .grade-baixo { grid-template-columns: 1fr 1fr; }
-            .campeoes, .chamada-produtor { grid-column: span 2; }
+            .campeoes, .chamada-produtor, .sobre { grid-column: span 2; }
         }
         .grade-baixo > * { min-width: 0; }
 
@@ -163,7 +158,7 @@
             border-radius: var(--raio);
             animation: entrar 0.35s ease-out backwards;
         }
-        .campeoes strong { font-weight: 800; color: #7c5e09; }
+        .campeoes strong { font-weight: 800; color: #8a4d1f; }
         .campeoes-linha { margin-top: 6px; font-size: 0.9em; color: var(--tinta); line-height: 1.7; }
 
         .sobre {
@@ -226,7 +221,7 @@
             background: #fff;
             border: 1px solid var(--borda);
             border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(18, 38, 28, 0.16);
+            box-shadow: 0 6px 20px rgba(0, 60, 23, 0.16);
             padding: 6px;
             display: flex;
             flex-direction: column;
@@ -288,7 +283,7 @@
             <span class="jogar">JOGAR</span>
         </a>
 
-        <a href="jogo2.html" class="menu-item azul">
+        <a href="jogo2.html" class="menu-item">
             <div class="mi-corpo">
                 <h2>Decisão Rápida</h2>
                 <p>21 situações em 4 fases da safra — do pré-plantio à colheita — com tempo e bônus por sequência.</p>
@@ -301,7 +296,7 @@
             <span class="jogar">JOGAR</span>
         </a>
 
-        <a href="jogo3.html" class="menu-item dourado">
+        <a href="jogo3.html" class="menu-item">
             <div class="mi-corpo">
                 <h2>Quiz Alta Pressão</h2>
                 <p>3 níveis de dificuldade, power-up 50/50 e multiplicador de sequência. 8 perguntas sorteadas de um banco de 31.</p>
@@ -314,7 +309,7 @@
             <span class="jogar">JOGAR</span>
         </a>
 
-        <a href="jogo4.html" class="menu-item terracota">
+        <a href="jogo4.html" class="menu-item">
             <div class="mi-corpo">
                 <h2>Jogo da Memória SBC</h2>
                 <p>3 modos, da associação rápida aos números oficiais do SBC. Dica revela um par — mas custa jogadas.</p>
@@ -327,7 +322,7 @@
             <span class="jogar">JOGAR</span>
         </a>
 
-        <a href="jogo5.html" class="menu-item maquete">
+        <a href="jogo5.html" class="menu-item">
             <div class="mi-corpo">
                 <h2>Maquete da Fazenda 3D</h2>
                 <p>Diorama 3D girável da fazenda com 3 talhões, rios e APP: evolua o manejo do Ano 1 ao Ano 3 — palhada, contorno e diversidade — enquanto o drone sobrevoa e as vacas pastam.</p>
@@ -338,18 +333,6 @@
                 </div>
             </div>
             <span class="jogar">JOGAR</span>
-        </a>
-
-        <a href="registro.html" class="menu-item registro">
-            <div class="mi-corpo">
-                <h2>Registro do Produtor</h2>
-                <p>Passou pelo estande? Deixe seu nome, fazenda e contato — a equipe do programa acompanha quem visitou e retorna depois.</p>
-                <div class="chips">
-                    <span class="chip destaque">Cadastro</span>
-                    <span class="chip">1 min</span>
-                </div>
-            </div>
-            <span class="jogar">REGISTRAR</span>
         </a>
     </nav>
 
@@ -412,3 +395,15 @@
     <script src="modo-tela.js"></script>
 </body>
 </html>
+<script>
+setTimeout(function(){
+  var d=document.documentElement,b=document.body,lst=[];
+  b.querySelectorAll("*").forEach(function(e){
+    var r=e.getBoundingClientRect();
+    lst.push([r.right,r.width,(e.id&&('#'+e.id))||'',e.className||'',e.tagName]);
+  });
+  lst.sort(function(a,c){return c[0]-a[0];});
+  var top=lst.slice(0,8).map(function(x){return 'R'+Math.round(x[0])+' w'+Math.round(x[1])+' '+x[4]+' '+x[2]+' '+x[3];}).join(' || ');
+  document.title='DBG3 sw='+d.scrollWidth+' classe='+b.className+' padding='+getComputedStyle(b).padding+' zoom='+String(getComputedStyle(b).zoom)+' '+top;
+},600);
+</script>

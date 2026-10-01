@@ -1,8 +1,11 @@
 /* ============================================================
    Identidade visual SBC – Soja Baixo Carbono (Embrapa Soja)
    Design system compartilhado pelos jogos do estande.
-   Cores e botões derivados do site oficial do programa
-   (sbc.cnpso.embrapa.br) · fonte Roboto embutida (offline).
+   Layout/padrão derivados do site oficial do Programa SBC
+   (sojabaixocarbono.com.br), mas as cores vêm ESTRITAMENTE da
+   paleta oficial "PALETA DE CORES EMBRAPA.ai" — nenhum tom
+   fora dela. Tintas claras/sombras são derivações (alfa) da
+   própria paleta. Fonte Roboto embutida (offline).
    ============================================================ */
 
 /* ---------- Roboto (arquivo local, offline) ---------- */
@@ -25,24 +28,24 @@
 }
 
 :root {
-    /* Paleta oficial do site SBC (elementor-kit-6) */
-    --verde-escuro: #176545;  /* primary: títulos, HUD, faixa de capa */
-    --verde: #669933;         /* accent: hovers, verde-oliva */
-    --verde-vivo: #7ABB1F;
+    /* Cores Padrão Embrapa (PALETA DE CORES EMBRAPA.ai) */
+    --verde-escuro: #003c17;  /* verde escura (escala Embrapa): títulos, HUD, faixa de capa */
+    --verde: #007f47;         /* verde padrão Embrapa: bordas, hovers, ações */
+    --verde-vivo: #00ac6c;    /* verde positivo da escala */
     --verde-claro: #e9f2eb;
-    --dourado: #ffcc33;       /* secondary: botões e destaques */
+    --dourado: #ffcc31;       /* amarelo padrão Embrapa: botões e destaques */
     --dourado-claro: #fff6db;
-    --carmim: #b03a2e;
-    --carmim-claro: #fdecea;
-    --azul: #2a6e8e;          /* azul-água da marca (escurecido p/ contraste) */
-    --agua: #5fb0d1;
+    --carmim: #86124c;        /* vinho das placas BRS (erros) */
+    --carmim-claro: #faf0f4;
+    --azul: #00529c;          /* azul padrão Embrapa */
+    --agua: #4495d1;
     --agua-claro: #e7f5ff;
     --tinta: #1c1c1c;
     --tinta-suave: #55605a;
     --fundo: #f2f5f3;
     --cartao: #ffffff;
     --borda: #dfe5e1;
-    --sombra: 0 1px 3px rgba(18, 38, 28, 0.08), 0 10px 28px rgba(18, 38, 28, 0.06);
+    --sombra: 0 1px 3px rgba(0, 60, 23, 0.08), 0 10px 28px rgba(0, 60, 23, 0.06);
     --raio: 15px;
 }
 
@@ -59,7 +62,7 @@ body {
     line-height: 1.55;
     color: var(--tinta);
     background: linear-gradient(180deg, #f4f6f5 0%, #eef2ef 100%);
-    -webkit-tap-highlight-color: rgba(102, 153, 51, 0.12);
+    -webkit-tap-highlight-color: rgba(0, 127, 71, 0.12);
 }
 
 /* ---------- Cabeçalho padrão dos jogos ---------- */
@@ -332,7 +335,7 @@ body {
 .modal-fundo {
     position: fixed;
     inset: 0;
-    background: rgba(23, 101, 69, 0.55);
+    background: rgba(0, 60, 23, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -347,7 +350,7 @@ body {
     border: 1px solid var(--borda);
     border-radius: var(--raio);
     padding: 22px;
-    box-shadow: 0 12px 40px rgba(23, 101, 69, 0.35);
+    box-shadow: 0 12px 40px rgba(0, 60, 23, 0.35);
     text-align: center;
     animation: entrar 0.25s ease-out;
 }
@@ -380,7 +383,7 @@ body {
 
 .classe-sbc.ouro { background: var(--dourado); color: var(--verde-escuro); }
 .classe-sbc.prata { background: #8a9aa8; }
-.classe-sbc.bronze { background: #a05a2c; }
+.classe-sbc.bronze { background: #8a4d1f; }
 
 /* ---------- Confete ---------- */
 .confete {

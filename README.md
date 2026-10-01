@@ -4,9 +4,13 @@ Material didático do Programa SBC – Soja Baixo Carbono (Embrapa Soja) para o 
 
 ## Identidade visual
 
-Cores e botões seguem o site oficial do Programa SBC (sojabaixocarbono.com.br): verde `#176545`,
-verde-oliva `#669933`, amarelo `#FFCC33`, azuis-água `#5FB0D1`/`#E7F5FF`. A fonte **Roboto** está
-embutida em `fonte/` (woff2 variável, offline) — carregada por `estilo-sbc.css`; não usar CDN externo.
+O padrão visual e o layout seguem o site oficial do Programa SBC (sojabaixocarbono.com.br), mas
+**nenhuma cor foge da paleta oficial** de `PALETA DE CORES EMBRAPA.ai`: verde escura `#003c17`,
+verde padrão `#007f47`, verde positivo `#00ac6c`, verde-limão `#bed747`, amarelo `#ffcc31`,
+verde-água `#6dc067`, petróleo `#149c9e`, azuis `#4495d1`/`#00529c`/`#001a4b`, laranja `#f79433`,
+marrom `#8a4d1f`, vinho (placas BRS) `#86124c`. Tintas claras e sombras são derivações (alfa)
+dessas cores. A fonte **Roboto** está embutida em `fonte/` (woff2 variável, offline) — carregada
+por `estilo-sbc.css`; não usar CDN externo.
 
 Os recursos gráficos oficiais (selo branco e colorido, banner do hero, logo Embrapa,
 ícones das práticas SPD/MIP/MID/FBN/ILPF, faixa de apoiadores e favicon) estão em `logos-oficiais/`,

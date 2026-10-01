@@ -54,11 +54,11 @@
             max-width: 1140px;
             margin: 0 auto 16px;
             padding: 10px;
-            background: #6b4a2b;
+            background: #8a4d1f;
             background-image:
                 repeating-linear-gradient(93deg, rgba(0,0,0,0.13) 0 2px, rgba(255,255,255,0.04) 2px 4px, transparent 4px 11px),
-                linear-gradient(180deg, #7a5533 0%, #5d3f24 100%);
-            border: 2px solid #3f2a13;
+                linear-gradient(180deg, #9a5d2a 0%, #6f3c17 100%);
+            border: 2px solid #653a14;
             border-radius: 14px;
             box-shadow: var(--sombra), inset 0 0 18px rgba(0, 0, 0, 0.3);
             animation: entrar 0.35s ease-out 0.1s backwards;
@@ -69,7 +69,7 @@
             aspect-ratio: 31 / 20;
             border-radius: 9px;
             overflow: hidden;
-            background: #a5d4f2;
+            background: #92c5eb;
             cursor: grab;
             touch-action: none;
         }
@@ -165,8 +165,8 @@
         }
         .marcador:hover { background: var(--dourado-claro); }
         @keyframes pulso3d {
-            0% { box-shadow: 0 0 0 0 rgba(255, 213, 77, 0.85), 0 3px 8px rgba(0, 0, 0, 0.35); }
-            100% { box-shadow: 0 0 0 15px rgba(255, 213, 77, 0), 0 3px 8px rgba(0, 0, 0, 0.35); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 204, 49, 0.85), 0 3px 8px rgba(0, 0, 0, 0.35); }
+            100% { box-shadow: 0 0 0 15px rgba(255, 204, 49, 0), 0 3px 8px rgba(0, 0, 0, 0.35); }
         }
         .marcador.feito {
             background: var(--verde-escuro);
@@ -181,7 +181,7 @@
             bottom: 12px;
             z-index: 3;
             pointer-events: none;
-            background: rgba(15, 35, 22, 0.62);
+            background: rgba(0, 60, 23, 0.62);
             color: #fff;
             padding: 6px 14px;
             border-radius: 999px;
@@ -197,7 +197,7 @@
             text-align: center;
             padding: 30px;
             color: #fff;
-            background: #35614a;
+            background: #003c17;
             font-weight: 700;
         }
 
@@ -212,7 +212,7 @@
             justify-content: center;
             font-size: 1.7em;
             background: #f3ead9;
-            border: 2px solid #7a5b36;
+            border: 2px solid #8a4d1f;
             border-radius: 12px;
         }
         .ficha-cabeca h2 { margin: 0; flex: 1; font-size: 1.1em; color: var(--verde-escuro); }
@@ -282,7 +282,7 @@
         .vctrl-icone { padding: 8px 11px; opacity: 0.85; }
         .visita-placar {
             background: rgba(255, 255, 255, 0.92); border-radius: 999px;
-            padding: 5px 10px; font-size: 12px; font-weight: 700; color: #2f4a23;
+            padding: 5px 10px; font-size: 12px; font-weight: 700; color: #003c17;
         }
         .ficha-corpo h3 { margin: 10px 0 4px; color: var(--verde-escuro); font-size: 1.05em; }
         .ficha-corpo p { margin: 6px 0; }
@@ -295,7 +295,7 @@
             border-radius: 10px;
             font-size: 0.93em;
         }
-        .ficha-sbc strong { color: #7c5e09; }
+        .ficha-sbc strong { color: #8a4d1f; }
         .ficha-nova { display: inline-block; margin-left: 8px; font-size: 0.7em; vertical-align: middle; padding: 3px 10px; border-radius: 999px; background: var(--verde); color: #fff; font-weight: 700; letter-spacing: 0.04em; }
     </style>
 </head>
@@ -650,7 +650,7 @@
             else classe.className = "classe-sbc bronze", classe.textContent = "BRONZE · Aprendiz do Campo";
 
             SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");
-            SBCH.confete(["#176545", "#ffcc33", "#669933", "#5fb0d1", "#8a5a33"]);
+            SBCH.confete(["#003c17", "#ffcc31", "#007f47", "#4495d1", "#8a5a33"]);
             SBCH.som("vitoria");
             SBCH.pedirNomeESalvar("maquete", pontos, true, function () {
                 SBCH.desenharRanking(document.getElementById("ranking"), "maquete", " pts");

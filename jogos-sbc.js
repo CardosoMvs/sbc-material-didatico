@@ -92,7 +92,7 @@ var SBCH = (function () {
     /* ---------- Efeitos ---------- */
 
     function confete(cores) {
-        cores = cores || ["#176545", "#ffcc33", "#669933", "#5fb0d1"];
+        cores = cores || ["#003c17", "#ffcc31", "#007f47", "#4495d1"];
         for (var i = 0; i < 40; i++) {
             var p = document.createElement("div");
             p.className = "confete";

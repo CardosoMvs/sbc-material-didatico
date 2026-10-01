@@ -36,13 +36,15 @@
     estilo.textContent =
         "body.modo-celular{zoom:1.25;}" +
         "body.modo-tv{zoom:1.35;}" +
+        /* telas pequenas não ganham zoom — o layout já é mobile-first */
+        "@media (max-width:620px),(max-height:480px){body.modo-celular,body.modo-tv{zoom:1;}}" +
         "#sbc-modos{position:fixed;top:8px;right:8px;z-index:80;display:flex;gap:2px;" +
         "background:rgba(255,255,255,0.95);border:1px solid #dfe5e1;border-radius:9px;" +
-        "padding:3px;box-shadow:0 1px 4px rgba(18,38,28,0.14);font-family:inherit;}" +
+        "padding:3px;box-shadow:0 1px 4px rgba(0, 60, 23,0.14);font-family:inherit;}" +
         "#sbc-modos button{border:0;background:transparent;border-radius:7px;" +
         "padding:6px 12px;font:inherit;font-size:0.75em;font-weight:700;color:#54635a;" +
         "line-height:1.2;cursor:pointer;-webkit-appearance:none;}" +
-        "#sbc-modos button.ativo{background:#176545;color:#fff;}" +
+        "#sbc-modos button.ativo{background:#003c17;color:#fff;}" +
         "@media (max-width:620px),(max-height:480px){#sbc-modos button{padding:6px 9px;font-size:0.7em;}}";
     document.head.appendChild(estilo);
 

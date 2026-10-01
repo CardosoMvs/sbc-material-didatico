@@ -1533,7 +1533,7 @@ var Maquete3D = (function () {
             cx.lineWidth = 10;
             cx.strokeRect(5, 5, 790, 170);
             cx.fillStyle = "#3e2b18";
-            cx.font = "bold 44px Arial";
+            cx.font = "bold 44px Roboto, Arial";
             cx.textAlign = "center";
             cx.textBaseline = "middle";
             cx.fillText(texto, 400, 90);

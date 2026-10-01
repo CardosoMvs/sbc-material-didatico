@@ -26,7 +26,7 @@
 
         .capa .capa-logo {
             flex: none;
-            width: clamp(150px, 17vw, 210px);
+            width: clamp(130px, 15vw, 185px);
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
         }
 
@@ -35,20 +35,21 @@
         .capa .tag {
             display: inline-block;
             font-weight: 700;
-            font-size: 0.72em;
+            font-size: 0.95em;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--verde-escuro);
             background: var(--dourado);
-            padding: 3px 12px;
+            padding: 4px 16px;
             border-radius: 999px;
         }
 
         .capa .capa-sub {
             margin: 0;
-            max-width: 62ch;
-            color: #d7e5d7;
-            font-size: 0.98em;
+            max-width: 60ch;
+            color: #e2eee2;
+            font-size: 1.28em;
+            line-height: 1.45;
         }
 
         /* ---------- Grade do menu (2 colunas na TV, 1 no celular) ---------- */
@@ -139,7 +140,9 @@
         @media (max-width: 620px) {
             body { padding: 14px 14px 30px; }
             .capa { padding: 18px; gap: 14px; }
-            .capa .capa-logo { width: 72px; }
+            .capa .capa-logo { width: 96px; }
+            .capa .tag { font-size: 0.8em; }
+            .capa .capa-sub { font-size: 1em; }
         }
 
         .campeoes {

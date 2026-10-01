@@ -96,8 +96,20 @@ body {
     text-decoration: none;
     transition: background 0.15s, color 0.15s;
 }
-.voltar:hover { background: var(--verde-claro); }
+.voltar:hover { background: var(--verde); border-color: var(--verde); }
 .voltar:active { transform: translateY(1px); }
+
+/* ícone: a seta circular do selo SBC — verde no fundo branco,
+   branca quando o botão fica verde no hover */
+.voltar img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    transition: opacity 0.15s;
+}
+.voltar .seta-b { display: none; }
+.voltar:hover .seta-v { display: none; }
+.voltar:hover .seta-b { display: block; }
 
 .titulo-bloco { min-width: 0; }
 

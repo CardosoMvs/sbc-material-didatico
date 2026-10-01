@@ -40,6 +40,15 @@ VERSOES = [
     ("v4", "dc9dde6", "1 out", "sem emojis · visual do site oficial"),
 ]
 
+# arquivos "vivos" do site (evoluem a cada versão): sempre copiam, nunca
+# apontam para a raiz — senão a próxima mudança de design altera as versões
+# antigas congeladas. Só recursos estáveis (modelos, three.js, logos, fonte,
+# imagens) ficam compartilhados via ../../
+SEMPRE_COPIAR = ("estilo-sbc.css", "jogos-sbc.js", "modo-tela.js", "maquete3d")
+
+def sempreCopiar(r):
+    return any(r.startswith(p) for p in SEMPRE_COPIAR)
+
 REF_ATRIBUTO = re.compile(r"""(?:src|href)=(["'])([^"']+?)\1""")
 
 def referencias(texto):
@@ -88,7 +97,7 @@ def montar(versao, commit, data, desc):
             compartilhados.append(r)  # tentar pela raiz mesmo assim
             continue
         da_epoca = show(commit, r)
-        if da_epoca is not None and da_epoca == ler(r):
+        if da_epoca is not None and da_epoca == ler(r) and not sempreCopiar(r):
             compartilhados.append(r)          # igual à raiz: usa ../../
         else:
             copiados.append(r)                # diferente/ausente: copia a da época
@@ -110,7 +119,7 @@ def montar(versao, commit, data, desc):
                 compartilhados.append(r)
                 continue
             da_epoca = show(commit, r)
-            if da_epoca is not None and da_epoca == ler(r):
+            if da_epoca is not None and da_epoca == ler(r) and not sempreCopiar(r):
                 compartilhados.append(r)
             else:
                 copiados.append(r)

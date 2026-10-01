@@ -11,6 +11,10 @@ embutida em `fonte/` (woff2 variável, offline) — carregada por `estilo-sbc.cs
 Os recursos gráficos oficiais (selo branco e colorido, banner do hero, logo Embrapa,
 ícones das práticas SPD/MIP/MID/FBN/ILPF, faixa de apoiadores e favicon) estão em `logos-oficiais/`,
 baixados do site oficial; a capa do menu, o rodapé de todas as páginas e o favicon os usam.
+Os **selos 2026** foram extraídos dos arquivos Illustrator compartilhados (`SELOS BAIXO CARBONO -
+curvas_2026.ai` e `propostas ... apoiadoras_2026.ai`) para PNG transparente 300dpi e têm
+prioridade: capa (`selo-2026-branco`), cabeçalho das páginas (`selo-2026-cor`) e rodapé
+do menu (`lockup-apoiadoras-2026`).
 
 ## Versionamento
 

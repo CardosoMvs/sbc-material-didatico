@@ -98,6 +98,17 @@ body {
 
 .titulo-bloco { min-width: 0; }
 
+/* selo colorido 2026 (dos arquivos do Illustrator) à direita do cabeçalho */
+.topo-selo {
+    flex: none;
+    margin-left: auto;
+    height: 58px;
+    width: auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 4px 8px;
+}
+
 .selo {
     display: inline-block;
     font-size: 0.72em;

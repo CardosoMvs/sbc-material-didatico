@@ -1501,7 +1501,7 @@ var Maquete3D = (function () {
 
     var placasFeitas = []; // para deitá-las p/ cima na vista superior
     function montarPlacas() {
-        function placa(texto, x, z, rot, esc) {
+        function placa(texto, x, z, rot, esc, alto) {
             var g = new THREE.Group();
             var h = altura(x, z);
             var poste = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.1, 8), mat(0x6b4a2b));
@@ -1534,15 +1534,17 @@ var Maquete3D = (function () {
             g.position.set(x, h, z);
             g.rotation.y = rot || 0;
             g.scale.setScalar(esc || 1);
+            // altura da tela DEITADA acima do normal (pra placas sob copa de árvores sairem de baixo dela)
+            g.userData.alto = alto || 0;
             placasFeitas.push(g);
             gCena.add(g);
         }
-        placa("Talhão 1 · Evolução da palhada", (T1.x0 + T1.x1) / 2, T1.z1 + 1.4, 0, 1.1);
+        placa("Talhão 1 · Evolução da palhada", (T1.x0 + T1.x1) / 2, T1.z1 + 1.4, 0, 1.1, 1.0);
         placa("Talhão 2 · Plantio em contorno", (T2.x0 + T2.x1) / 2, T2.z1 + 1.4, 0, 1.1);
         placa("Talhão 3 · Manejo avançado", (T3.x0 + T3.x1) / 2, T3.z1 + 1.4, 0, 1.1);
         placa("APP degradada", -14.5, 6.5, 0.4, 0.9);
         placa("APP preservada", 19.0, 7.0, -0.35, 0.78); /* do outro lado da borda do rio */
-        placa("RL preservada e excedente", 13.5, -9.5, -0.2, 0.95);
+        placa("RL preservada e excedente", 13.5, -9.5, -0.2, 0.95, 2.2); /* dentro da floresta: deita ACIMA da copa */
     }
 
     /* ====================== marcadores ====================== */
@@ -1629,6 +1631,8 @@ var Maquete3D = (function () {
        sem giro nem orbital; a leitura dos detalhes fica para a lente (abaixo) */
     var visaoTopo = { ativo: false, camSalva: null, alvoSalva: null };
     var zoomLupa = 6; // altura da lente do zoom (roda ajusta enquanto no modo topo)
+    var lenteModo = "zoom"; // "zoom": vista de cima | "frente": visão 3D em pé no ponto
+    var distFrente = 6.5; // distância da câmera de frente (a roda ajusta nesse modo)
 
     /* devolve a tomada de cima p/ o formato atual da janela (usada ao ativar
        e a cada redimensionamento, pra maquete encostar nas 4 bordas) */
@@ -1659,8 +1663,15 @@ var Maquete3D = (function () {
         function deitarPlacas(deitadas) {
             placasFeitas.forEach(function (g) {
                 var m = g.children[1], verso = g.children[2]; // as duas telas do poste
-                if (m) m.rotation.x = deitadas ? -Math.PI / 2 : 0; // viradas p/ cima
-                if (verso) verso.rotation.x = deitadas ? Math.PI / 2 : 0;
+                var k = deitadas ? 2.6 : 1; // deitada ela amplia o texto: legível de cima
+                var yTela = deitadas ? 1.15 + (g.userData.alto || 0) : 1.15;
+                if (m) { m.rotation.x = deitadas ? -Math.PI / 2 : 0; m.scale.set(k, k, 1); m.position.y = yTela; }
+                if (verso) { // deitada o verso sairia por CIMA do texto (mesma altura): esconde
+                    verso.rotation.x = deitadas ? Math.PI / 2 : 0;
+                    verso.scale.set(k, k, 1);
+                    verso.position.y = yTela;
+                    verso.visible = !deitadas;
+                }
             });
         }
         if (quer === visaoTopo.ativo) {
@@ -1840,6 +1851,7 @@ var Maquete3D = (function () {
         d.appendChild(r2.domElement);
         var c2 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
         lupa = { div: d, r2: r2, c2: c2, L: L };
+        encaixarLupaTelaCheia(); // lente criada DEPOIS de entrar na tela cheia: joga p/ dentro dela já
     }
     function encaixarLupaTelaCheia() {
         var fs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
@@ -1895,9 +1907,25 @@ var Maquete3D = (function () {
                     lupa.div.style.left = Math.round(cxr / esc - L / 2) + "px";
                     lupa.div.style.top = Math.round(cyr / esc - L / 2) + "px";
                     lupa.div.style.display = "block";
-                    lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
-                    lupa.c2.up.set(0, 0, -1);
-                    lupa.c2.lookAt(pontoCursor.x, 0, pontoCursor.z);
+                    if (lenteModo === "frente") {
+                        /* visão de frente: câmera em pé no ponto, a distância e
+                           altura de um olhar de verdade — dá a profundidade 3D
+                           que a vista de cima não dá (relevo, placas, árvores) */
+                        lupa.c2.up.set(0, 1, 0);
+                        lupa.c2.position.set(
+                            pontoCursor.x,
+                            Math.max(
+                                altura(pontoCursor.x, pontoCursor.z) + 1.7, // os olhos acima do chão do ponto
+                                altura(pontoCursor.x, pontoCursor.z + distFrente) + 1.1 // e acima da borda da frente
+                            ),
+                            pontoCursor.z + distFrente
+                        );
+                        lupa.c2.lookAt(pontoCursor.x, altura(pontoCursor.x, pontoCursor.z) + 0.9, pontoCursor.z);
+                    } else {
+                        lupa.c2.up.set(0, 0, -1);
+                        lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
+                        lupa.c2.lookAt(pontoCursor.x, 0, pontoCursor.z);
+                    }
                     lupa.r2.render(scene, lupa.c2);
                     return;
                 }
@@ -1924,6 +1952,8 @@ var Maquete3D = (function () {
         if (controls) controls.enablePan = panAtivo;
     }
     function setInspecao(ativo) {
+        // na vista de cima a maquete fica TRAVADA: nada religa os controles por baixo
+        if (visaoTopo.ativo) return;
         inspecaoAtiva = !!ativo;
         var anterior = controls;
         if (inspecaoAtiva) {
@@ -2045,7 +2075,11 @@ var Maquete3D = (function () {
         renderer.domElement.addEventListener("wheel", function (e) {
             if (!visaoTopo.ativo) return;
             e.preventDefault();
-            zoomLupa = Math.min(18, Math.max(2.5, zoomLupa + (e.deltaY > 0 ? 0.7 : -0.7)));
+            if (lenteModo === "frente") {
+                distFrente = Math.min(14, Math.max(3.2, distFrente + (e.deltaY > 0 ? 0.7 : -0.7)));
+            } else {
+                zoomLupa = Math.min(18, Math.max(2.5, zoomLupa + (e.deltaY > 0 ? 0.7 : -0.7)));
+            }
         }, { passive: false });
         document.addEventListener("fullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });
         document.addEventListener("webkitfullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });
@@ -2103,6 +2137,13 @@ var Maquete3D = (function () {
         setInspecao: setInspecao,
         setVisaoTopo: setVisaoTopo,
         topoAtivo: topoAtivo,
+        /* modo da lente na vista superior: "zoom" (de cima) ou "frente" (3D em pé) */
+        setLenteModo: function (m) {
+            if (m === "zoom" || m === "frente") lenteModo = m;
+            renderUmaVez();
+            return lenteModo;
+        },
+        lenteModo: function () { return lenteModo; },
         /* desenha um quadro na hora (para fullscreen/troca de ano e diagnóstico) */
         renderUmaVez: renderUmaVez,
         aproximar: aproximar,

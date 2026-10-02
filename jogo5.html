@@ -140,6 +140,18 @@
         #cena3d.cheia .btn-pan { right: 58px; }
         .btn-decima { right: 98px; }
         #cena3d.cheia .btn-decima { right: 102px; }
+        /* botão da lente (só aparece com a visão superior ativa) */
+        #btn-lente {
+            display: none;
+            position: absolute; top: 10px; right: 142px; z-index: 10;
+            padding: 9px 14px; border: none; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.92); color: var(--verde-escuro);
+            font-size: 14px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+        #cena3d.cheia #btn-lente { top: 14px; right: 146px; }
+        #cena3d.topo-vista #btn-lente { display: block; }
+        #cena3d.visita #btn-lente { display: none; }
         @media (pointer: fine) {
             .btn-pan { display: none; }
         }
@@ -357,6 +369,7 @@
         <div id="cena3d">
             <button class="btn-acao btn-pan" id="btn-pan" type="button" title="Mover a maquete" aria-label="Mover a maquete">✥</button>
             <button class="btn-acao btn-decima" id="btn-decima" type="button" title="Visão fixa de cima (com lente no ponteiro)" aria-label="Visão fixa de cima">⌖</button>
+            <button class="btn-acao-borda" id="btn-lente" type="button" title="Troca a lente entre vista de cima e vista de frente">Lente: de cima</button>
             <button class="btn-acao btn-cheia" id="btn-cheia" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button>
             <div id="marcadores"></div>
             <div id="visita-ctrl">
@@ -496,7 +509,7 @@
                 }
             },
             drone: {
-                icone: "🛸", nome: "Drone de monitoramento",
+                icone: "✈️", nome: "Drone de monitoramento",
                 sbc: "monitoramento preciso é a base para decidir melhor e provar resultados na MRV.",
                 anos: {
                     1: ["Drone sobrevoando os talhões", "Do alto, o drone enxerga o que o olho perde: falhas de plantio, erosão começando e quanto do solo está de fato coberto por palhada."],
@@ -694,7 +707,9 @@
 
         function atualizarDica() {
             if (Maquete3D.topoAtivo && Maquete3D.topoAtivo()) {
-                dica3d.textContent = "Vista fixa de cima — a lente segue o ponteiro · roda dá zoom na lente";
+                dica3d.textContent = (Maquete3D.lenteModo && Maquete3D.lenteModo() === "frente")
+                    ? "Vista fixa de cima — lente em 3D, de frente no ponto · roda aproxima"
+                    : "Vista fixa de cima — a lente segue o ponteiro · roda dá zoom na lente";
             } else if (modoPan) {
                 dica3d.textContent = "✥ Arraste para andar · 2 dedos para zoom · olhe de frente";
             } else {
@@ -729,6 +744,15 @@
         document.getElementById("btn-visao-topo").addEventListener("click", function () {
             if (cena3d.classList.contains("visita")) return;
             alternarVisaoTopo();
+        });
+
+        // lente: alterna entre a vista de cima e a vista de frente (3D)
+        var btnLente = document.getElementById("btn-lente");
+        if (btnLente) btnLente.addEventListener("click", function () {
+            if (typeof Maquete3D.setLenteModo !== "function") return;
+            var modo = Maquete3D.setLenteModo(Maquete3D.lenteModo() === "frente" ? "zoom" : "frente");
+            btnLente.textContent = modo === "frente" ? "Lente: de frente" : "Lente: de cima";
+            atualizarDica();
         });
 
         // Shift no desktop alterna inspeção temporariamente (menos na vista de cima / visita)

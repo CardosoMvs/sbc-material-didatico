@@ -2102,10 +2102,12 @@ var Maquete3D = (function () {
         renderer.domElement.addEventListener("wheel", function (e) {
             if (!visaoTopo.ativo) return;
             e.preventDefault();
+            // passo miúdo perto do chão: dá para fechar bem sobre os detalhes
+            var passo = (lenteModo === "frente" ? distFrente : zoomLupa) < 3.2 ? 0.25 : 0.7;
             if (lenteModo === "frente") {
-                distFrente = Math.min(14, Math.max(3.2, distFrente + (e.deltaY > 0 ? 0.7 : -0.7)));
+                distFrente = Math.min(14, Math.max(1.5, distFrente + (e.deltaY > 0 ? passo : -passo)));
             } else {
-                zoomLupa = Math.min(18, Math.max(2.5, zoomLupa + (e.deltaY > 0 ? 0.7 : -0.7)));
+                zoomLupa = Math.min(18, Math.max(1.2, zoomLupa + (e.deltaY > 0 ? passo : -passo)));
             }
         }, { passive: false });
         document.addEventListener("fullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });

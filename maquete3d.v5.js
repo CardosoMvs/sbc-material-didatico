@@ -28,7 +28,6 @@ var Maquete3D = (function () {
 
     /* ====================== dimensões do mundo ====================== */
     var ILHA_W = 40, ILHA_D = 26;              // extensão x e z da ilha
-    var IMG_LADO = 40, IMG_ALTO = 25;          // moldura da vista superior (caber a ilha inteira)
 
     /* rios: polilinhas que serpenteiam e escavam o terreno */
     var RIO_ESQ_PTS = [[-17.2, -11.8], [-15.5, -7], [-17, -1], [-14.5, 4], [-16, 8.5], [-15, 11.8]];
@@ -1634,14 +1633,18 @@ var Maquete3D = (function () {
         if (!camera || !controls) return false;
         var quer = !!ativo;
         function tomadaTopo() {
-            /* como uma maquete de verdade: a altura sai do FOV e do formato da
-               janela — a ilha inteira (rios, RL e APP) preenche a tela toda,
-               qualquer que seja o aparelho */
+            /* como uma maquete de verdade: a câmera fica bem em cima do
+               centro da ilha e a altura sai do FOV e do formato da janela,
+               de modo que o TERRENO cubra a tela TODA — sem sobrar céu na
+               borda e sem cortar nada de importante */
             var semiT = Math.tan(25 * Math.PI / 180); // metade do FOV 50°
             var aspecto = (innerWidth || 1) / (innerHeight || 1);
-            var h = Math.max(IMG_LADO / (semiT * aspecto * 2), IMG_ALTO / (semiT * 2)) * 1.1;
+            var hx = ILHA_W / 2, hz = ILHA_D / 2;
+            var pCobrir = Math.min(hx / (semiT * aspecto), hz / semiT); // terreno vaza nas 2 bordas
+            var pCaber = Math.max(hx / (semiT * aspecto), hz / semiT);  // ilha inteira na tela
+            var h = aspecto >= 1.2 ? pCobrir * 0.95 : pCaber * 1.04;    // TV/lugar largo: cobre; celular na vertical: encaixa
             return {
-                cam: new THREE.Vector3(1.96, h, 2.1),
+                cam: new THREE.Vector3(0, h, 0),   // reto p/ baixo: o quadro no chão é um retângulo exato
                 alvo: new THREE.Vector3(0, 0.4, 0)
             };
         }

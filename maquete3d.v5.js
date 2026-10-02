@@ -28,6 +28,7 @@ var Maquete3D = (function () {
 
     /* ====================== dimensões do mundo ====================== */
     var ILHA_W = 40, ILHA_D = 26;              // extensão x e z da ilha
+    var IMG_LADO = 40, IMG_ALTO = 25;          // moldura da vista superior (caber a ilha inteira)
 
     /* rios: polilinhas que serpenteiam e escavam o terreno */
     var RIO_ESQ_PTS = [[-17.2, -11.8], [-15.5, -7], [-17, -1], [-14.5, 4], [-16, 8.5], [-15, 11.8]];
@@ -1628,14 +1629,19 @@ var Maquete3D = (function () {
     /* travamento: sobe liso até uma tomada em cima do diorama e fica lá —
        sem giro nem orbital; a leitura dos detalhes fica para a lente (abaixo) */
     var visaoTopo = { ativo: false, camSalva: null, alvoSalva: null };
-    var zoomLupa = 12; // altura da lente do zoom (roda ajusta enquanto no modo topo)
+    var zoomLupa = 6; // altura da lente do zoom (roda ajusta enquanto no modo topo)
     function setVisaoTopo(ativo, instant) {
         if (!camera || !controls) return false;
         var quer = !!ativo;
         function tomadaTopo() {
-            /* mais perto que a vista orbital vertical: as placas ficam legíveis */
+            /* como uma maquete de verdade: a altura sai do FOV e do formato da
+               janela — a ilha inteira (rios, RL e APP) preenche a tela toda,
+               qualquer que seja o aparelho */
+            var semiT = Math.tan(25 * Math.PI / 180); // metade do FOV 50°
+            var aspecto = (innerWidth || 1) / (innerHeight || 1);
+            var h = Math.max(IMG_LADO / (semiT * aspecto * 2), IMG_ALTO / (semiT * 2)) * 1.1;
             return {
-                cam: new THREE.Vector3(1.96, 46.71, 2.1),
+                cam: new THREE.Vector3(1.96, h, 2.1),
                 alvo: new THREE.Vector3(0, 0.4, 0)
             };
         }
@@ -1803,9 +1809,10 @@ var Maquete3D = (function () {
     var cursor = { x: 0, y: 0, dentro: false };
     function garantirLupa() {
         if (lupa) return;
+        var L = Math.round(Math.min(Math.max(230, (innerHeight || 1000) * 0.22), 360)); // acompanha a tela (TV ganha lente grande)
         var d = document.createElement("div");
         d.className = "sbc-lente";
-        d.style.cssText = "position:fixed;z-index:86;width:250px;height:250px;border-radius:50%;" +
+        d.style.cssText = "position:fixed;z-index:86;width:" + L + "px;height:" + L + "px;border-radius:50%;" +
             "border:4px solid #ffcc31;box-shadow:0 12px 30px rgba(0,0,0,0.4), inset 0 0 22px rgba(0,0,0,0.22);" +
             "overflow:hidden;pointer-events:none;display:none;";
         document.body.appendChild(d);
@@ -1814,7 +1821,7 @@ var Maquete3D = (function () {
         r2.setPixelRatio(1);
         r2.shadowMap.enabled = false; // dentro da lente vai sem sombra: barato e estável
         r2.setClearColor(0x87c3e4);
-        r2.setSize(250, 250);
+        r2.setSize(L, L);
         d.appendChild(r2.domElement);
         var c2 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
         lupa = { div: d, r2: r2, c2: c2 };
@@ -1839,9 +1846,19 @@ var Maquete3D = (function () {
                 ndcCursor.set((cursor.x / b.width) * 2 - 1, -((cursor.y / b.height) * 2 - 1));
                 raioCursor.setFromCamera(ndcCursor, camera);
                 if (raioCursor.ray.intersectPlane(planoCursor, pontoCursor)) {
-                    var L = lupa.div.offsetWidth;
-                    lupa.div.style.left = Math.round(b.left + cursor.x - (L / 2 + 18)) + "px";
-                    lupa.div.style.top = Math.round(b.top + cursor.y - (L / 2 + 18)) + "px";
+                    var L = lupa.div.offsetWidth, foco = L / 2 + 18;
+                    // centro da lente no documento; perto da borda ela espelha
+                    // para o lado de dentro (nunca some da tela)
+                    var mxr = b.left + cursor.x, myr = b.top + cursor.y;
+                    var cxr = mxr - 18, cyr = myr - 18;
+                    if (cxr + foco > innerWidth - 6) cxr = mxr - L / 2;      // direita: lente à esquerda do mouse
+                    else if (cxr - foco < 6) cxr = mxr + L / 2;              // esquerda: lente à direita do mouse
+                    if (cyr + foco > innerHeight - 6) cyr = myr - L / 2;     // baixo: lente acima do mouse
+                    else if (cyr - foco < 6) cyr = myr + L / 2;              // cima: lente abaixo do mouse
+                    cxr = Math.max(Math.min(cxr, innerWidth - L / 2 - 6), L / 2 + 6);
+                    cyr = Math.max(Math.min(cyr, innerHeight - L / 2 - 6), L / 2 + 6);
+                    lupa.div.style.left = Math.round(cxr - L / 2) + "px";
+                    lupa.div.style.top = Math.round(cyr - L / 2) + "px";
                     lupa.div.style.display = "block";
                     lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
                     lupa.c2.up.set(0, 0, -1);
@@ -1988,7 +2005,7 @@ var Maquete3D = (function () {
         renderer.domElement.addEventListener("wheel", function (e) {
             if (!visaoTopo.ativo) return;
             e.preventDefault();
-            zoomLupa = Math.min(20, Math.max(6, zoomLupa + (e.deltaY > 0 ? 1.1 : -1.1)));
+            zoomLupa = Math.min(18, Math.max(2.5, zoomLupa + (e.deltaY > 0 ? 0.7 : -0.7)));
         }, { passive: false });
         document.addEventListener("fullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });
         document.addEventListener("webkitfullscreenchange", function () { setTimeout(encaixarLupaTelaCheia, 60); });

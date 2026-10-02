@@ -1629,25 +1629,33 @@ var Maquete3D = (function () {
        sem giro nem orbital; a leitura dos detalhes fica para a lente (abaixo) */
     var visaoTopo = { ativo: false, camSalva: null, alvoSalva: null };
     var zoomLupa = 6; // altura da lente do zoom (roda ajusta enquanto no modo topo)
+
+    /* devolve a tomada de cima p/ o formato atual da janela (usada ao ativar
+       e a cada redimensionamento, pra maquete encostar nas 4 bordas) */
+    function tomadaTopo() {
+        /* como uma maquete de verdade fotografada de cima: a altura sai
+           do FOV REAL da câmera e do formato da janela, e a tomada é a
+           mais alta que ainda COBRE a tela toda — a maquete encosta nas
+           4 bordas da exibição: no eixo limite (largura ou altura,
+           o mais comprimido) a borda da maquete coincide com a borda
+           da tela; no outro ela vaza um pouco, sem sobrar céu
+           (o quadro embutido tem 31/20 e a maquete 40/26: quase iguais) */
+        var semiT = Math.tan((camera.fov || 40) * 0.5 * Math.PI / 180);
+        // mede o QUADRO do jogo (na tela cheia ele e a janela toda; em pagina normal e a caixa)
+        var wq = (container && container.clientWidth) || innerWidth;
+        var hq = (container && container.clientHeight) || innerHeight;
+        var aspecto = wq / hq;
+        var hx = ILHA_W / 2, hz = ILHA_D / 2;
+        var h = Math.min(hx / (semiT * aspecto), hz / semiT);
+        return {
+            cam: new THREE.Vector3(0, h, 0),   // reto p/ baixo: o quadro no chão é um retângulo exato
+            alvo: new THREE.Vector3(0, 0.4, 0)
+        };
+    }
+
     function setVisaoTopo(ativo, instant) {
         if (!camera || !controls) return false;
         var quer = !!ativo;
-        function tomadaTopo() {
-            /* como uma maquete de verdade: a câmera fica bem em cima do
-               centro da ilha e a altura sai do FOV e do formato da janela,
-               de modo que o TERRENO cubra a tela TODA — sem sobrar céu na
-               borda e sem cortar nada de importante */
-            var semiT = Math.tan(25 * Math.PI / 180); // metade do FOV 50°
-            var aspecto = (innerWidth || 1) / (innerHeight || 1);
-            var hx = ILHA_W / 2, hz = ILHA_D / 2;
-            var pCobrir = Math.min(hx / (semiT * aspecto), hz / semiT); // terreno vaza nas 2 bordas
-            var pCaber = Math.max(hx / (semiT * aspecto), hz / semiT);  // ilha inteira na tela
-            var h = aspecto >= 1.2 ? pCobrir * 0.95 : pCaber * 1.04;    // TV/lugar largo: cobre; celular na vertical: encaixa
-            return {
-                cam: new THREE.Vector3(0, h, 0),   // reto p/ baixo: o quadro no chão é um retângulo exato
-                alvo: new THREE.Vector3(0, 0.4, 0)
-            };
-        }
         function deitarPlacas(deitadas) {
             placasFeitas.forEach(function (g) {
                 var m = g.children[1], verso = g.children[2]; // as duas telas do poste
@@ -1722,7 +1730,11 @@ var Maquete3D = (function () {
         requestAnimationFrame(animar);
         var dt = Math.min(relogio.getDelta(), 0.05);
         tGlobal += dt;
-        controls.update();
+        // no modo topo a camera fica TRAVADA na tomada de cima: o update do
+        // OrbitControls re-projeta a esferica e empurra a maquete fora do centro;
+        // entao a olhada fica por nossa conta, direto no alvo (reto p/ baixo)
+        if (visaoTopo.ativo) camera.lookAt(controls.target);
+        else controls.update();
 
         // voo da visita guiada: interpola câmera e alvo com suavização
         if (voo) {
@@ -1818,7 +1830,7 @@ var Maquete3D = (function () {
         d.style.cssText = "position:fixed;z-index:86;width:" + L + "px;height:" + L + "px;border-radius:50%;" +
             "border:4px solid #ffcc31;box-shadow:0 12px 30px rgba(0,0,0,0.4), inset 0 0 22px rgba(0,0,0,0.22);" +
             "overflow:hidden;pointer-events:none;display:none;";
-        document.body.appendChild(d);
+        document.documentElement.appendChild(d); // fora do body: o zoom de TV não escala a lente
         var r2;
         try { r2 = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { d.remove(); return; }
         r2.setPixelRatio(1);
@@ -1827,13 +1839,28 @@ var Maquete3D = (function () {
         r2.setSize(L, L);
         d.appendChild(r2.domElement);
         var c2 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
-        lupa = { div: d, r2: r2, c2: c2 };
+        lupa = { div: d, r2: r2, c2: c2, L: L };
     }
     function encaixarLupaTelaCheia() {
         var fs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
-        if (lupa && lupa.div.parentNode !== (fs || document.body)) {
-            (fs || document.body).appendChild(lupa.div);
+        var pai = fs || document.documentElement;
+        if (lupa && lupa.div.parentNode !== pai) {
+            pai.appendChild(lupa.div);
         }
+    }
+    /* o zoom do "Modo TV" (CSS zoom no body) escala a lente junto com a
+       página — ela renderiza maior do que o planejado e escapa da tela nas
+       bordas de baixo/direita. Medimos o fator real por frame e aplicamos um
+       contra-zoom medido (testado: devolve posicao E tamanho ao 1:1) */
+    function escalaDaLente() {
+        var L = lupa.L;
+        var esc = lupa.div.getBoundingClientRect().width / L;
+        if (esc > 0.4 && esc < 3 && Math.abs(esc - 1) > 0.02) {
+            lupa.div.style.zoom = (1 / esc).toFixed(3); // contra-zoom: voltar ao tamanho 1:1
+            var esc2 = lupa.div.getBoundingClientRect().width / L;
+            if (esc2 > 0.4 && esc2 < 3) esc = esc2; // o que sobrar de escala, vai nos calculos
+        }
+        return esc;
     }
     function desenharLupa() {
         if (cursor.dentro && visaoTopo.ativo && renderer.domElement) {
@@ -1849,19 +1876,24 @@ var Maquete3D = (function () {
                 ndcCursor.set((cursor.x / b.width) * 2 - 1, -((cursor.y / b.height) * 2 - 1));
                 raioCursor.setFromCamera(ndcCursor, camera);
                 if (raioCursor.ray.intersectPlane(planoCursor, pontoCursor)) {
-                    var L = lupa.div.offsetWidth, foco = L / 2 + 18;
-                    // centro da lente no documento; perto da borda ela espelha
-                    // para o lado de dentro (nunca some da tela)
+                    var L = lupa.L;
+                    var esc = escalaDaLente();
+                    var Lv = L * esc; // tamanho VISUAL da lente (o que ela ocupa na tela)
+                    var foco = Lv / 2 + 18;
+                    // centro da lente na tela em px reais; fica pendurada abaixo e
+                    // à direita da mira; perto da borda ela espelha pro lado de dentro
+                    // (baixo vira cima) sem trocar de lado — nunca some da tela
                     var mxr = b.left + cursor.x, myr = b.top + cursor.y;
                     var cxr = mxr - 18, cyr = myr - 18;
-                    if (cxr + foco > innerWidth - 6) cxr = mxr - L / 2;      // direita: lente à esquerda do mouse
-                    else if (cxr - foco < 6) cxr = mxr + L / 2;              // esquerda: lente à direita do mouse
-                    if (cyr + foco > innerHeight - 6) cyr = myr - L / 2;     // baixo: lente acima do mouse
-                    else if (cyr - foco < 6) cyr = myr + L / 2;              // cima: lente abaixo do mouse
-                    cxr = Math.max(Math.min(cxr, innerWidth - L / 2 - 6), L / 2 + 6);
-                    cyr = Math.max(Math.min(cyr, innerHeight - L / 2 - 6), L / 2 + 6);
-                    lupa.div.style.left = Math.round(cxr - L / 2) + "px";
-                    lupa.div.style.top = Math.round(cyr - L / 2) + "px";
+                    if (cxr + foco > innerWidth - 6) cxr = mxr - foco;   // direita: lente à esquerda da mira
+                    else if (cxr - foco < 6) cxr = mxr + foco;           // esquerda: lente à direita da mira
+                    if (cyr + foco > innerHeight - 6) cyr = myr - foco;  // baixo: lente acima (fica na direita)
+                    else if (cyr - foco < 6) cyr = myr + foco;           // cima: lente abaixo da mira
+                    cxr = Math.max(Math.min(cxr, innerWidth - Lv / 2 - 6), Lv / 2 + 6);
+                    cyr = Math.max(Math.min(cyr, innerHeight - Lv / 2 - 6), Lv / 2 + 6);
+                    // px do estilo sao escalados pelo zoom da pagina: divide de volta
+                    lupa.div.style.left = Math.round(cxr / esc - L / 2) + "px";
+                    lupa.div.style.top = Math.round(cyr / esc - L / 2) + "px";
                     lupa.div.style.display = "block";
                     lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
                     lupa.c2.up.set(0, 0, -1);
@@ -1881,6 +1913,11 @@ var Maquete3D = (function () {
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
+        if (visaoTopo.ativo) { // a tomada sai do formato da janela: refaz pra manter o encaixe
+            var tt = tomadaTopo();
+            camera.position.copy(tt.cam);
+        }
+        renderUmaVez();
     }
     function setPan(ativo) {
         panAtivo = !!ativo;

@@ -1635,10 +1635,10 @@ var Maquete3D = (function () {
     function tomadaTopo() {
         /* como uma maquete de verdade fotografada de cima: a altura sai
            do FOV REAL da câmera e do formato da janela, e a tomada é a
-           mais alta que ainda COBRE a tela toda — a maquete encosta nas
-           4 bordas da exibição: no eixo limite (largura ou altura,
-           o mais comprimido) a borda da maquete coincide com a borda
-           da tela; no outro ela vaza um pouco, sem sobrar céu
+           mais baixa que ainda CABE a maquete toda — nada é cortado em
+           nenhum formato de tela (e ajusta sozinho a cada redimensionamento):
+           no eixo limite a borda da maquete coincide com a borda da tela;
+           no outro sobra fundo (céu), e o quadro se acomoda no centro
            (o quadro embutido tem 31/20 e a maquete 40/26: quase iguais) */
         var semiT = Math.tan((camera.fov || 40) * 0.5 * Math.PI / 180);
         // mede o QUADRO do jogo (na tela cheia ele e a janela toda; em pagina normal e a caixa)
@@ -1646,7 +1646,7 @@ var Maquete3D = (function () {
         var hq = (container && container.clientHeight) || innerHeight;
         var aspecto = wq / hq;
         var hx = ILHA_W / 2, hz = ILHA_D / 2;
-        var h = Math.min(hx / (semiT * aspecto), hz / semiT);
+        var h = Math.max(hx / (semiT * aspecto), hz / semiT);
         return {
             cam: new THREE.Vector3(0, h, 0),   // reto p/ baixo: o quadro no chão é um retângulo exato
             alvo: new THREE.Vector3(0, 0.4, 0)

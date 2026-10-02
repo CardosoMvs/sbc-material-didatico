@@ -133,7 +133,7 @@
 
         @media (min-width: 960px) {
             .grade-baixo { grid-template-columns: 1fr 1fr; }
-            .campeoes, .chamada-produtor, .sobre { grid-column: span 2; }
+            .campeoes, .chamada-produtor, .sobre, .evento { grid-column: span 2; }
         }
         .grade-baixo > * { min-width: 0; }
 
@@ -168,6 +168,48 @@
         }
         .campeoes strong { font-weight: 800; color: #8a4d1f; }
         .campeoes-linha { margin-top: 6px; font-size: 0.9em; color: var(--tinta); line-height: 1.7; }
+
+        /* ---------- Nome do evento (equipe) ---------- */
+        .evento {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 18px;
+            background: var(--verde-escuro);
+            color: #fff;
+            border-radius: var(--raio);
+            animation: entrar 0.35s ease-out backwards;
+        }
+        .evento .evt-label { font-size: 0.9em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .evento strong { color: var(--dourado); }
+        .evento .evt-trocar {
+            flex: none;
+            font: inherit;
+            font-size: 0.8em;
+            font-weight: 700;
+            color: var(--verde-escuro);
+            background: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .evento .evt-trocar:active { background: var(--dourado-claro); }
+        .linha-evento { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+        .linha-evento .botao { flex: 1; padding: 10px; font-size: 0.95em; }
+        .linha-evento .evt-apagar {
+            flex: none;
+            width: 38px;
+            height: 46px;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            background: #f0f3f1;
+            color: #8a4d1f;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
 
         .sobre {
             background: var(--cartao);
@@ -350,6 +392,11 @@
             <strong><a href="registro.html" style="color:inherit;">Deixe seu registro aqui</a></strong> para a equipe entrar em contato.
         </div>
 
+        <div class="evento">
+            <span class="evt-label">Evento: <strong id="evt-nome">—</strong></span>
+            <button id="btn-evento" class="evt-trocar" type="button">Definir evento</button>
+        </div>
+
         <div class="sobre">
             <strong>Programa SBC – Soja Baixo Carbono</strong> · conduzido pela Embrapa Soja desde 2021, com apoio de Bayer, Bunge,
             Cargill, Coamo, Cocamar, GDM e UPL. Selo de certificação voluntária, de 3ª parte, para soja produzida com redução da
@@ -358,7 +405,7 @@
         </div>
 
         <div class="campeoes" id="campeoes" hidden>
-            <strong>Campeões do estande</strong>
+            <strong>Campeões do estande<span id="campeoes-evt"></span></strong>
             <div class="campeoes-linha" id="campeoes-linha"></div>
         </div>
     </div>
@@ -397,6 +444,9 @@
                 { chave: "quiz", nome: "Quiz" },
                 { chave: "memoria_pares", nome: "Memória" }
             ];
+            var evt = SBCH.eventoAtual();
+            if (evt) document.getElementById("campeoes-evt").textContent = " · " + evt;
+            document.getElementById("evt-nome").textContent = evt || "(sem evento)";
             var linhas = [];
             jogos.forEach(function (j) {
                 var lista = SBCH.carregarRanking(j.chave);
@@ -413,6 +463,72 @@
                 document.getElementById("campeoes").hidden = false;
                 document.getElementById("campeoes-linha").textContent = linhas.join("  ·  ");
             }
+
+            /* ---------- Modal da EQUIPE: nome do evento ---------- */
+            var fundo = document.createElement("div");
+            fundo.className = "modal-fundo";
+            fundo.style.display = "none"; // .modal-fundo{display:flex} venceria o hidden
+            fundo.innerHTML =
+                '<div class="modal-caixa" style="text-align:left;">' +
+                '<button type="button" class="btn-fechar-x" id="evt-fechar" title="Fechar" aria-label="Fechar">✕</button>' +
+                "<h3>Nome do evento</h3>" +
+                "<p style='margin:0;font-size:0.88em;color:var(--tinta-suave);'>O ranking fica separado por evento: em tela só aparece a informação do evento atual. Um nome novo cria um evento novo.</p>" +
+                '<input id="evt-campo" maxlength="40" placeholder="Ex.: Feira de Londrina 2026" style="text-align:left;">' +
+                '<button type="button" class="botao" id="evt-ok">Aplicar</button>' +
+                '<div id="evt-lista" style="margin-top:12px;"></div>' +
+                "</div>";
+            document.body.appendChild(fundo);
+
+            function montarLista() {
+                var caixa = fundo.querySelector("#evt-lista");
+                caixa.innerHTML = "";
+                var eventos = SBCH.listaEventos();
+                if (!eventos.length) {
+                    caixa.innerHTML = "<p style='margin:0;font-size:0.85em;color:var(--tinta-suave);'>Nenhum evento salvo neste aparelho.</p>";
+                    return;
+                }
+                var t = document.createElement("p");
+                t.textContent = "Eventos deste aparelho:";
+                t.style.cssText = "margin:0;font-size:0.85em;color:var(--tinta-suave);";
+                caixa.appendChild(t);
+                eventos.forEach(function (nome) {
+                    var linha = document.createElement("div");
+                    linha.className = "linha-evento";
+                    linha.innerHTML =
+                        '<button type="button" class="botao evt-ir"></button>' +
+                        '<button type="button" class="evt-apagar" title="Apagar este evento e seu ranking">✕</button>';
+                    linha.querySelector(".evt-ir").textContent = nome;
+                    linha.querySelector(".evt-ir").addEventListener("click", function () {
+                        SBCH.definirEvento(nome);
+                        location.reload();
+                    });
+                    linha.querySelector(".evt-apagar").addEventListener("click", function () {
+                        if (!confirm("Apagar o evento \"" + nome + "\" e o ranking dele?")) return;
+                        SBCH.apagarEvento(nome);
+                        fundo.style.display = "none";
+                        location.reload();
+                    });
+                    caixa.appendChild(linha);
+                });
+            }
+
+            document.getElementById("evt-nome").textContent = evt || "(sem evento)";
+            document.getElementById("btn-evento").addEventListener("click", function () {
+                fundo.querySelector("#evt-campo").value = evt;
+                montarLista();
+                fundo.style.display = "flex";
+                fundo.querySelector("#evt-campo").focus();
+            });
+            fundo.querySelector("#evt-ok").addEventListener("click", function () {
+                if (SBCH.definirEvento(fundo.querySelector("#evt-campo").value) === evt) {
+                    fundo.style.display = "none"; // nada mudou: só fecha
+                    return;
+                }
+                location.reload(); // evento trocado: toda a tela recomeça nele
+            });
+            fundo.querySelector("#evt-fechar").addEventListener("click", function () {
+                fundo.style.display = "none";
+            });
         })();
     </script>
 

@@ -356,6 +356,7 @@ body {
 }
 
 .modal-caixa {
+    position: relative;
     width: 100%;
     max-width: 420px;
     background: var(--cartao);
@@ -366,6 +367,24 @@ body {
     text-align: center;
     animation: entrar 0.25s ease-out;
 }
+
+/* X de fechar: fecha o modal SEM preencher o nome */
+.btn-fechar-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--borda);
+    border-radius: 999px;
+    background: #f0f3f1;
+    color: var(--tinta-suave, #54635a);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 30px;
+    cursor: pointer;
+}
+.btn-fechar-x:active { background: #e2e8e5; }
 
 .modal-caixa h3 { margin: 0 0 6px; color: var(--verde-escuro); font-weight: 800; }
 .modal-caixa input {

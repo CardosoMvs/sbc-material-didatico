@@ -8,10 +8,74 @@
 var SBCH = (function () {
     "use strict";
 
-    /* ---------- Ranking (por dispositivo, no kiosk) ---------- */
+    /* ---------- Ranking (por dispositivo e POR EVENTO, no kiosk) ----------
+
+       A equipe nomeia cada evento (feira, curso, oficina...); o ranking é
+       guardado em "sbc_ranking_<evento>_<jogo>", então em tela só aparece a
+       informação do evento atual. Sem evento nomeado, vale o ranking antigo
+       (legado, "sbc_ranking_<jogo>"). */
+
+    var K_EVT = "sbc_evento_atual"; // nome bonito do evento atual
+    var K_EVTS = "sbc_eventos";     // lista de eventos deste aparelho
+
+    function slug(t) {
+        try {
+            t = (t || "").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+        } catch (e) {
+            t = (t || "").trim().toLowerCase();
+        }
+        return t.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 28);
+    }
+
+    function eventoAtual() {
+        try { return localStorage.getItem(K_EVT) || ""; } catch (e) { return ""; }
+    }
+
+    function listaEventos() {
+        try { return JSON.parse(localStorage.getItem(K_EVTS)) || []; } catch (e) { return []; }
+    }
 
     function chave(jogo) {
-        return "sbc_ranking_" + jogo;
+        var e = slug(eventoAtual());
+        if (!e) return "sbc_ranking_" + jogo; // sem evento: ranking legado
+        return "sbc_ranking_" + e + "_" + jogo;
+    }
+
+    /* Equipe: define o evento atual (nome novo cria um ranking novo; nome
+       em branco volta ao ranking legado). Sem tela: apagarEvento remove. */
+    function definirEvento(nome) {
+        nome = (nome || "").trim();
+        var s = slug(nome);
+        try {
+            if (s) {
+                localStorage.setItem(K_EVT, nome);
+                var l = listaEventos();
+                if (l.indexOf(nome) < 0) {
+                    l.push(nome);
+                    localStorage.setItem(K_EVTS, JSON.stringify(l));
+                }
+            } else {
+                localStorage.removeItem(K_EVT);
+            }
+        } catch (e) { /* kiosk sem storage: ranking só na sessão */ }
+        return eventoAtual();
+    }
+
+    /* Apaga um evento E TODO o ranking dele. */
+    function apagarEvento(nome) {
+        var s = slug(nome), rem = [];
+        try {
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (s && k.indexOf("sbc_ranking_" + s + "_") === 0) rem.push(k);
+            }
+            rem.forEach(function (k) { localStorage.removeItem(k); });
+            if (rem.length) { // limpa lembrança só se tinha ranking
+                localStorage.setItem(K_EVTS, JSON.stringify(listaEventos().filter(function (x) { return slug(x) !== s; })));
+                if (slug(eventoAtual()) === s) localStorage.removeItem(K_EVT);
+            }
+        } catch (e) { /* kiosk sem storage: ranking só na sessão */ }
+        return true;
     }
 
     function carregarRanking(jogo) {
@@ -63,14 +127,17 @@ var SBCH = (function () {
         return d.innerHTML;
     }
 
-    /* Modal touch para pedir o nome do visitante. */
+    /* Modal touch para pedir o nome do visitante — o X fecha SEM informar
+       (a pontuação só entra no ranking se o visitante salvar). */
     function pedirNomeESalvar(jogo, valor, melhorMaior, aoSalvar) {
         var fundo = document.createElement("div");
         fundo.className = "modal-fundo";
         fundo.innerHTML =
             '<div class="modal-caixa">' +
+            '<button type="button" class="btn-fechar-x" id="sbc-nome-x" ' +
+            'title="Não informar o nome" aria-label="Fechar sem informar o nome">✕</button>' +
             "<h3>Registrado no ranking!</h3>" +
-            '<p class="sub">Deixe seu nome ou o nome da fazenda:</p>' +
+            '<p class="sub">Deixe seu nome ou o nome da fazenda (opcional):</p>' +
             '<input id="sbc-nome" maxlength="22" placeholder="Seu nome / fazenda">' +
             '<button class="botao" id="sbc-nome-ok">Salvar</button>' +
             "</div>";
@@ -84,6 +151,9 @@ var SBCH = (function () {
             if (aoSalvar) aoSalvar(pos);
         }
         fundo.querySelector("#sbc-nome-ok").addEventListener("click", confirmar);
+        fundo.querySelector("#sbc-nome-x").addEventListener("click", function () {
+            fundo.remove(); // não informou o nome: fecha sem salvar nada
+        });
         campo.addEventListener("keydown", function (ev) {
             if (ev.key === "Enter") confirmar();
         });
@@ -190,6 +260,11 @@ var SBCH = (function () {
         registrar: registrar,
         desenharRanking: desenharRanking,
         pedirNomeESalvar: pedirNomeESalvar,
+        slug: slug,
+        eventoAtual: eventoAtual,
+        listaEventos: listaEventos,
+        definirEvento: definirEvento,
+        apagarEvento: apagarEvento,
         confete: confete,
         som: som,
         popupPontos: popupPontos,

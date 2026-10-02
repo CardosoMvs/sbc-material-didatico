@@ -81,6 +81,14 @@
     var modoAtual = ler() || "tablet";
     aplicar(modoAtual);
     atualizar();
+    /* o seletor VISÍVEL fica só na tela inicial (index): nas outras páginas o
+       zoom escolhido continua valendo (guardado no localStorage), mas o
+       interruptor sai da frente — quem precisa trocar volta ao início */
+    function naTelaInicial() {
+        var p = location.pathname.replace(/\\/g, "/").split("/").pop().toLowerCase();
+        return !p || p === "index.html";
+    }
     document.body.appendChild(barra);
+    if (!naTelaInicial()) barra.style.display = "none";
     encaixeTelaCheia();
 })();

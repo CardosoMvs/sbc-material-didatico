@@ -1849,15 +1849,31 @@ var Maquete3D = (function () {
         r2.setClearColor(0x87c3e4);
         r2.setSize(L, L);
         d.appendChild(r2.domElement);
-        var c2 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
-        lupa = { div: d, r2: r2, c2: c2, L: L };
-        encaixarLupaTelaCheia(); // lente criada DEPOIS de entrar na tela cheia: joga p/ dentro dela já
-    }
+            var c2 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
+            /* medalhão: lente MENOR do outro modo, colada a esta, pra ver os dois ângulos juntos */
+            var S = Math.round(L * 0.42);
+            var d2 = document.createElement("div");
+            d2.className = "sbc-lente-inseto";
+            d2.style.cssText = "position:fixed;z-index:86;width:" + S + "px;height:" + S + "px;border-radius:50%;" +
+                "border:3px solid #ffcc31;box-shadow:0 8px 18px rgba(0,0,0,0.35);overflow:hidden;pointer-events:none;display:none;";
+            document.documentElement.appendChild(d2);
+            var r3;
+            try { r3 = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { d.remove(); d2.remove(); return; }
+            r3.setPixelRatio(1);
+            r3.shadowMap.enabled = false;
+            r3.setClearColor(0x87c3e4);
+            r3.setSize(S, S);
+            d2.appendChild(r3.domElement);
+            var c3 = new THREE.PerspectiveCamera(50, 1, 0.4, 200);
+            lupa = { div: d, r2: r2, c2: c2, L: L, inseto: d2, r3: r3, c3: c3, S: S };
+            encaixarLupaTelaCheia(); // lente criada DEPOIS de entrar na tela cheia: joga p/ dentro dela já
+        }
     function encaixarLupaTelaCheia() {
         var fs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
         var pai = fs || document.documentElement;
         if (lupa && lupa.div.parentNode !== pai) {
             pai.appendChild(lupa.div);
+            pai.appendChild(lupa.inseto);
         }
     }
     /* o zoom do "Modo TV" (CSS zoom no body) escala a lente junto com a
@@ -1891,6 +1907,7 @@ var Maquete3D = (function () {
                     var L = lupa.L;
                     var esc = escalaDaLente();
                     var Lv = L * esc; // tamanho VISUAL da lente (o que ela ocupa na tela)
+                    var S = lupa.S, Sv = S * esc; // idem pro medalhão
                     var foco = Lv / 2 + 18;
                     // centro da lente na tela em px reais; fica pendurada abaixo e
                     // à direita da mira; perto da borda ela espelha pro lado de dentro
@@ -1901,37 +1918,47 @@ var Maquete3D = (function () {
                     else if (cxr - foco < 6) cxr = mxr + foco;           // esquerda: lente à direita da mira
                     if (cyr + foco > innerHeight - 6) cyr = myr - foco;  // baixo: lente acima (fica na direita)
                     else if (cyr - foco < 6) cyr = myr + foco;           // cima: lente abaixo da mira
-                    cxr = Math.max(Math.min(cxr, innerWidth - Lv / 2 - 6), Lv / 2 + 6);
+                    cxr = Math.max(Math.min(cxr, innerWidth - Lv / 2 - 6), Lv / 2 + Sv - 12);
                     cyr = Math.max(Math.min(cyr, innerHeight - Lv / 2 - 6), Lv / 2 + 6);
                     // px do estilo sao escalados pelo zoom da pagina: divide de volta
                     lupa.div.style.left = Math.round(cxr / esc - L / 2) + "px";
                     lupa.div.style.top = Math.round(cyr / esc - L / 2) + "px";
                     lupa.div.style.display = "block";
+                    /* medalhão (lente menor do outro modo) colada à esquerda da grande,
+                       centrada na mesma linha da mira dele */
+                    lupa.inseto.style.left = Math.round((cxr - Lv / 2 + 12 - Sv / 2) / esc - lupa.S / 2) + "px";
+                    lupa.inseto.style.top = Math.round(cyr / esc - lupa.S / 2) + "px";
+                    lupa.inseto.style.display = "block";
+                    // poses das duas câmeras saem sempre do mesmo ponto do chão
+                    lupa.c2.up.set(0, 0, -1);
+                    lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
+                    lupa.c2.lookAt(pontoCursor.x, 0, pontoCursor.z);
+                    /* visão de frente: câmera em pé no ponto, a distância e altura
+                       de um olhar de verdade — dá a profundidade 3D que a vista
+                       de cima não dá (relevo, placas, árvores) */
+                    lupa.c3.up.set(0, 1, 0);
+                    lupa.c3.position.set(
+                        pontoCursor.x,
+                        Math.max(
+                            altura(pontoCursor.x, pontoCursor.z) + 1.7, // os olhos acima do chão do ponto
+                            altura(pontoCursor.x, pontoCursor.z + distFrente) + 1.1 // e acima da borda da frente
+                        ),
+                        pontoCursor.z + distFrente
+                    );
+                    lupa.c3.lookAt(pontoCursor.x, altura(pontoCursor.x, pontoCursor.z) + 0.9, pontoCursor.z);
+                    // grande = modo escolhido; medalhão = o outro
                     if (lenteModo === "frente") {
-                        /* visão de frente: câmera em pé no ponto, a distância e
-                           altura de um olhar de verdade — dá a profundidade 3D
-                           que a vista de cima não dá (relevo, placas, árvores) */
-                        lupa.c2.up.set(0, 1, 0);
-                        lupa.c2.position.set(
-                            pontoCursor.x,
-                            Math.max(
-                                altura(pontoCursor.x, pontoCursor.z) + 1.7, // os olhos acima do chão do ponto
-                                altura(pontoCursor.x, pontoCursor.z + distFrente) + 1.1 // e acima da borda da frente
-                            ),
-                            pontoCursor.z + distFrente
-                        );
-                        lupa.c2.lookAt(pontoCursor.x, altura(pontoCursor.x, pontoCursor.z) + 0.9, pontoCursor.z);
+                        lupa.r2.render(scene, lupa.c3);
+                        lupa.r3.render(scene, lupa.c2);
                     } else {
-                        lupa.c2.up.set(0, 0, -1);
-                        lupa.c2.position.set(pontoCursor.x, zoomLupa, pontoCursor.z + 0.001);
-                        lupa.c2.lookAt(pontoCursor.x, 0, pontoCursor.z);
+                        lupa.r2.render(scene, lupa.c2);
+                        lupa.r3.render(scene, lupa.c3);
                     }
-                    lupa.r2.render(scene, lupa.c2);
                     return;
                 }
             }
         }
-        if (lupa) lupa.div.style.display = "none";
+        if (lupa) { lupa.div.style.display = "none"; lupa.inseto.style.display = "none"; }
     }
     var planoCursor = null, raioCursor = null, pontoCursor = null, ndcCursor = null;
 

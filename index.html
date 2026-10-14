@@ -30,7 +30,7 @@
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
         }
 
-        .capa .capa-texto { min-width: 0; }
+        .capa .capa-texto { min-width: 0; max-width: 33%; } /* a frase fica no degradê verde sem invadir a foto da soja à direita */
 
         .capa .tag {
             display: inline-block;
@@ -45,7 +45,7 @@
         }
 
         .capa .capa-sub {
-            margin: 0;
+            margin: 10px 0 0;
             max-width: 60ch;
             color: #e2eee2;
             font-size: 1.14em;
@@ -148,6 +148,7 @@
                     linear-gradient(180deg, rgba(0, 60, 23, 0.96) 0%, rgba(0, 60, 23, 0.9) 62%, rgba(0, 60, 23, 0.6) 100%),
                     var(--verde-escuro) url("logos-oficiais/banner-oficial.png") center / cover no-repeat;
             }
+            .capa .capa-texto { max-width: none; } /* aqui o fundo já é degradê vertical: a frase pode usar a largura toda */
         }
 
         @media (max-width: 620px) {
@@ -314,7 +315,7 @@
         <img class="capa-logo" src="logos-oficiais/selo-2026-branco.png" alt="Selo Soja Baixo Carbono">
         <div class="capa-texto">
             <span class="tag">Estande SBC · 5 desafios</span>
-            <p class="capa-sub">Produza mais, emita menos e suba no ranking: cinco desafios rápidos para conhecer o Programa SBC. Escolha um para começar.</p>
+            <p class="capa-sub">Produza mais, emita menos e suba no ranking: cinco desafios rápidos para conhecer o Programa SBC.<br>Escolha um para começar.</p>
         </div>
     </section>
 

@@ -30,6 +30,27 @@
             transition: width 0.3s linear;
         }
 
+        /* resposta: flash colorido sobre o cartão inteiro (verde acerto, vinho erro) */
+        .flash {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 5;
+        }
+        .flash.ok { background: rgba(23, 101, 69, 0.15); animation: flash-pisca 0.8s ease-out; }
+        .flash.erro { background: rgba(134, 18, 76, 0.16); animation: flash-pisca 0.9s ease-out; }
+        @keyframes flash-pisca { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* erro: cartão treme */
+        .treme { animation: tremer 0.45s ease; }
+        @keyframes tremer {
+            10%, 90% { transform: translateX(-2px); }
+            20%, 80% { transform: translateX(3px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+
         .resumo-fase { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .resumo-fase td { padding: 8px 10px; border-bottom: 2px solid #dfe8df; font-size: 0.95em; }
         .resumo-fase td:last-child { text-align: right; font-weight: 800; color: var(--azul); white-space: nowrap; }
@@ -63,7 +84,7 @@
         </div>
     </div>
 
-    <main class="cartao" id="carta-area" style="padding:0;overflow:hidden;">
+    <main class="cartao" id="carta-area" style="padding:0;overflow:hidden;position:relative;">
         <div style="background:linear-gradient(160deg,var(--verde-escuro),#007f47);color:#e6f2e6;padding:12px 18px;font-size:0.85em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <span class="fase-chip" id="fase-chip">Pré-plantio</span>
             <span style="font-weight:800;">Safra do carbono — cada decisão conta</span>
@@ -80,6 +101,7 @@
             <button class="botao" id="btn-sim" onclick="decidir(true)" style="flex:1;min-height:66px;border-radius:0;font-size:1.05em;">✔ Prática SBC</button>
         </div>
         <button class="botao secundario oculto" id="btn-proxima" onclick="proxima()" style="width:100%;min-height:60px;border-radius:0;">Próxima situação ➜</button>
+        <div class="flash" id="flash"></div>
     </main>
 
     <main class="cartao tela-final oculto" id="tela-final">
@@ -235,6 +257,18 @@
             var carta = CARTAS[ordem[posicao]];
             var acertou = escolheuSBC !== null && escolheuSBC === carta.sbc;
             var fb = document.getElementById("feedback");
+            var flash = document.getElementById("flash");
+            var cartao = document.getElementById("carta-area");
+
+            // flash da resposta: verde acerto, vinho erro + tremida no erro
+            flash.classList.remove("ok", "erro");
+            void flash.offsetWidth;
+            flash.classList.add(acertou ? "ok" : "erro");
+            if (!acertou) {
+                cartao.classList.remove("treme");
+                void cartao.offsetWidth;
+                cartao.classList.add("treme");
+            }
 
             if (acertou) {
                 sequencia++;
@@ -244,12 +278,14 @@
                 pontos += ganho;
                 SBCH.popupPontos(document.getElementById("pts"), "+" + ganho);
                 fb.className = "feedback ok";
+                fb.style.display = "block"; // carregarCarta() esconde via style.display; só a classe não basta
                 fb.innerHTML = "<strong>✔ Correto! +" + ganho + " pts" + (sequencia > 1 ? " (sequência de " + sequencia + ")" : "") + "</strong><br>" + carta.exp;
                 SBCH.som("acerto");
                 if (sequencia >= 3) SBCH.confete();
             } else {
                 sequencia = 0;
                 fb.className = "feedback erro";
+                fb.style.display = "block"; // carregarCarta() esconde via style.display; só a classe não basta
                 var cab = escolheuSBC === null ? "Tempo esgotado!" :
                     (escolheuSBC ? "Essa não é uma prática SBC." : "Essa é justamente uma prática SBC!");
                 fb.innerHTML = "<strong>" + cab + "</strong><br>" + carta.exp;

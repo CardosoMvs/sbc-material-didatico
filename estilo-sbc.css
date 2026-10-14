@@ -455,7 +455,7 @@ body {
 
 .rodape-lockup {
     flex: none;
-    width: min(100%, 560px);
+    width: min(100%, 600px);
     height: auto;
 }
 

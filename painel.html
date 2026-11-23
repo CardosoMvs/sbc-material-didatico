@@ -66,13 +66,7 @@
             text-align: right;
             font-variant-numeric: tabular-nums;
         }
-        .linha-barra.genero-h .preenchimento { background: #001a4b; }
-        .linha-barra.genero-m .preenchimento { background: #8a4d1f; }
-        .linha-barra.genero-n .preenchimento { background: #9aa5a0; }
         .linha-barra:hover .trilho { background: #e2ece2; }
-        .legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.78em; color: var(--tinta-suave); margin: 4px 0 10px; }
-        .legenda span { display: inline-flex; align-items: center; gap: 5px; }
-        .legenda i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
         .vazio { font-size: 0.88em; color: var(--tinta-suave); text-align: center; padding: 8px 0; }
 
@@ -113,7 +107,7 @@
             overflow-wrap: anywhere;
         }
         .tabela tr:nth-child(even) td { background: #f5f8f5; }
-        .tabela .sem-genero { color: var(--tinta-suave); font-style: italic; }
+        .tabela .sem-perfil { color: var(--tinta-suave); font-style: italic; }
 
         .acoes-painel { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
         .acoes-painel .botao { flex: 1; min-width: 150px; min-height: 54px; font-size: 0.95em; }
@@ -157,19 +151,14 @@
                 <div class="nome">Hoje</div>
             </div>
             <div class="placar-item">
-                <div class="valor" id="p-contato">0</div>
-                <div class="nome">Com contato</div>
+                <div class="valor" id="p-celular">0</div>
+                <div class="nome">Com celular</div>
             </div>
         </div>
 
         <main class="cartao">
-            <h2>Quem visitou</h2>
-            <div class="legenda">
-                <span><i style="background:#001a4b;"></i>Homem</span>
-                <span><i style="background:#8a4d1f;"></i>Mulher</span>
-                <span><i style="background:#9aa5a0;"></i>Não informou</span>
-            </div>
-            <div id="graf-genero"></div>
+            <h2>Perfil de quem visitou</h2>
+            <div id="graf-perfil"></div>
         </main>
 
         <main class="cartao">
@@ -184,12 +173,12 @@
 
         <main class="cartao">
             <h2>Registros</h2>
-            <input type="search" class="busca" id="busca" placeholder="Buscar por nome, fazenda, cidade, UF ou contato…">
+            <input type="search" class="busca" id="busca" placeholder="Buscar por nome, fazenda, cidade, UF, perfil, e-mail ou celular…">
             <div class="tabela-wrap">
                 <table class="tabela">
                     <thead>
                         <tr>
-                            <th>Data</th><th>Nome</th><th>Fazenda</th><th>Cidade</th><th>UF</th><th>Gênero</th><th>Contato</th>
+                            <th>Data</th><th>Nome</th><th>Fazenda</th><th>Cidade</th><th>UF</th><th>Você é</th><th>E-mail</th><th>Celular</th>
                         </tr>
                     </thead>
                     <tbody id="corpo-tabela"></tbody>
@@ -261,6 +250,20 @@
             return d.innerHTML;
         }
 
+        /* Campos novos (perfil, e-mail, celular) com fallback para os
+           registros antigos (gênero e contato único). */
+        function perfilDe(r) { return r.perfil || r.genero || ""; }
+        function emailDe(r) {
+            if (r.email) return r.email;
+            var c = String(r.contato || "");
+            return c.indexOf("@") >= 0 ? c : "";
+        }
+        function celularDe(r) {
+            if (r.celular) return r.celular;
+            var c = String(r.contato || "");
+            return c && c.indexOf("@") < 0 ? c : "";
+        }
+
         /* ---------- Porta ---------- */
         document.getElementById("form-senha").addEventListener("submit", function (ev) {
             ev.preventDefault();
@@ -300,7 +303,7 @@
             var cont = {};
             lista.forEach(function (r) {
                 var k = String(r[campoChave] || "").trim();
-                if (campoChave === "genero" && k !== "Homem" && k !== "Mulher") k = "Não informou";
+                if (campoChave === "perfil" && !k) k = "Não informou";
                 if (campoChave === "uf" && !k) k = "—";
                 cont[k] = (cont[k] || 0) + 1;
             });
@@ -333,19 +336,23 @@
         function desenharTabela(lista) {
             var corpo = document.getElementById("corpo-tabela");
             if (!lista.length) {
-                corpo.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--tinta-suave);">Nenhum registro.</td></tr>';
+                corpo.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--tinta-suave);">Nenhum registro.</td></tr>';
                 return;
             }
             corpo.innerHTML = lista.slice().reverse().map(function (r) {
-                var g = r.genero ? escapar(r.genero) : '<span class="sem-genero">—</span>';
+                var p = perfilDe(r);
+                var perfil = p ? escapar(p) : '<span class="sem-perfil">—</span>';
+                var email = emailDe(r);
+                var celular = celularDe(r);
                 return "<tr>" +
                     "<td>" + escapar(r.quando) + "</td>" +
                     "<td><strong>" + escapar(r.nome) + "</strong></td>" +
                     "<td>" + escapar(r.fazenda || "—") + "</td>" +
                     "<td>" + escapar(r.cidade) + "</td>" +
                     "<td>" + escapar(r.uf) + "</td>" +
-                    "<td>" + g + "</td>" +
-                    "<td>" + escapar(r.contato || "—") + "</td>" +
+                    "<td>" + perfil + "</td>" +
+                    "<td>" + (email ? escapar(email) : "—") + "</td>" +
+                    "<td>" + (celular ? escapar(celular) : "—") + "</td>" +
                     "</tr>";
             }).join("");
         }
@@ -355,15 +362,13 @@
             var lista = carregar();
             var hoje = new Date().toDateString();
             var hojeQtd = lista.filter(function (r) { return new Date(r.ts).toDateString() === hoje; }).length;
-            var comContato = lista.filter(function (r) { return String(r.contato || "").trim(); }).length;
+            var comCelular = lista.filter(function (r) { return String(celularDe(r)).trim(); }).length;
 
             document.getElementById("p-total").textContent = lista.length;
             document.getElementById("p-hoje").textContent = hojeQtd;
-            document.getElementById("p-contato").textContent = comContato;
+            document.getElementById("p-celular").textContent = comCelular;
 
-            desenharGrafico("graf-genero", contarPor(lista, "genero"), lista.length, function (k) {
-                return k === "Homem" ? "genero-h" : k === "Mulher" ? "genero-m" : "genero-n";
-            });
+            desenharGrafico("graf-perfil", contarPor(lista, "perfil"), lista.length);
             desenharGrafico("graf-estados", contarPor(lista, "uf").slice(0, 10), lista.length);
             desenharGrafico("graf-cidades", contarPor(lista, "cidade").slice(0, 10), lista.length);
 
@@ -374,7 +379,7 @@
             var lista = carregar();
             var t = buscaTermo.toLowerCase();
             var visiveis = t ? lista.filter(function (r) {
-                return ["nome", "fazenda", "cidade", "uf", "contato", "genero", "quando"].some(function (c) {
+                return ["nome", "fazenda", "cidade", "uf", "perfil", "email", "celular", "genero", "contato", "quando"].some(function (c) {
                     return String(r[c] || "").toLowerCase().indexOf(t) >= 0;
                 });
             }) : lista;
@@ -394,9 +399,9 @@
                 v = String(v || "");
                 return '"' + v.replace(/"/g, '""') + '"';
             }
-            var linhas = [["Data", "Nome", "Fazenda", "Cidade", "UF", "Gênero", "Contato"].join(";")];
+            var linhas = [["Data", "Nome", "Fazenda", "Cidade", "UF", "Você é", "E-mail", "Celular"].join(";")];
             lista.forEach(function (r) {
-                linhas.push([campo(r.quando), campo(r.nome), campo(r.fazenda), campo(r.cidade), campo(r.uf), campo(r.genero), campo(r.contato)].join(";"));
+                linhas.push([campo(r.quando), campo(r.nome), campo(r.fazenda), campo(r.cidade), campo(r.uf), campo(perfilDe(r)), campo(emailDe(r)), campo(celularDe(r))].join(";"));
             });
             // BOM + ";" para abrir direto no Excel em português
             var csv = "﻿" + linhas.join("\r\n");

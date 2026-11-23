@@ -133,7 +133,7 @@
 
         @media (min-width: 960px) {
             .grade-baixo { grid-template-columns: 1fr 1fr; }
-            .campeoes, .chamada-produtor, .sobre, .evento { grid-column: span 2; }
+            .campeoes, .sobre { grid-column: span 2; }
         }
         .grade-baixo > * { min-width: 0; }
 
@@ -176,6 +176,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            max-width: 1140px;
+            margin: 0 auto 12px;
             padding: 12px 18px;
             background: var(--verde-escuro);
             color: #fff;
@@ -222,12 +224,15 @@
         }
 
         .chamada-produtor {
+            max-width: 1140px;
+            margin: 0 auto 12px;
             background: var(--dourado-claro);
             border: 1px solid var(--dourado);
             border-left-width: 4px;
             border-radius: var(--raio);
             padding: 14px 18px;
-            font-size: 0.9em;
+            font-size: 0.95em;
+            animation: entrar 0.35s ease-out backwards;
         }
 
         /* ---------- Seletor de versão (canto esquerdo; sempre abre na atual) ---------- */
@@ -315,9 +320,19 @@
         <img class="capa-logo" src="logos-oficiais/selo-2026-branco.png" alt="Selo Soja Baixo Carbono">
         <div class="capa-texto">
             <span class="tag">Estande SBC · 5 desafios</span>
-            <p class="capa-sub">Produza mais, emita menos e suba no ranking: cinco desafios rápidos para conhecer o Programa SBC.<br>Escolha um para começar.</p>
+            <p class="capa-sub"><strong>Produza mais e emita menos:</strong> desafios rápidos para conhecer o Programa SBC.<br>Escolha um para começar.</p>
         </div>
     </section>
+
+    <div class="evento">
+        <span class="evt-label">Evento: <strong id="evt-nome">—</strong></span>
+        <button id="btn-evento" class="evt-trocar" type="button">Definir evento</button>
+    </div>
+
+    <div class="chamada-produtor">
+        <strong>Faça seu cadastro</strong> e saiba mais sobre a Embrapa Soja e o Programa Soja Baixo Carbono.
+        <a href="registro.html" class="botao" style="margin-top:10px;text-decoration:none;text-align:center;">Cadastrar</a>
+    </div>
 
     <nav class="grade">
         <a href="jogo1.html" class="menu-item">
@@ -387,17 +402,6 @@
     </nav>
 
     <div class="grade-baixo">
-        <div class="chamada-produtor">
-            <strong>Você é produtor rural?</strong> Pergunte no estande como sua fazenda pode participar:
-            a adesão é voluntária, o degrau de entrada é o Sistema Plantio Direto e os dados da safra (MRV) são a porta da certificação.
-            <strong><a href="registro.html" style="color:inherit;">Deixe seu registro aqui</a></strong> para a equipe entrar em contato.
-        </div>
-
-        <div class="evento">
-            <span class="evt-label">Evento: <strong id="evt-nome">—</strong></span>
-            <button id="btn-evento" class="evt-trocar" type="button">Definir evento</button>
-        </div>
-
         <div class="sobre">
             <strong>Programa SBC – Soja Baixo Carbono</strong> · conduzido pela Embrapa Soja desde 2021, com apoio de Bayer, Bunge,
             Cargill, Coamo, Cocamar, GDM e UPL. Selo de certificação voluntária, de 3ª parte, para soja produzida com redução da
@@ -538,15 +542,3 @@
     <script src="modo-tela.js"></script>
 </body>
 </html>
-<script>
-setTimeout(function(){
-  var d=document.documentElement,b=document.body,lst=[];
-  b.querySelectorAll("*").forEach(function(e){
-    var r=e.getBoundingClientRect();
-    lst.push([r.right,r.width,(e.id&&('#'+e.id))||'',e.className||'',e.tagName]);
-  });
-  lst.sort(function(a,c){return c[0]-a[0];});
-  var top=lst.slice(0,8).map(function(x){return 'R'+Math.round(x[0])+' w'+Math.round(x[1])+' '+x[4]+' '+x[2]+' '+x[3];}).join(' || ');
-  document.title='DBG3 sw='+d.scrollWidth+' classe='+b.className+' padding='+getComputedStyle(b).padding+' zoom='+String(getComputedStyle(b).zoom)+' '+top;
-},600);
-</script>

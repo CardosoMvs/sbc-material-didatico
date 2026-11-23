@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro do Produtor SBC</title>
+    <title>Cadastro SBC</title>
     <link rel="icon" type="image/png" href="logos-oficiais/favicon.png">
     <link rel="stylesheet" href="estilo-sbc.css">
     <style>
@@ -59,17 +59,13 @@
         <a href="index.html" class="voltar" aria-label="Voltar ao menu"><img src="logos-oficiais/seta-voltar-verde.png" class="seta-v" alt=""><img src="logos-oficiais/seta-voltar-branca.png" class="seta-b" alt=""></a>
         <div class="titulo-bloco">
             <span class="selo">SBC · Soja Baixo Carbono</span>
-            <h1 class="titulo">Registro do Produtor</h1>
+            <h1 class="titulo">Cadastro</h1>
         </div>
     <img class="topo-selo" src="logos-oficiais/selo-2026-cor.png" alt="Selo Soja Baixo Carbono">
     </header>
 
     <main class="cartao">
-        <h2>Passou pelo estande? Deixe seu registro</h2>
-        <p class="sub">A equipe do Programa SBC usa esta lista para acompanhar quem visitou o estande
-        e poder retornar o contato com informações do selo.</p>
-
-        <form id="form-registro" style="margin-top:14px;" autocomplete="off">
+        <form id="form-registro" autocomplete="off">
             <div class="campo">
                 <label for="r-nome">Seu nome</label>
                 <input id="r-nome" maxlength="60" placeholder="Nome completo" required>
@@ -91,18 +87,27 @@
                 </div>
             </div>
             <div class="campo">
-                <label for="r-contato">Contato <span class="opcional">(WhatsApp ou e-mail · opcional)</span></label>
-                <input id="r-contato" maxlength="60" placeholder="(43) 99999-0000 ou@email.com" inputmode="tel">
+                <label for="r-email">E-mail</label>
+                <input id="r-email" type="email" maxlength="60" placeholder="nome@exemplo.com" inputmode="email" required>
             </div>
             <div class="campo">
-                <label for="r-genero">Você é <span class="opcional">(opcional)</span></label>
-                <select id="r-genero">
-                    <option value="" selected>Prefiro não informar</option>
-                    <option value="Homem">Homem</option>
-                    <option value="Mulher">Mulher</option>
+                <label for="r-celular">Celular / WhatsApp <span class="opcional">(opcional)</span></label>
+                <input id="r-celular" type="tel" maxlength="20" placeholder="(43) 99999-0000" inputmode="tel">
+            </div>
+            <div class="campo">
+                <label for="r-perfil">Você é <span class="opcional">(opcional)</span></label>
+                <select id="r-perfil">
+                    <option value="" selected>Selecione</option>
+                    <option value="Produtor">Produtor</option>
+                    <option value="Técnico">Técnico</option>
+                    <option value="Pesquisador">Pesquisador</option>
+                    <option value="Professor">Professor</option>
+                    <option value="Estudante">Estudante</option>
+                    <option value="Consultor">Consultor</option>
+                    <option value="Representante comercial">Representante comercial</option>
                 </select>
             </div>
-            <button type="submit" class="botao">Registrar visita</button>
+            <button type="submit" class="botao">Cadastrar</button>
             <p class="aviso-privacidade">Os dados ficam somente neste tablet e são exportados pela equipe do estande.</p>
         </form>
     </main>
@@ -119,7 +124,6 @@
                 <div class="nome">Hoje</div>
             </div>
         </div>
-        <p class="sub" style="text-align:center;">Obrigado! Seu registro ajuda o programa a levar o selo até a sua região.</p>
         <p style="text-align:center;margin:10px 0 0;">
             <a href="painel.html" class="link-equipe" title="Acesso restrito à equipe">Área da equipe</a>
         </p>
@@ -198,8 +202,9 @@
                 fazenda: document.getElementById("r-fazenda").value.trim(),
                 cidade: document.getElementById("r-cidade").value.trim(),
                 uf: document.getElementById("r-uf").value,
-                genero: document.getElementById("r-genero").value,
-                contato: document.getElementById("r-contato").value.trim(),
+                perfil: document.getElementById("r-perfil").value,
+                email: document.getElementById("r-email").value.trim(),
+                celular: document.getElementById("r-celular").value.trim(),
                 quando: agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
                 ts: agora.getTime()
             };
